@@ -13,7 +13,10 @@ public final class ClientState {
     public static GangDirectory.Gang gang(){
         return state.has("gang")?JSON.fromJson(state.get("gang"),GangDirectory.Gang.class):null;
     }
-    public static UUID player(){return Minecraft.getInstance().player.getUUID();}
+    public static UUID player(){
+        var player=Minecraft.getInstance().player;
+        return player!=null?player.getUUID():state.has("player")?UUID.fromString(state.get("player").getAsString()):new UUID(0,0);
+    }
     public static void receive(String data){
         state=JsonParser.parseString(data).getAsJsonObject();message=state.get("message").getAsString();
         if(Minecraft.getInstance().screen instanceof GangScreen screen)screen.updated();
@@ -26,3 +29,4 @@ public final class ClientState {
     }
     public static void refresh(String query,int page){JsonObject a=new JsonObject();a.addProperty("query",query);a.addProperty("page",page);action("refresh",a);}
 }
+

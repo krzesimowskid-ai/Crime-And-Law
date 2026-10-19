@@ -1,19 +1,21 @@
 # Crime And Law
 
 Pierwszy prototyp autorskiego moda gangsterskiego: kompaktowy panel gangów,
-członkostwo, rangi i wygląd menu. Wersja **0.1.0**.
+członkostwo, rangi i wygląd menu. Wersja **0.1.1**.
 
 ## Uruchomienie
 
 - Minecraft **1.21.1**, Java **21**, NeoForge **21.1.248 lub nowszy z serii 21.1**.
-- Włóż `crimeandlaw-0.1.0.jar` do `mods`.
+- Włóż `crimeandlaw-0.1.1.jar` do `mods`, zastępując poprzedni JAR tego moda.
 - Na serwerze plik musi być zainstalowany **u graczy i na serwerze**.
 - W świecie jednoosobowym część serwerowa uruchamia się razem ze światem.
 - Klawisz **G** otwiera panel; skrót można zmienić w sterowaniu Minecrafta.
 
 ## Co obejmuje wersja
 
-Bez gangu: „Stwórz gang” i „Znajdź gang”. Własna nazwa i logo.
+Bez gangu: dwie równe zakładki u góry okna — „Stwórz gang” i „Znajdź gang”.
+Pod nimi wspólny obszar formularza lub wyszukiwarki, zgodnie ze szkicem użytkownika.
+Własna nazwa i opcjonalne logo. Esc zamyka okno.
 Zgłoszenia do istniejącego gangu akceptuje lider albo uprawniony członek.
 
 Po dołączeniu: mały nagłówek z logo, nazwą i rangą, wąska kolumna zakładek,
@@ -61,12 +63,27 @@ Windows: gradlew.bat build
 Linux/macOS: ./gradlew build
 ```
 
-Wynik: `build/libs/crimeandlaw-0.1.0.jar`.
+Wynik: `build/libs/crimeandlaw-0.1.1.jar`.
 Gradle Wrapper 9.2.1, ModDevGradle 2.0.148, NeoForge 21.1.248.
-`./gradlew test` uruchamia testy modelu gangów i walidacji logo.
+`./gradlew test` uruchamia testy modelu gangów, walidacji logo oraz proporcji menu.
+
+Test graficzny z przykładowymi danymi: `./gradlew -PuiSmoke runClient`.
+Wymaga działającego ekranu/OpenGL. Otwiera siedem widoków w prawdziwym kliencie,
+sprawdza kliknięcia i wpisywanie, zapisuje obrazy i raport w `build/ui-smoke`,
+po czym zamyka klienta. Kod z `src/uiTest` jest wyłączony w normalnym buildzie.
+Test nie łączy dwóch graczy i nie zastępuje testu sieciowego.
+
+## Poprawki 0.1.1
+
+- Układ tworzenia i wyszukiwania według nowego szkicu, bez bocznego menu na tym ekranie.
+- Efekt rozmycia tła nie nakłada się na tekst interfejsu.
+- Wielkość okna i kontrolek jest niezależna od globalnej skali GUI Minecrafta.
+  Współrzędne kliknięć, przeciągania i przewijania uwzględniają skalę panelu.
+- Przycisk utworzenia gangu jest widoczny bez przewijania.
 
 ## Dalszy zakres
 
 Mapa, własność chunków, oznaczenia, NPC, produkcja, handel oraz rozbudowane
 animacje pozostają do wykonania. Ta wersja nie dodaje tych systemów.
 Makieta była referencją układu; elementy zmniejszono zgodnie z uwagą użytkownika.
+
