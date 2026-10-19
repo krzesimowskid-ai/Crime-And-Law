@@ -1,10 +1,10 @@
 # Crime And Law — ustalenia projektu
 
-Stan rozmowy: 17 października 2026, godz. 08:41, Europe/Warsaw.
+Stan rozmowy: 19 października 2026, godz. 17:46, Europe/Warsaw.
 
 ## Status i sposób dalszej pracy
 
-To zapis pomysłów i decyzji użytkownika, a nie opis gotowego moda. Na moment zapisu repozytorium nie zawierało implementacji. Użytkownik poprosił o zachowanie ustaleń **bez rozpoczynania kodowania**; chce teraz omówić i przeanalizować osobny mod tworzony wcześniej z innym AI.
+To zapis pomysłów i decyzji użytkownika, a nie opis gotowego moda. Repozytorium nie zawiera jeszcze implementacji. 19 października użytkownik odłożył DarkPerazera i wrócił do Crime And Law. Zaakceptował rozpoczęcie od podstaw panelu gangów; obecnie doprecyzowuje jego wygląd. Wersja Minecrafta i loader pozostają do potwierdzenia.
 
 Crime And Law jest nowym, osobnym modem. McArk pozostaje odłożony, zachowując cel odwzorowania ASA 1:1. Nie zmieniać projektu McArk w Crime And Law ani nie usuwać jego materiałów w ramach tej pracy.
 
@@ -54,6 +54,16 @@ Pomysły użytkownika:
 - Po utworzeniu lub dołączeniu ten sam klawisz otwiera menu aktualnego gangu.
 - Jedną z zakładek menu ma być mapa świata pokazująca m.in. kontrolowane obszary.
 - Rangi, uprawnienia, zaproszenia, akceptowanie zgłoszeń, limity członków i koszty utworzenia nie zostały określone.
+
+## Wygląd menu gangu — doprecyzowanie 19 października
+
+- Na początek jeden spójny, jednolity motyw bazowy.
+- Wspólny motyw ustawiany dla gangu dotyczy jego menu, otwieranego zarówno przez założyciela, jak i członków.
+- Lider może ustawić domyślny wygląd menu gangu, w tym kolor tła, obramówek oraz przezroczystość.
+- Członek może korzystać z wyglądu ustalonego dla gangu albo dostosować go lokalnie tylko dla siebie.
+- Osobiste zmiany nie zmieniają ustawień gangu ani wyglądu u innych graczy.
+- Nie utożsamiać motywu menu z kolorem własności na mapie. Powiązanie tych kolorów nie zostało zatwierdzone.
+- Szczegóły kontrolek edytora, dokładne kolory startowe, zakres przezroczystości i zapisywanie osobistych motywów osobno dla każdego gangu pozostają do ustalenia.
 
 ## Gangi NPC — pomysł na później
 
@@ -105,4 +115,4 @@ Użytkownik lubi rozważanie obu wariantów przy dylematach. Nie oznacza to auto
 
 Asystent zaproponował: podstawę moda, jeden multiblok, jeden fikcyjny proces, prosty układ oparów, jednego handlarza, pieniądze, zapis oraz JAR do testów. To propozycja kolejności pracy, nie zatwierdzenie wyglądu, receptury, wymiarów maszyny ani parametrów.
 
-Najbliższa dyspozycja użytkownika: **zachować ten opis bez implementowania moda i umożliwić osobną analizę innego, wcześniej tworzonego projektu, gdy zostanie wskazany.**
+Aktualny pierwszy etap: panel tworzenia i wyszukiwania gangów, własne logo, członkostwo oraz trwały zapis, docelowo JAR do sprawdzenia z drugim graczem. Użytkownik zaakceptował rozpoczęcie i następnie doprecyzował motywy menu. Przed budowaniem pierwszej wersji należy ustalić platformę; pytanie o Minecraft 1.21.1 / NeoForge nie zostało jeszcze rozstrzygnięte.
