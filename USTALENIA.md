@@ -1,10 +1,10 @@
 # Crime And Law — ustalenia projektu
 
-Stan rozmowy: 19 października 2026, godz. 17:46, Europe/Warsaw.
+Stan projektu: 19 października 2026.
 
 ## Status i sposób dalszej pracy
 
-To zapis pomysłów i decyzji użytkownika, a nie opis gotowego moda. Repozytorium nie zawiera jeszcze implementacji. 19 października użytkownik odłożył DarkPerazera i wrócił do Crime And Law. Zaakceptował rozpoczęcie od podstaw panelu gangów; obecnie doprecyzowuje jego wygląd. Wersja Minecrafta i loader pozostają do potwierdzenia.
+To zapis pomysłów i decyzji użytkownika, a nie opis gotowego moda. Powstaje pierwszy prototyp panelu gangów, wersja 0.1.0. 19 października użytkownik odłożył DarkPerazera i wrócił do Crime And Law. Zaakceptował rozpoczęcie od podstaw panelu gangów; obecnie doprecyzowuje jego wygląd. Dla pierwszego prototypu przyjęto Minecraft 1.21.1 i NeoForge 21.1.248: użytkownik polecił rozpoczęcie bez wskazania innej platformy. Jest to jawne założenie wykonawcze, nie wcześniejsza deklaracja użytkownika.
 
 Crime And Law jest nowym, osobnym modem. McArk pozostaje odłożony, zachowując cel odwzorowania ASA 1:1. Nie zmieniać projektu McArk w Crime And Law ani nie usuwać jego materiałów w ramach tej pracy.
 
@@ -17,7 +17,7 @@ Użytkownik może przypominać sobie pomysły stopniowo. Nie traktować opisu ja
 - Ważne są obsługa urządzeń, animacje, modele, dźwięki i atmosfera prowadzenia laboratorium.
 - Użytkownik chce złożonego procesu angażującego gracza, a nie pojedynczej wymiany składników na gotowy produkt w jednym oknie craftingu.
 - Wydajność jest ważna od początku.
-- Minecraft 1.21.1 z NeoForge został zaproponowany przez asystenta jako platforma startowa; nie zatwierdzono jeszcze wersji nowego projektu.
+- Pierwszy prototyp jest przygotowywany dla Minecraft 1.21.1 / NeoForge 21.1.248, zgodnie z jawnym założeniem wykonawczym po poleceniu rozpoczęcia.
 
 ## Materiały, produkty i maszyny
 
@@ -58,6 +58,9 @@ Pomysły użytkownika:
 ## Wygląd menu gangu — doprecyzowanie 19 października
 
 - Na początek jeden spójny, jednolity motyw bazowy.
+- Zaakceptowano makietę: logo i nazwa gangu w lewym górnym nagłówku, zakładki po lewej, treść po prawej, zamknięcie w prawym górnym rogu.
+- Użytkownik następnie zażądał kompaktowych proporcji: mniejsze logo i nazwa, niższy nagłówek i przyciski, węższy panel nawigacji, więcej miejsca na treść. Makieta nie określa docelowych wielkości elementów.
+- Zakładki pierwszego panelu: Gang, Członkowie, Rangi, Mapa, Ustawienia. Mapa w pierwszym prototypie wyraźnie zapowiada dalszy etap; nie udaje działającego systemu terytoriów.
 - Wspólny motyw ustawiany dla gangu dotyczy jego menu, otwieranego zarówno przez założyciela, jak i członków.
 - Lider może ustawić domyślny wygląd menu gangu, w tym kolor tła, obramówek oraz przezroczystość.
 - Członek może korzystać z wyglądu ustalonego dla gangu albo dostosować go lokalnie tylko dla siebie.
@@ -115,4 +118,19 @@ Użytkownik lubi rozważanie obu wariantów przy dylematach. Nie oznacza to auto
 
 Asystent zaproponował: podstawę moda, jeden multiblok, jeden fikcyjny proces, prosty układ oparów, jednego handlarza, pieniądze, zapis oraz JAR do testów. To propozycja kolejności pracy, nie zatwierdzenie wyglądu, receptury, wymiarów maszyny ani parametrów.
 
-Aktualny pierwszy etap: panel tworzenia i wyszukiwania gangów, własne logo, członkostwo oraz trwały zapis, docelowo JAR do sprawdzenia z drugim graczem. Użytkownik zaakceptował rozpoczęcie i następnie doprecyzował motywy menu. Przed budowaniem pierwszej wersji należy ustalić platformę; pytanie o Minecraft 1.21.1 / NeoForge nie zostało jeszcze rozstrzygnięte.
+Aktualny pierwszy etap: panel tworzenia i wyszukiwania gangów, własne logo, członkostwo oraz trwały zapis, docelowo JAR do sprawdzenia z drugim graczem. Użytkownik zaakceptował rozpoczęcie i następnie doprecyzował motywy menu. Po ponownym poleceniu „to rób” asystent rozpoczął prototyp na Minecraft 1.21.1 / NeoForge 21.1.248, jawnie podając to założenie.
+
+
+## Zakres prototypu 0.1.0
+
+Szczegóły wykonawcze pierwszej wersji, możliwe do zmiany po testach:
+
+- Tworzenie, wyszukiwanie i zgłoszenia do gangów; zgłoszenie przyjmuje osoba z uprawnieniem.
+- Jeden gang na gracza; zapis gangów w danych świata po stronie serwera.
+- Domyślne rangi Lider i Członek; własne rangi z uprawnieniami do członkostwa, rang i wyglądu.
+- Przekazanie przywództwa, opuszczenie gangu i usuwanie członków; lider nie może opuścić pozostałych bez przekazania przywództwa.
+- Własne logo PNG z lokalnej ścieżki pliku, dopasowane do 64×64. Pobieranie obrazów z URL nie jest jeszcze zaimplementowane.
+- Kolory tła i obramówki oraz krycie tła; osobiste nadpisanie motywu nie zmienia ustawień innych graczy.
+- Robocze limity zasobów prototypu: 64 członków, 12 rang, 512 gangów; nie są ostateczną decyzją o balansie moda.
+- NPC, produkcja, handel, mapa i własność chunków pozostają dalszymi etapami.
+
