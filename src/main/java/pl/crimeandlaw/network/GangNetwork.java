@@ -70,6 +70,11 @@ public final class GangNetwork {
                     for(var permission:Permission.values())if(a.has(permission.name()) && a.get(permission.name()).getAsBoolean())permissions.add(permission);
                     d.role(actor,text(a,"role"),text(a,"name"),permissions);
                 }
+                case "reorder_roles" -> {
+                    List<String> order=new ArrayList<>();
+                    for(var id:a.getAsJsonArray("order"))order.add(id.getAsString());
+                    d.reorderRoles(actor,order);
+                }
                 case "theme" -> d.theme(actor,new Theme(integer(a,"background",Theme.DEFAULT.background()),integer(a,"border",Theme.DEFAULT.border()),integer(a,"opacity",235)));
                 case "logo" -> d.logo(actor,GangLogo.validate(text(a,"logo")));
                 default -> throw new IllegalArgumentException("Nieznana czynność.");

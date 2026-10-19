@@ -1,48 +1,54 @@
-# Sprawdzenie 0.1.1
+# Sprawdzenie 0.1.2
 
-19 października 2026. Wersja 0.1.1 poprawia ekran tworzenia/wyszukiwania
-według szkicu użytkownika oraz renderowanie i skalowanie całego panelu.
+19 października 2026. Minecraft 1.21.1, NeoForge 21.1.248, JDK 21.
+Gradle clean build i wrapper zakończone BUILD SUCCESSFUL.
 
-## Wyniki
+## Testy automatyczne
 
-- Gradle build i generowanie wrappera: BUILD SUCCESSFUL, JDK 21.
-- 14 testów JUnit bez błędów: 10 modelu gangów, 2 walidacji PNG,
-  2 proporcji panelu i przeliczania współrzędnych.
-- Uruchomiono rzeczywistego klienta Minecraft 1.21.1 / NeoForge 21.1.248
-  z Crime And Law 0.1.1 w rozdzielczości 1920×1080. Wirtualny ekran,
-  OpenGL 4.5 Mesa llvmpipe, bez logowania konta i bez serwera.
-- Obejrzano zrzuty siedmiu widoków z przykładowymi danymi: tworzenie przy
-  skali GUI 2 i 4, wyszukiwanie, gang, członkowie, rangi i ustawienia.
-- Sprawdzono kliknięcie pola po przeliczeniu skali, wpisywanie tekstu,
-  kliknięcie zakładki wyszukiwania, równe szerokości obu górnych zakładek
-  i widoczność przycisku utworzenia bez przewijania.
-- Dodatkowy test obrazu wykrywa znikające tło po zmianie skali/zakładki.
-  Poprawiono stan bufora głębi; ponowny przebieg zakończył się
-  CRIME_UI_SMOKE_PASS. Napisy na końcowych obrazach są ostre.
-- Produkcyjny JAR jest pakowany z wyłączeniem klasy testu graficznego.
+23 testy JUnit bez błędów: 12 modelu gangów, 2 walidacji PNG, 7 edycji obrazów
+oraz konwersji kolorów i 2 proporcji/współrzędnych menu.
 
-Test graficzny jest odtwarzalny przez `./gradlew -PuiSmoke runClient`.
-Korzysta z danych testowych, a nie z dwóch połączonych graczy. Nie potwierdza
-całego przepływu sieciowego, rzeczywistych kont, renderowania świata w tle
-ani poprawności na każdym GPU i każdej rozdzielczości. Przepływ między dwoma
-rzeczywistymi klientami pozostaje do sprawdzenia.
+Nowe przypadki obejmują dowolną wizualną kolejność rang (również nad Liderem),
+brak nadawania uprawnień przez przesuwanie, odrzucanie niepełnej/powielonej listy,
+zapis/odczyt kolejności, PNG i JPG, spacje i polskie znaki w ścieżkach,
+obrazy większe niż poprzedni limit 4096 px, konkretne błędy braku pliku i błędnego
+formatu, granice kadru, przezroczyste marginesy, HSV/RGB oraz słabo kompresujące
+się miniatury RGBA mieszczące się w limicie pakietu.
 
-## Dotychczasowe sprawdzenie serwera
+## Klient graficzny
 
-Poprzednia wersja 0.1.0 uruchomiła osobny serwer developerski NeoForge,
-utworzyła świat i doszła do komunikatu Done. Nie powtarzano tego testu
-w 0.1.1: zmiany dotyczą klienta i układu menu, a model gangów i protokół
-serwerowy pozostały takie same. Testy modelu nadal przechodzą.
+Uruchomiono prawdziwy klient Minecraft w 1920×1080 na wirtualnym ekranie,
+OpenGL 4.5 Mesa llvmpipe. Test używa danych przykładowych, bez logowania konta.
+Końcowy przebieg zakończył się CRIME_UI_SMOKE_PASS i zapisał 12 obrazów.
+
+Sprawdzono pola tekstowe i zakładki przy skalach GUI 2/4, otwarcie koła kolorów,
+wybór koloru i zmianę krycia, podgląd wyglądu, wywołanie obsługi upuszczenia
+pliku, asynchroniczne otwarcie edytora, przesuwanie/przybliżanie kadru,
+zatwierdzenie i walidację logo oraz przeciąganie rangi z linią docelową.
+Obejrzano zrzuty głównych widoków i obu edytorów. Test obrazu dodatkowo
+sprawdza tło po zmianie skali i widoczność napisu „Anuluj” w oknach edytorów.
+
+Podgląd PNG większy niż stos LWJGL jest dekodowany ze strumienia; końcowy test
+korzysta z takiego obrazu i nie zgłasza błędu stosu. Warstwa kontrolek edytora
+jest rysowana po wyczyszczeniu głębi, by podgląd nie zasłaniał przycisków.
+
+Odtworzenie: `./gradlew -PuiSmoke runClient`. Kod testu graficznego jest
+wykluczony z produkcyjnego JAR-a; sprawdzono jego zawartość.
+
+## Granice weryfikacji
+
+Test wywołuje metodę Minecrafta obsługującą upuszczenie pliku; nie odtwarza
+fizycznego przeciągania z Eksploratora Windows ani systemowego okna wyboru
+na komputerze użytkownika. Pozostają do sprawdzenia dwa rzeczywiste klienty
+na serwerze, powiązana synchronizacja oraz wygląd na innych GPU/rozdzielczościach.
+Wersja 0.1.0 wcześniej uruchomiła serwer dedykowany i utworzyła świat.
+Nie przedstawiamy tego jako testu sieciowego wersji 0.1.2.
 
 ## Środowisko budowania
 
-W środowisku Work NeoForm Runtime 2.0.31 nie otrzymywał ścieżki procesu
-z ProcessHandle.current().info().command(). Dwie lokalne klasy narzędzia
-budującego (NeoFormEngine i ExternalJavaToolAction) otrzymały fallback na
-java.home/bin/java zamiast bezwarunkowego Optional.orElseThrow().
-Nie zmieniano logiki transformowania Minecrafta. Korekta narzędzia nie jest
-częścią JAR-a moda ani kodu projektu; zwykły komputer korzysta z oryginalnej
-zależności pobieranej przez Gradle.
-
-W kliencie developerskim usługi kont Minecraft zgłaszały niedostępność DNS.
-Nie blokowało to uruchomienia renderera i testu menu z przykładowymi danymi.
+Lokalny NeoForm Runtime 2.0.31 używa fallbacku java.home/bin/java w dwóch
+miejscach, gdzie ograniczone środowisko nie udostępnia ścieżki ProcessHandle.
+Ta poprawka narzędzia budującego nie trafia do repozytorium ani JAR-a moda.
+Usługi kont Minecraft były niedostępne przez DNS; nie blokowało to testu UI
+z danymi przykładowymi. Pobranie zasobów uzupełniono z oficjalnego CDN,
+z kontrolą rozmiarów i SHA-1 z indeksu gry.

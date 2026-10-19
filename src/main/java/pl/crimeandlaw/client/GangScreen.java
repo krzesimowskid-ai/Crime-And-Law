@@ -4,10 +4,8 @@ import com.google.gson.*;
 import com.mojang.blaze3d.systems.RenderSystem;
 import java.util.*;
 import java.nio.file.*;
-import java.io.*;
-import java.awt.RenderingHints;
-import java.awt.image.BufferedImage;
-import javax.imageio.ImageIO;
+import org.lwjgl.system.MemoryStack;
+import org.lwjgl.util.tinyfd.TinyFileDialogs;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.*;
@@ -27,6 +25,13 @@ public final class GangScreen extends Screen {
     private String query="",draftName="",file="",draftLogo="",selectedMember="",selectedRole="member",roleName="";
     private String background="15161C",border="A3425D",lastGang="";
     private int opacity=235;
+    private int settingsSection;
+    private boolean previewTheme;
+    private long logoRequest;
+    private String draggedRole="";
+    private double dragStartY,dragY;
+    private boolean roleMoved;
+    private final Map<String,FlatButton> roleButtons=new LinkedHashMap<>();
     private EnumSet<Permission> rolePermissions=EnumSet.noneOf(Permission.class);
     public GangScreen(){super(Component.literal("Crime And Law"));}
     private Gang gang(){return ClientState.gang();}
@@ -35,11 +40,12 @@ public final class GangScreen extends Screen {
         Member m=g.members.get(ClientState.player());Role role=m==null?null:g.roles.get(m.role);
         return role!=null && role.permissions.contains(p);
     }
-    private Theme theme(){Gang g=gang();if(g==null)return Theme.DEFAULT;Theme local=PersonalTheme.get(g.id.toString());return local==null?g.theme:local;}
+    private Theme theme(){if(previewTheme)return draftTheme();Gang g=gang();if(g==null)return Theme.DEFAULT;Theme local=PersonalTheme.get(g.id.toString());return local==null?g.theme:local;}
+    Theme currentTheme(){return theme();}
     public void updated(){
         Gang g=gang();String id=g==null?"":g.id.toString();
         if(!id.equals(lastGang)){
-            lastGang=id;tab=0;selectedMember="";selectedRole="member";memberPage=0;roleName="";
+            lastGang=id;tab=0;selectedMember="";selectedRole="member";memberPage=0;roleName="";previewTheme=false;
             Theme t=theme();background=String.format("%06X",t.background());border=String.format("%06X",t.border());opacity=t.opacity();
             draftLogo="";
         }
@@ -48,7 +54,7 @@ public final class GangScreen extends Screen {
     @Override protected void init(){
         layout=GangLayout.of(width,height);w=layout.panelWidth();h=layout.panelHeight();
         left=(layout.canvasWidth()-w)/2;top=(layout.canvasHeight()-h)/2;
-        labels.clear();
+        labels.clear();roleButtons.clear();
         Gang g=gang();
         if(g==null){
             cx=left+20;cy=top+62;cw=w-40;
@@ -88,17 +94,21 @@ public final class GangScreen extends Screen {
         minecraft.setScreen(new ConfirmScreen(yes->{minecraft.setScreen(this);if(yes)action.run();},Component.literal(title),Component.literal(description)));
     }
     private void buildCreate(){
-        int formWidth=Math.min(cw,400);
-        label(cx,cy,"Stwórz swój gang");label(cx,cy+22,"Nazwa (3–32 znaki)",0xFFAAAAB7);
-        field(cx,cy+36,Math.min(cw,280),32,draftName,v->draftName=v);
-        label(cx,cy+68,"Własne logo — ścieżka do pliku PNG",0xFFAAAAB7);
-        field(cx,cy+82,formWidth,240,file,v->file=v);
-        button(cx,cy+106,112,"Wczytaj PNG",b->loadLogo());
-        label(cx,cy+135,"Logo zostanie dopasowane do 64×64.",0xFFAAAAB7);
-        button(cx,cy+158,Math.min(cw,190),"Utwórz gang",b->{
+        label(cx,cy,"Stwórz swój gang");label(cx,cy+23,"Nazwa (3–32 znaki)",0xFFAAAAB7);
+        field(cx,cy+37,Math.min(cw-170,380),32,draftName,v->draftName=v);
+        logoControls(cx,cy+73,Math.min(cw-170,400),true);
+        button(cx,cy+202,190,"Utwórz gang",b->{
             JsonObject a=new JsonObject();a.addProperty("name",draftName);a.addProperty("logo",draftLogo);send("create",a);
         });
-        label(cx,cy+191,"Logo jest opcjonalne. Możesz dodać je później.",0xFFAAAAB7);
+        label(cx,cy+234,"Logo jest opcjonalne. Możesz zmienić je później.",0xFFAAAAB7);
+    }
+    private void logoControls(int x,int y,int width,boolean creating){
+        label(x,y,"Logo z komputera",0xFFAAAAB7);
+        button(x,y+18,Math.min(160,width/2-4),"Wybierz obraz…",b->chooseLogoFile()).active=creating||can(Permission.MANAGE_THEME);
+        label(x,y+48,"lub wklej ścieżkę do obrazu:",0xFFAAAAB7);
+        field(x,y+62,width,1024,file,v->file=v);
+        button(x,y+88,Math.min(140,width),"Wczytaj i dopasuj",b->loadLogo()).active=creating||can(Permission.MANAGE_THEME);
+        label(x,y+115,"PNG / JPG • możesz też przeciągnąć plik na okno gry.",0xFFAAAAB7);
     }
     private void buildFind(){
         label(cx,cy,"Znajdź gang");int searchWidth=Math.max(50,cw-82);
@@ -167,7 +177,8 @@ public final class GangScreen extends Screen {
     private void buildRoles(){
         Gang g=gang();label(cx,cy,"Rangi i uprawnienia");int listWidth=Math.min(150,(cw-12)/2),rx=cx+listWidth+12;
         int index=0;for(Role r:g.roles.values()){
-            button(cx,cy+26+index++*22,listWidth,r.name,b->{selectedRole=r.id;roleName=r.name;rolePermissions=r.permissions.isEmpty()?EnumSet.noneOf(Permission.class):EnumSet.copyOf(r.permissions);rebuildWidgets();},selectedRole.equals(r.id));
+            var row=button(cx,cy+26+index++*22,listWidth,"≡  "+r.name,b->{selectedRole=r.id;roleName=r.name;rolePermissions=r.permissions.isEmpty()?EnumSet.noneOf(Permission.class):EnumSet.copyOf(r.permissions);rebuildWidgets();},selectedRole.equals(r.id));
+            roleButtons.put(r.id,row);
         }
         button(cx,Math.max(top+h-48,cy+30+g.roles.size()*22),listWidth,"+ Nowa ranga",b->{selectedRole="";roleName="";rolePermissions.clear();rebuildWidgets();}).active=can(Permission.MANAGE_ROLES)&&g.roles.size()<12;
         Role current=g.roles.get(selectedRole);
@@ -181,6 +192,8 @@ public final class GangScreen extends Screen {
         button(rx,cy+154,cw-listWidth-12,"Zapisz rangę",b->{JsonObject a=new JsonObject();a.addProperty("role",selectedRole);a.addProperty("name",roleName);
             for(Permission p:Permission.values())a.addProperty(p.name(),rolePermissions.contains(p));send("role",a);
         }).active=can(Permission.MANAGE_ROLES)&&!selectedRole.equals("leader");
+        label(rx,cy+188,"Przeciągaj rangi po lewej, aby je uporządkować.",0xFFAAAAB7);
+        label(rx,cy+204,"Pozycja na liście nie zmienia uprawnień.",0xFFAAAAB7);
     }
     private void buildMap(){
         label(cx,cy,"Mapa — kolejny etap");label(cx,cy+26,"Tu pojawią się chunki i tereny gangów.",0xFFAAAAB7);
@@ -189,44 +202,67 @@ public final class GangScreen extends Screen {
     }
     private Theme draftTheme(){return new Theme(Integer.parseInt(background.replace("#",""),16),Integer.parseInt(border.replace("#",""),16),opacity);}
     private void buildSettings(){
-        label(cx,cy,"Wygląd menu");int half=Math.max(60,(cw-10)/2);
-        label(cx,cy+22,"Tło — HEX",0xFFAAAAB7);label(cx+half+10,cy+22,"Obramówka — HEX",0xFFAAAAB7);
-        field(cx,cy+36,half,7,background,v->background=v);field(cx+half+10,cy+36,half,7,border,v->border=v);
-        addRenderableWidget(new AbstractSliderButton(cx,cy+62,cw,18,Component.empty(),opacity/255.0){
-            {updateMessage();}
-            @Override protected void updateMessage(){setMessage(Component.literal("Krycie tła: "+Math.round(value*100)+"%"));}
-            @Override protected void applyValue(){opacity=(int)Math.round(value*255);}
-        });
-        button(cx,cy+90,half,"Zapisz tylko u mnie",b->{try{if(PersonalTheme.set(gang().id.toString(),draftTheme()))ClientState.message="Zapisano osobisty wygląd.";}catch(Exception e){ClientState.message="Podaj kolor jako 6 znaków HEX, np. A3425D.";}});
-        button(cx+half+10,cy+90,half,"Zapisz dla gangu",b->{try{Theme t=draftTheme();JsonObject a=new JsonObject();a.addProperty("background",t.background());a.addProperty("border",t.border());a.addProperty("opacity",t.opacity());send("theme",a);}catch(Exception e){ClientState.message="Nieprawidłowy kolor HEX.";}}).active=can(Permission.MANAGE_THEME);
-        button(cx,cy+114,cw,"Używaj wyglądu gangu",b->{PersonalTheme.set(gang().id.toString(),null);Theme t=gang().theme;background=String.format("%06X",t.background());border=String.format("%06X",t.border());opacity=t.opacity();rebuildWidgets();});
-        label(cx,cy+145,"Logo gangu — ścieżka do PNG",0xFFAAAAB7);
-        field(cx,cy+159,cw,240,file,v->file=v);
-        button(cx,cy+183,half,"Wczytaj PNG",b->loadLogo()).active=can(Permission.MANAGE_THEME);
-        button(cx+half+10,cy+183,half,"Zapisz logo gangu",b->{JsonObject a=new JsonObject();a.addProperty("logo",draftLogo);send("logo",a);}).active=can(Permission.MANAGE_THEME)&&!draftLogo.isBlank();
+        button(cx,cy,110,"Wygląd",b->{settingsSection=0;bodyScroll=0;rebuildWidgets();},settingsSection==0);
+        button(cx+118,cy,110,"Logo",b->{settingsSection=1;bodyScroll=0;rebuildWidgets();},settingsSection==1);
+        int y=cy+42,half=(cw-12)/2;
+        if(settingsSection==0){
+            label(cx,y,"Kolory i przezroczystość");
+            label(cx,y+20,"Zobacz podgląd, a potem wybierz, komu zapisać wygląd.",0xFFAAAAB7);
+            button(cx,y+48,half,"Zmień kolor tła…",b->openColor(true));
+            button(cx+half+12,y+48,half,"Zmień obramówkę…",b->openColor(false));
+            label(cx,y+80,"Krycie tła: "+Math.round(opacity/255.0*100)+"%",0xFFAAAAB7);
+            label(cx+half+12,y+80,"Kolor akcentów menu",0xFFAAAAB7);
+            label(cx,y+113,"Zapis wyglądu");
+            button(cx,y+134,half,"Zapisz tylko u mnie",b->{
+                if(PersonalTheme.set(gang().id.toString(),draftTheme())){previewTheme=false;ClientState.message="Zapisano osobisty wygląd.";}
+            });
+            button(cx+half+12,y+134,half,"Zapisz dla gangu",b->{
+                Theme t=draftTheme();JsonObject a=new JsonObject();a.addProperty("background",t.background());a.addProperty("border",t.border());a.addProperty("opacity",t.opacity());send("theme",a);
+            }).active=can(Permission.MANAGE_THEME);
+            button(cx,y+161,cw,"Używaj wyglądu gangu",b->{
+                if(PersonalTheme.set(gang().id.toString(),null)){previewTheme=false;Theme t=gang().theme;background=String.format("%06X",t.background());border=String.format("%06X",t.border());opacity=t.opacity();rebuildWidgets();}
+            });
+        }else{
+            logoControls(cx,y,Math.min(cw-160,350),false);
+            button(cx,y+151,Math.min(cw,230),"Zapisz logo gangu",b->{JsonObject a=new JsonObject();a.addProperty("logo",draftLogo);send("logo",a);}).active=can(Permission.MANAGE_THEME)&&!draftLogo.isBlank();
+            label(cx,y+183,"Zmiana logo będzie widoczna dla całego gangu.",0xFFAAAAB7);
+        }
+    }
+    private void openColor(boolean backgroundColor){
+        Theme t=draftTheme();minecraft.setScreen(new ColorPickerScreen(this,backgroundColor?"Kolor i krycie tła":"Kolor obramówki",backgroundColor?t.background():t.border(),backgroundColor?opacity:255,backgroundColor,(rgb,alpha)->{
+            if(backgroundColor){background=String.format("%06X",rgb);opacity=alpha;}else border=String.format("%06X",rgb);
+            previewTheme=true;ClientState.message="Podgląd wyglądu. Wybierz sposób zapisu.";
+        }));
+    }
+    private void chooseLogoFile(){
+        try(MemoryStack stack=MemoryStack.stackPush()){
+            var filters=stack.pointers(stack.UTF8("*.png"),stack.UTF8("*.jpg"),stack.UTF8("*.jpeg"));
+            String path=TinyFileDialogs.tinyfd_openFileDialog("Wybierz logo gangu",null,filters,"Obrazy PNG / JPG",false);
+            if(path!=null){file=path;loadLogo();}
+        }catch(Exception e){ClientState.message="Nie można otworzyć okna wyboru. Przeciągnij obraz albo wklej jego ścieżkę.";}
+    }
+    @Override public void onFilesDrop(List<Path> files){
+        if(files.size()!=1){ClientState.message="Przeciągnij jeden obraz naraz.";return;}
+        if(gang()!=null&&!can(Permission.MANAGE_THEME)){ClientState.message="Nie masz uprawnień do zmiany logo gangu.";return;}
+        file=files.getFirst().toString();if(gang()!=null){tab=4;settingsSection=1;}else find=false;bodyScroll=0;rebuildWidgets();loadLogo();
     }
     private void loadLogo(){
-        final String path=file;ClientState.message="Wczytywanie logo…";
+        if(gang()!=null&&!can(Permission.MANAGE_THEME)){ClientState.message="Nie masz uprawnień do zmiany logo gangu.";return;}
+        final long request=++logoRequest;final String path=file.strip().replaceAll("^\"|\"$","");
+        if(path.isBlank()){ClientState.message="Wybierz obraz, przeciągnij plik albo wklej ścieżkę.";return;}
+        ClientState.message="Wczytywanie obrazu…";
         java.util.concurrent.CompletableFuture.supplyAsync(()->{
-            try{
-                Path p=Path.of(path.replace("\"","").strip());if(Files.size(p)>5_000_000)throw new IOException("Plik przekracza 5 MB.");
-                try(var in=ImageIO.createImageInputStream(p.toFile())){
-                    var readers=ImageIO.getImageReaders(in);if(!readers.hasNext())throw new IOException("Nieprawidłowy obraz.");
-                    var reader=readers.next();
-                    try{reader.setInput(in);if(!reader.getFormatName().equalsIgnoreCase("png")||reader.getWidth(0)>4096||reader.getHeight(0)>4096)throw new IOException("Wybierz PNG do 4096×4096.");
-                        BufferedImage original=reader.read(0);BufferedImage image=new BufferedImage(64,64,BufferedImage.TYPE_INT_ARGB);
-                        var graphics=image.createGraphics();graphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION,RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-                        double scale=Math.min(64.0/original.getWidth(),64.0/original.getHeight());int iw=Math.max(1,(int)(original.getWidth()*scale)),ih=Math.max(1,(int)(original.getHeight()*scale));
-                        graphics.drawImage(original,(64-iw)/2,(64-ih)/2,iw,ih,null);graphics.dispose();
-                        ByteArrayOutputStream out=new ByteArrayOutputStream();ImageIO.write(image,"png",out);
-                        return GangLogo.validate(Base64.getEncoder().encodeToString(out.toByteArray()));
-                    }finally{reader.dispose();}
-                }
-            }catch(Exception e){throw new java.util.concurrent.CompletionException(e);}
-        }).whenComplete((encoded,error)->Minecraft.getInstance().execute(()->{
-            if(error!=null)ClientState.message="Nie wczytano logo. Wybierz istniejący plik PNG do 5 MB.";
-            else{draftLogo=encoded;ClientState.message="Logo wczytane. Zapisz gang lub logo.";}
-            if(minecraft.screen==this)rebuildWidgets();
+            try{return LogoImages.read(Path.of(path));}catch(Exception e){throw new java.util.concurrent.CompletionException(e);}
+        }).whenComplete((image,error)->Minecraft.getInstance().execute(()->{
+            if(request!=logoRequest||minecraft.screen!=this)return;
+            if(error!=null){
+                Throwable cause=error;while(cause.getCause()!=null)cause=cause.getCause();
+                ClientState.message="Nie wczytano logo: "+(cause.getMessage()==null?cause.getClass().getSimpleName():cause.getMessage());rebuildWidgets();
+            }else{
+                ClientState.message="";minecraft.setScreen(new LogoCropScreen(this,image,Path.of(path).getFileName().toString(),encoded->{
+                    draftLogo=encoded;ClientState.message="Logo przygotowane. "+(gang()==null?"Utwórz gang, aby je zapisać.":"Kliknij Zapisz logo gangu.");rebuildWidgets();
+                }));
+            }
         }));
     }
     // Vanilla Screen.render invokes renderBackground before widgets. The old custom
@@ -249,37 +285,90 @@ public final class GangScreen extends Screen {
     }
     private void paint(GuiGraphics g,int mouseX,int mouseY,float delta){
         g.fill(0,0,layout.canvasWidth(),layout.canvasHeight(),0x55000000);
+        g.fill(left+3,top+3,left+w+3,top+h+3,0x44000000);
         Theme t=theme();g.fill(left,top,left+w,top+h,t.backgroundArgb());
+        int header=(t.opacity()<<24)|mix(t.background(),t.border(),0.18f);
+        g.fillGradient(left+1,top+1,left+w-1,top+42,header,t.backgroundArgb());
         g.renderOutline(left,top,w,h,t.borderArgb());g.fill(left+1,top+42,left+w-1,top+43,t.borderArgb());
+        for(int offset:new int[]{0,w-14}){
+            g.fill(left+offset,top,left+offset+14,top+2,t.borderArgb());
+            g.fill(left+offset,top+h-2,left+offset+14,top+h,t.borderArgb());
+        }
         Gang gang=gang();String logo=!draftLogo.isBlank()?draftLogo:gang==null?"":gang.logo;
         var texture=LogoTexture.get(logo);
         if(gang!=null){
+            g.fill(left+3,top+45,left+107,top+h-24,0x16000000);
             g.fill(left+108,top+43,left+109,top+h-22,t.borderArgb());
+            g.fill(left+46,top+7,left+w-35,top+36,0x28000000);
+            g.fill(left+46,top+7,left+48,top+36,t.borderArgb());
             if(texture!=null)g.blit(texture,left+10,top+8,0,0,28,28,28,28);
             else{g.renderOutline(left+10,top+8,28,28,t.borderArgb());g.drawCenteredString(font,"G",left+24,top+18,t.borderArgb());}
-            g.drawString(font,font.plainSubstrByWidth(gang.name,w-98),left+48,top+10,0xFFF0EDF1,false);
+            g.drawString(font,font.plainSubstrByWidth(gang.name,w-106),left+54,top+10,0xFFF0EDF1,false);
             Member me=gang.members.get(ClientState.player());String subtitle="Twoja ranga: "+gang.roles.get(me.role).name;
-            g.drawString(font,font.plainSubstrByWidth(subtitle,w-98),left+48,top+25,0xFFAAAAB7,false);
-        }else if(texture!=null && !find){
-            int previewX=cx+Math.min(cw,400)+24;
-            if(previewX+64<left+w-12){g.blit(texture,previewX,cy+36,0,0,64,64,64,64);g.renderOutline(previewX,cy+36,64,64,t.borderArgb());}
+            g.drawString(font,font.plainSubstrByWidth(subtitle,w-106),left+54,top+25,0xFFAAAAB7,false);
+        }
+        if(gang==null&&!find || gang!=null&&tab==4&&settingsSection==1){
+            int previewX=cx+cw-140,previewY=cy+(gang==null?24:55);
+            g.fill(previewX,previewY,previewX+140,previewY+148,0x20000000);g.renderOutline(previewX,previewY,140,148,0x66000000|t.border());
+            g.drawCenteredString(font,"PODGLĄD LOGO",previewX+70,previewY+12,0xFFAAA7B6);
+            if(texture!=null){g.pose().pushPose();g.pose().translate(previewX+22,previewY+32,0);g.pose().scale(1.5f,1.5f,1);g.blit(texture,0,0,0,0,64,64,64,64);g.pose().popPose();}
+            else{g.renderOutline(previewX+38,previewY+48,64,64,t.borderArgb());g.drawCenteredString(font,"+",previewX+70,previewY+74,t.borderArgb());}
+        }
+        if(gang!=null&&tab==4&&settingsSection==0){
+            int half=(cw-12)/2,y=cy+42;
+            g.fill(cx,y+70,cx+half,y+75,(opacity<<24)|Integer.parseInt(background,16));
+            g.fill(cx+half+12,y+70,cx+cw,y+75,0xFF000000|Integer.parseInt(border,16));
+            g.fill(cx,y+104,cx+cw,y+105,0x44000000|t.border());
         }
         clip(g,cx,cy,cx+cw,top+h-24);
         for(Label line:labels)g.drawString(font,font.plainSubstrByWidth(line.value(),line.width()),line.x(),line.y()-bodyScroll,line.color(),false);
         g.disableScissor();
         super.render(g,mouseX,mouseY,delta);
+        if(!draggedRole.isEmpty()&&roleMoved){
+            int listWidth=Math.min(150,(cw-12)/2),drop=roleDropIndex(dragY);
+            int lineY=Math.clamp(cy+26+drop*22-bodyScroll,cy,top+h-26);
+            g.fill(cx,lineY,cx+listWidth,lineY+2,t.borderArgb());
+            int ghostY=(int)Math.clamp(dragY-9,cy,top+h-44);
+            g.fill(cx+3,ghostY,cx+listWidth+3,ghostY+20,0xEE29232F);g.renderOutline(cx+3,ghostY,listWidth,20,t.borderArgb());
+            Role role=gang.roles.get(draggedRole);if(role!=null)g.drawString(font,font.plainSubstrByWidth(role.name,listWidth-12),cx+9,ghostY+6,0xFFEAE7ED,false);
+        }
         if(gang==null)g.fill(left+w/2,top+1,left+w/2+1,top+42,t.borderArgb());
         String message=ClientState.message;g.drawString(font,font.plainSubstrByWidth(message,w-20),left+10,top+h-14,0xFFD4C4CC,false);
-        if(message.isBlank())g.drawString(font,"Esc — zamknij",left+10,top+h-14,0xFF858591,false);
         if(!message.isBlank()&&mouseY>=top+h-22&&mouseY<top+h && font.width(message)>w-20){
             var wrapped=font.split(Component.literal(message),w-28);int tipY=top+h-28-wrapped.size()*11;
             g.fill(left+6,tipY-4,left+w-6,top+h-24,0xFF181820);
             for(int i=0;i<wrapped.size();i++)g.drawString(font,wrapped.get(i),left+12,tipY+i*11,0xFFE9E8EC,false);
         }
     }
-    @Override public boolean mouseClicked(double x,double y,int button){return super.mouseClicked(layout.local(x),layout.local(y),button);}
-    @Override public boolean mouseReleased(double x,double y,int button){return super.mouseReleased(layout.local(x),layout.local(y),button);}
+    private static int mix(int a,int b,float ratio){int r=(int)((a>>16&255)*(1-ratio)+(b>>16&255)*ratio),g=(int)((a>>8&255)*(1-ratio)+(b>>8&255)*ratio),blue=(int)((a&255)*(1-ratio)+(b&255)*ratio);return r<<16|g<<8|blue;}
+    private int roleDropIndex(double y){return Math.clamp((int)Math.floor((y+bodyScroll-cy-26)/22),0,gang().roles.size()-1);}
+    @Override public boolean mouseClicked(double x,double y,int button){
+        x=layout.local(x);y=layout.local(y);
+        String role="";
+        if(button==0&&tab==2&&can(Permission.MANAGE_ROLES))for(var entry:roleButtons.entrySet()){
+            if(entry.getValue().visible&&entry.getValue().isMouseOver(x,y)){role=entry.getKey();break;}
+        }
+        boolean result=super.mouseClicked(x,y,button);
+        if(!role.isEmpty()){draggedRole=role;dragY=dragStartY=y;roleMoved=false;}return result;
+    }
+    @Override public boolean mouseReleased(double x,double y,int button){
+        if(button==0&&!draggedRole.isEmpty()){
+            if(roleMoved&&gang()!=null&&can(Permission.MANAGE_ROLES)){
+                List<String> order=new ArrayList<>(gang().roles.keySet());int target=roleDropIndex(layout.local(y));
+                order.remove(draggedRole);order.add(Math.min(target,order.size()),draggedRole);
+                JsonObject args=new JsonObject();JsonArray ids=new JsonArray();order.forEach(ids::add);args.add("order",ids);send("reorder_roles",args);
+            }
+            draggedRole="";roleMoved=false;
+        }
+        return super.mouseReleased(layout.local(x),layout.local(y),button);
+    }
     @Override public boolean mouseDragged(double x,double y,int button,double dx,double dy){
+        if(button==0&&!draggedRole.isEmpty()){
+            dragY=layout.local(y);roleMoved|=Math.abs(dragY-dragStartY)>3;
+            if(dragY<cy+10&&bodyScroll>0){bodyScroll=Math.max(0,bodyScroll-8);rebuildWidgets();}
+            else if(dragY>top+h-36&&bodyScroll<maxBodyScroll){bodyScroll=Math.min(maxBodyScroll,bodyScroll+8);rebuildWidgets();}
+            return true;
+        }
         return super.mouseDragged(layout.local(x),layout.local(y),button,layout.local(dx),layout.local(dy));
     }
     @Override public void mouseMoved(double x,double y){super.mouseMoved(layout.local(x),layout.local(y));}

@@ -1,12 +1,12 @@
 # Crime And Law
 
 Pierwszy prototyp autorskiego moda gangsterskiego: kompaktowy panel gangów,
-członkostwo, rangi i wygląd menu. Wersja **0.1.1**.
+członkostwo, rangi i wygląd menu. Wersja **0.1.2**.
 
 ## Uruchomienie
 
 - Minecraft **1.21.1**, Java **21**, NeoForge **21.1.248 lub nowszy z serii 21.1**.
-- Włóż `crimeandlaw-0.1.1.jar` do `mods`, zastępując poprzedni JAR tego moda.
+- Włóż `crimeandlaw-0.1.2.jar` do `mods`, zastępując poprzedni JAR tego moda.
 - Na serwerze plik musi być zainstalowany **u graczy i na serwerze**.
 - W świecie jednoosobowym część serwerowa uruchamia się razem ze światem.
 - Klawisz **G** otwiera panel; skrót można zmienić w sterowaniu Minecrafta.
@@ -32,12 +32,32 @@ logikę. Mapa wyraźnie informuje o planowanym dalszym etapie.
 
 ## Własne logo
 
-Wpisz lokalną ścieżkę PNG, np. `C:\Users\Gracz\Pictures\logo.png`,
-i kliknij „Wczytaj PNG”. Obraz jest dopasowywany z zachowaniem proporcji
-oraz przezroczystości do 64×64. Następnie utwórz gang albo zapisz jego logo.
-PNG źródłowy: do 5 MB i 4096×4096. Przesyłane logo: do 16 KB i 64×64.
-Serwer sam sprawdza format, rozmiar i zawartość obrazu; inni gracze nie
-potrzebują pliku na dysku. Import z linku nie jest jeszcze obsługiwany.
+Możesz wybrać obraz z okna plików, wkleić jego lokalną ścieżkę albo przeciągnąć
+jeden obraz z folderu na otwarty panel gangu w Minecraftcie. PNG i JPG, do 20 MB.
+W razie potrzeby przełącz grę w okno klawiszem F11, aby widzieć grę i folder.
+
+Po odczytaniu obrazu otwiera się „Dopasuj logo”. Przeciągaj obraz w podglądzie,
+przybliżaj kółkiem myszy lub suwakiem. Możesz wybrać kwadratowy kadr albo cały
+obraz z zachowaniem proporcji i przezroczystymi marginesami. „Anuluj”/X/Esc
+zachowuje poprzednie logo. „Zastosuj logo” przygotowuje podgląd; zapisz go
+przez „Utwórz gang” albo Ustawienia → Logo → „Zapisz logo gangu”.
+
+Obraz jest dopasowywany do 64×64. Przesyłane logo jest sprawdzane przez serwer
+jako PNG do 20 KB; pozostali gracze nie potrzebują pliku na swoim komputerze.
+Import z linku nie jest jeszcze obsługiwany. W razie błędu pojawia się jego
+konkretna przyczyna. Nie zamieniaj rozszerzenia JPG/SVG/WebP na PNG samą zmianą nazwy.
+
+## Ustawienia i kolejność rang
+
+Ustawienia mają kategorie „Wygląd” i „Logo”. Przyciski zmiany tła i obramówki
+otwierają małe okno z kołem barw, nasyceniem, jasnością, HEX i RGB. Tło ma
+również suwak krycia. Po „Zastosuj” widzisz podgląd menu; wybierz zapis osobisty
+lub zapis dla gangu. Możesz wrócić do wspólnego wyglądu gangu.
+
+W zakładce Rangi chwyć rangę na liście po lewej i przeciągnij ją w nowe miejsce.
+Można umieścić dowolną rangę nad liderem, również rangę bez uprawnień.
+To kolejność wyświetlania: nie zmienia uprawnień ani właściciela gangu.
+Porządkowanie wymaga uprawnienia do zarządzania rangami; nowy porządek zapisuje serwer.
 
 ## Zapis i zasady prototypu
 
@@ -63,15 +83,22 @@ Windows: gradlew.bat build
 Linux/macOS: ./gradlew build
 ```
 
-Wynik: `build/libs/crimeandlaw-0.1.1.jar`.
+Wynik: `build/libs/crimeandlaw-0.1.2.jar`.
 Gradle Wrapper 9.2.1, ModDevGradle 2.0.148, NeoForge 21.1.248.
 `./gradlew test` uruchamia testy modelu gangów, walidacji logo oraz proporcji menu.
 
 Test graficzny z przykładowymi danymi: `./gradlew -PuiSmoke runClient`.
-Wymaga działającego ekranu/OpenGL. Otwiera siedem widoków w prawdziwym kliencie,
-sprawdza kliknięcia i wpisywanie, zapisuje obrazy i raport w `build/ui-smoke`,
+Wymaga działającego ekranu/OpenGL. Otwiera widoki menu i nowe edytory w prawdziwym kliencie,
+sprawdza kliknięcia, wpisywanie, wybór kolorów, kadrowanie oraz przeciąganie rang, zapisuje obrazy i raport w `build/ui-smoke`,
 po czym zamyka klienta. Kod z `src/uiTest` jest wyłączony w normalnym buildzie.
 Test nie łączy dwóch graczy i nie zastępuje testu sieciowego.
+
+## Nowe w 0.1.2
+
+- Import obrazu przez przeciągnięcie, okno wyboru i ścieżkę; edytor kadrowania.
+- Kategorie ustawień, koło kolorów, jasność, nasycenie, krycie oraz HEX/RGB.
+- Przeciąganie rang z zapisem kolejności i bez zmieniania uprawnień.
+- Dopasowany nagłówek i ramka nazwy, wyraźniejsze przyciski, usunięty napis „Esc”.
 
 ## Poprawki 0.1.1
 

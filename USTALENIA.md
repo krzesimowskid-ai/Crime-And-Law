@@ -4,7 +4,7 @@ Stan projektu: 19 października 2026.
 
 ## Status i sposób dalszej pracy
 
-To zapis pomysłów i decyzji użytkownika, a nie opis gotowego moda. Powstaje prototyp panelu gangów, obecnie poprawka 0.1.1. 19 października użytkownik odłożył DarkPerazera i wrócił do Crime And Law. Zaakceptował rozpoczęcie od podstaw panelu gangów; obecnie doprecyzowuje jego wygląd. Dla pierwszego prototypu przyjęto Minecraft 1.21.1 i NeoForge 21.1.248: użytkownik polecił rozpoczęcie bez wskazania innej platformy. Jest to jawne założenie wykonawcze, nie wcześniejsza deklaracja użytkownika.
+To zapis pomysłów i decyzji użytkownika, a nie opis gotowego moda. Powstaje prototyp panelu gangów, obecnie wersja 0.1.2. 19 października użytkownik odłożył DarkPerazera i wrócił do Crime And Law. Zaakceptował rozpoczęcie od podstaw panelu gangów; obecnie doprecyzowuje jego wygląd. Dla pierwszego prototypu przyjęto Minecraft 1.21.1 i NeoForge 21.1.248: użytkownik polecił rozpoczęcie bez wskazania innej platformy. Jest to jawne założenie wykonawcze, nie wcześniejsza deklaracja użytkownika.
 
 Crime And Law jest nowym, osobnym modem. McArk pozostaje odłożony, zachowując cel odwzorowania ASA 1:1. Nie zmieniać projektu McArk w Crime And Law ani nie usuwać jego materiałów w ramach tej pracy.
 
@@ -143,3 +143,16 @@ Szczegóły wykonawcze pierwszej wersji, możliwe do zmiany po testach:
 - NPC, produkcja, handel, mapa i własność chunków pozostają dalszymi etapami.
 
 
+
+## Doprecyzowanie 19 października — wersja 0.1.2
+
+- Logo: przeciąganie pliku z folderu na otwarty panel gry, kadrowanie i dopasowanie,
+  przy zachowaniu możliwości podania ścieżki. Dodano też systemowe okno wyboru pliku.
+- Usunąć zbędny napis o Esc pod „Opuść gang”; zostaje zamknięcie X i Esc.
+- Dopracować wygląd nagłówka z nazwą gangu, tło i ramkę oraz czytelność przycisków.
+- Rangi można dowolnie przestawiać przeciąganiem, także umieszczać nową rangę bez
+  uprawnień nad Liderem. Kolejność wizualna jest niezależna od uprawnień i właściciela.
+- Ustawienia podzielić na schludne kategorie „Wygląd” i „Logo”.
+- Kolory wybiera się przyciskiem „Zmień…”: koło barw oraz suwaki jasności,
+  nasycenia i krycia, z dodatkowymi polami HEX/RGB. Krycie dotyczy tła.
+- Zachowane rozróżnienie wspólnego wyglądu gangu i wyglądu osobistego.

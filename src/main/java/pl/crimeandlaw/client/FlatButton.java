@@ -19,7 +19,8 @@ public final class FlatButton extends Button {
     }
     @Override protected void renderWidget(GuiGraphics g,int mouseX,int mouseY,float partialTick){
         Theme t=theme.get();int x=getX(),y=getY();
-        g.fill(x,y,x+width,y+height,selected||isHoveredOrFocused()?0x55000000|t.border():0x55101016);
+        g.fill(x,y,x+width,y+height,selected||isHoveredOrFocused()?0x55000000|t.border():0x40262934);
+        if(!centered)g.renderOutline(x,y,width,height,selected||isHoveredOrFocused()?0x99000000|t.border():0x553E3C48);
         if(selected){
             if(centered)g.fill(x,y+height-2,x+width,y+height,t.borderArgb());
             else g.fill(x,y,x+2,y+height,t.borderArgb());

@@ -1,0 +1,57 @@
+package pl.crimeandlaw.gang;
+
+import java.awt.image.BufferedImage;
+import java.io.*;
+import java.nio.file.*;
+import java.util.*;
+import javax.imageio.ImageIO;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import pl.crimeandlaw.client.*;
+import static org.junit.jupiter.api.Assertions.*;
+
+class ImageEditingTest {
+    @TempDir Path folder;
+    @Test void readsPngWithSpacesAndPolishCharacters()throws Exception {
+        Path path=folder.resolve("moje logo żółte.PNG");BufferedImage image=new BufferedImage(120,80,BufferedImage.TYPE_INT_ARGB);
+        image.setRGB(10,20,0xFF1267AB);ImageIO.write(image,"png",path.toFile());
+        BufferedImage loaded=LogoImages.read(path);assertEquals(120,loaded.getWidth());assertEquals(0xFF1267AB,loaded.getRGB(10,20));
+    }
+    @Test void readsJpegAndDownsamplesLargeSources()throws Exception {
+        Path jpg=folder.resolve("photo.jpg");ImageIO.write(new BufferedImage(320,200,BufferedImage.TYPE_INT_RGB),"jpeg",jpg.toFile());
+        assertEquals(320,LogoImages.read(jpg).getWidth());
+        Path png=folder.resolve("large.png");ImageIO.write(new BufferedImage(4097,32,BufferedImage.TYPE_INT_ARGB),"png",png.toFile());
+        assertTrue(LogoImages.read(png).getWidth()<=1024);
+    }
+    @Test void reportsMissingAndFakeImageFiles()throws Exception {
+        assertTrue(assertThrows(IOException.class,()->LogoImages.read(folder.resolve("missing.png"))).getMessage().contains("Nie znaleziono"));
+        Path fake=folder.resolve("fake.png");Files.writeString(fake,"not an image");
+        assertTrue(assertThrows(IOException.class,()->LogoImages.read(fake)).getMessage().contains("Nie można odczytać"));
+    }
+    @Test void cropNeverEscapesImageAfterExtremePanAndZoom(){
+        LogoCrop crop=new LogoCrop(800,200);crop.zoom(100);crop.pan(1e6,-1e6);
+        assertEquals(8,crop.zoom());assertTrue(crop.x()>=0);assertTrue(crop.y()>=0);assertTrue(crop.x()+crop.side()<=800);assertTrue(crop.y()+crop.side()<=200);
+        crop.reset();assertEquals(300,crop.x());assertEquals(0,crop.y());
+    }
+    @Test void encodesChosenCropAndPreservesFitTransparency()throws Exception {
+        BufferedImage source=new BufferedImage(200,100,BufferedImage.TYPE_INT_ARGB);
+        for(int y=0;y<100;y++)for(int x=0;x<200;x++)source.setRGB(x,y,x<100?0xFFFF0000:0xFF0000FF);
+        LogoCrop crop=new LogoCrop(200,100);crop.pan(-1000,0);
+        BufferedImage selected=ImageIO.read(new ByteArrayInputStream(Base64.getDecoder().decode(LogoImages.encode(source,crop))));
+        assertEquals(0xFFFF0000,selected.getRGB(32,32));assertEquals(64,selected.getWidth());
+        crop.fit(true);BufferedImage fit=ImageIO.read(new ByteArrayInputStream(Base64.getDecoder().decode(LogoImages.encode(source,crop))));
+        assertEquals(0,fit.getRGB(32,0)>>>24);assertEquals(255,fit.getRGB(32,32)>>>24);
+    }
+    @Test void rgbHsvRoundTripAndGrayscale(){
+        Random random=new Random(7);
+        for(int i=0;i<2000;i++){int color=random.nextInt(0x1000000);double[] hsv=ColorValues.hsv(color);assertEquals(color,ColorValues.rgb(hsv[0],hsv[1],hsv[2]));}
+        assertEquals(0xFFFFFF,ColorValues.rgb(0.7,0,1));assertEquals(0,ColorValues.rgb(0.3,1,0));assertEquals(0xFF0000,ColorValues.rgb(1,1,1));
+    }
+    @Test void acceptsWorstCaseRgbaThumbnailWithinNetworkBudget()throws Exception {
+        BufferedImage noise=new BufferedImage(64,64,BufferedImage.TYPE_INT_ARGB);Random random=new Random(18);
+        for(int y=0;y<64;y++)for(int x=0;x<64;x++)noise.setRGB(x,y,random.nextInt());
+        String encoded=LogoImages.encode(noise,new LogoCrop(64,64));
+        assertFalse(encoded.isBlank());assertTrue(Base64.getDecoder().decode(encoded).length<=GangLogo.MAX_BYTES);
+        assertTrue(encoded.length()+512<28000,"Fits the action packet with metadata");
+    }
+}

@@ -58,4 +58,19 @@ class GangDirectoryTest {
     @Test void independentWorldsHaveIndependentGangs(){
         var a=setup();var b=new GangDirectory();assertNull(b.of(leader));assertEquals(1,a.gangs().size());
     }
+    @Test void visualRoleOrderCanPutUnprivilegedRoleAboveLeaderAndSurvivesSave(){
+        var d=setup();d.role(leader,"","Nowa Ranga",Set.of());var g=d.of(leader);
+        String custom=g.roles.values().stream().filter(r->r.name.equals("Nowa Ranga")).findFirst().orElseThrow().id;
+        d.reorderRoles(leader,List.of(custom,"member","leader"));
+        assertEquals(List.of(custom,"member","leader"),new ArrayList<>(g.roles.keySet()));
+        d.request(member,"Gracz",g.id);d.accept(leader,member);d.assign(leader,member,custom);
+        assertFalse(d.allowed(g,member,Permission.MANAGE_ROLES));assertEquals(leader,g.owner);
+        var restored=GangDirectory.fromJson(d.toJson());assertEquals(List.of(custom,"member","leader"),new ArrayList<>(restored.of(leader).roles.keySet()));
+    }
+    @Test void roleReorderingChecksPermissionAndExactPermutation(){
+        var d=setup();var g=d.of(leader);d.request(member,"Gracz",g.id);d.accept(leader,member);
+        assertThrows(IllegalArgumentException.class,()->d.reorderRoles(member,List.of("member","leader")));
+        for(var invalid:List.of(List.of("member"),List.of("member","member"),List.of("member","unknown")))assertThrows(IllegalArgumentException.class,()->d.reorderRoles(leader,invalid));
+        assertEquals(List.of("leader","member"),new ArrayList<>(g.roles.keySet()));
+    }
 }

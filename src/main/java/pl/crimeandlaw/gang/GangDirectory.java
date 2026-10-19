@@ -102,6 +102,13 @@ public final class GangDirectory {
         require(!g.owner.equals(target) && !"leader".equals(role),"Lidera zmienia się przez przekazanie przywództwa.");
         require(g.roles.containsKey(role),"Nie ma takiej rangi.");g.members.get(target).role=role;
     }
+    /** Visual order only: no role gains permissions or ownership by moving up. */
+    public void reorderRoles(UUID actor,List<String> order){
+        Gang g=own(actor,Permission.MANAGE_ROLES);
+        require(order!=null&&order.size()==g.roles.size()&&new HashSet<>(order).size()==order.size()
+                &&g.roles.keySet().containsAll(order),"Kolejność musi zawierać każdą rangę dokładnie raz.");
+        Map<String,Role> sorted=new LinkedHashMap<>();for(String id:order)sorted.put(id,g.roles.get(id));g.roles=sorted;
+    }
     public void theme(UUID actor,Theme theme){own(actor,Permission.MANAGE_THEME).theme=theme;}
     public void logo(UUID actor,String logo){own(actor,Permission.MANAGE_THEME).logo=logo;}
     public void renameSeenPlayer(UUID player,String name){
@@ -134,7 +141,7 @@ public final class GangDirectory {
                 require(g.roles.containsKey(member.getValue().role),"Nieznana ranga członka.");
                 require(member.getKey().equals(g.owner)=="leader".equals(member.getValue().role),"Uszkodzona ranga lidera.");
             }
-            require(g.theme!=null && g.requests!=null && g.requests.size()<=128 && g.logo!=null && g.logo.length()<=22000,"Uszkodzone ustawienia gangu.");
+            require(g.theme!=null && g.requests!=null && g.requests.size()<=128 && g.logo!=null && g.logo.length()<=27000,"Uszkodzone ustawienia gangu.");
         }
         return directory;
     }
