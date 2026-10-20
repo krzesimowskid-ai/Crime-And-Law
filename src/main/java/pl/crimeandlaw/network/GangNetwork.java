@@ -19,7 +19,7 @@ public final class GangNetwork {
     public static Consumer<String> clientReceiver=ignored->{};
     private static final Map<ServerPlayer,View> views=new WeakHashMap<>();
     private static final Map<ServerPlayer,Rate> rates=new WeakHashMap<>();
-    private record View(String query,int page){}
+    private record View(String query,int page,int memberPage,int requestPage){}
     private static final class Rate {long second;int requests;}
     public record Action(String json) implements CustomPacketPayload {
         public static final Type<Action> TYPE=new Type<>(ResourceLocation.fromNamespaceAndPath("crimeandlaw","action"));
@@ -38,7 +38,7 @@ public final class GangNetwork {
         @Override public Type<? extends CustomPacketPayload> type(){return TYPE;}
     }
     public static void register(RegisterPayloadHandlersEvent event){
-        var registrar=event.registrar("1");
+        var registrar=event.registrar("2");
         registrar.playToServer(Action.TYPE,Action.CODEC,GangNetwork::handle);
         registrar.playToClient(State.TYPE,State.CODEC,(p,c)->clientReceiver.accept(p.json));
     }
@@ -53,7 +53,13 @@ public final class GangNetwork {
             JsonObject a=JsonParser.parseString(packet.json).getAsJsonObject();String action=text(a,"action");
             if(action.equals("refresh")){
                 String query=text(a,"query");if(query.length()>32)query=query.substring(0,32);
-                views.put(player,new View(query,Math.clamp(integer(a,"page",0),0,1000)));
+                View old=views.getOrDefault(player,new View("",0,0,0));
+                views.put(player,new View(query,Math.max(0,integer(a,"page",0)),old.memberPage,old.requestPage));
+                sendState(player,"");return;
+            }
+            if(action.equals("list_page")){
+                View old=views.getOrDefault(player,new View("",0,0,0));
+                views.put(player,new View(old.query,old.page,Math.max(0,integer(a,"memberPage",old.memberPage)),Math.max(0,integer(a,"requestPage",old.requestPage))));
                 sendState(player,"");return;
             }
             switch(action){
@@ -64,17 +70,6 @@ public final class GangNetwork {
                 case "leave" -> d.leave(actor);
                 case "kick" -> d.kick(actor,uuid(a,"target"));
                 case "transfer" -> d.transfer(actor,uuid(a,"target"));
-                case "assign" -> d.assign(actor,uuid(a,"target"),text(a,"role"));
-                case "role" -> {
-                    Set<Permission> permissions=EnumSet.noneOf(Permission.class);
-                    for(var permission:Permission.values())if(a.has(permission.name()) && a.get(permission.name()).getAsBoolean())permissions.add(permission);
-                    d.role(actor,text(a,"role"),text(a,"name"),permissions);
-                }
-                case "reorder_roles" -> {
-                    List<String> order=new ArrayList<>();
-                    for(var id:a.getAsJsonArray("order"))order.add(id.getAsString());
-                    d.reorderRoles(actor,order);
-                }
                 case "theme" -> d.theme(actor,new Theme(integer(a,"background",Theme.DEFAULT.background()),integer(a,"border",Theme.DEFAULT.border()),integer(a,"opacity",235)));
                 case "logo" -> d.logo(actor,GangLogo.validate(text(a,"logo")));
                 default -> throw new IllegalArgumentException("Nieznana czynność.");
@@ -89,13 +84,12 @@ public final class GangNetwork {
     }
     public static void sendState(ServerPlayer player,String message){
         GangDirectory d=GangSavedData.get(player.server).directory;
-        View view=views.computeIfAbsent(player,p->new View("",0));
+        View view=views.computeIfAbsent(player,p->new View("",0,0,0));
         JsonObject result=new JsonObject();result.addProperty("player",player.getUUID().toString());result.addProperty("message",message);
         Gang current=d.of(player.getUUID());
         if(current!=null){
-            JsonObject mine=JSON.toJsonTree(current).getAsJsonObject();
-            if(!d.allowed(current,player.getUUID(),Permission.INVITE))mine.remove("requests");
-            result.add("gang",mine);
+            JsonObject snapshot=GangView.snapshot(current,player.getUUID(),view.memberPage,view.requestPage);
+            for(var entry:snapshot.entrySet())result.add(entry.getKey(),entry.getValue());
         }
         List<Gang> matches=d.gangs().stream().filter(g->g.name.toLowerCase(Locale.ROOT).contains(view.query.toLowerCase(Locale.ROOT)))
                 .sorted(Comparator.comparing(g->g.name.toLowerCase(Locale.ROOT))).toList();

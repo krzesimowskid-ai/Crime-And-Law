@@ -22,7 +22,7 @@ abstract class MenuDialog extends Screen {
     protected abstract void paint(GuiGraphics g,int x,int y,float delta);
     @Override public void renderBackground(GuiGraphics g,int x,int y,float delta){}
     @Override public void render(GuiGraphics g,int x,int y,float delta){
-        parent.render(g,-100,-100,delta);g.flush();RenderSystem.clear(256,Minecraft.ON_OSX);
+        parent.render(g,-100,-100,delta);g.flush();RenderSystem.depthMask(true);RenderSystem.clear(256,Minecraft.ON_OSX);
         g.pose().pushPose();g.pose().scale(layout.scale(),layout.scale(),1);
         try {
             g.fill(0,0,layout.canvasWidth(),layout.canvasHeight(),0xAA000000);

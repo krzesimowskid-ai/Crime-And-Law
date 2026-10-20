@@ -18,7 +18,7 @@ public final class ColorPickerScreen extends MenuDialog {
     private int wx,wy;
     private final int diameter=168;
     private EditBox hex,red,green,blue;
-    private ValueSlider brightness,sat,opacity;
+    private GradientSlider brightness,sat,opacity;
     private FlatButton apply;
     public ColorPickerScreen(GangScreen parent,String title,int rgb,int alpha,boolean transparency,BiConsumer<Integer,Integer> accepted){
         super(parent,title);this.accepted=accepted;this.transparency=transparency;originalRgb=rgb;originalAlpha=alpha;
@@ -37,16 +37,15 @@ public final class ColorPickerScreen extends MenuDialog {
             }
             minecraft.getTextureManager().register(WHEEL,new DynamicTexture(image));registered=true;
         }
-        int rx=left+242,rw=panelWidth-260;
-        hex=field(rx,top+117,rw,7);hex.setResponder(s->{if(syncing)return;try{String v=s.replace("#","");if(v.length()==6){setRgb(Integer.parseInt(v,16));sync(false);}}catch(NumberFormatException ignored){}});
-        red=field(rx,top+158,66,3);green=field(rx+76,top+158,66,3);blue=field(rx+152,top+158,66,3);
+        hex=field(left+24,top+254,120,7);hex.setResponder(s->{if(syncing)return;try{String v=s.replace("#","");if(v.length()==6){setRgb(Integer.parseInt(v,16));sync(false);}}catch(NumberFormatException ignored){}});
+        red=field(left+170,top+254,56,3);green=field(left+236,top+254,56,3);blue=field(left+302,top+254,56,3);
         for(EditBox box:new EditBox[]{red,green,blue})box.setResponder(s->{if(syncing)return;try{
             int r=Integer.parseInt(red.getValue()),g=Integer.parseInt(green.getValue()),b=Integer.parseInt(blue.getValue());
             if(r>=0&&r<=255&&g>=0&&g<=255&&b>=0&&b<=255){setRgb(r<<16|g<<8|b);sync(false);}
         }catch(NumberFormatException ignored){}});
-        brightness=addRenderableWidget(new ValueSlider(left+24,top+238,194,"Jasność",value,this::theme,v->{value=v;sync(true);}));
-        sat=addRenderableWidget(new ValueSlider(rx,top+196,rw,"Nasycenie",saturation,this::theme,v->{saturation=v;sync(true);}));
-        if(transparency)opacity=addRenderableWidget(new ValueSlider(rx,top+238,rw,"Krycie",alpha,this::theme,v->{alpha=v;sync(true);}));
+        brightness=addRenderableWidget(new GradientSlider(left+230,top+49,"Jasność",value,()->0xFF000000|ColorValues.rgb(hue,saturation,1),()->0xFF000000,false,v->{value=v;sync(true);}));
+        sat=addRenderableWidget(new GradientSlider(left+312,top+49,"Nasycenie",saturation,()->0xFF000000|ColorValues.rgb(hue,1,value),()->0xFF000000|ColorValues.rgb(hue,0,value),false,v->{saturation=v;sync(true);}));
+        if(transparency)opacity=addRenderableWidget(new GradientSlider(left+394,top+49,"Krycie",alpha,()->0xFF000000|rgb(),this::rgb,true,v->{alpha=v;sync(true);}));
         button(left+18,top+panelHeight-35,90,"Anuluj",b->onClose());
         button(left+116,top+panelHeight-35,100,"Przywróć",b->{setRgb(originalRgb);alpha=originalAlpha/255.0;sync(true);});
         apply=button(left+panelWidth-138,top+panelHeight-35,120,"Zastosuj",b->{
@@ -73,12 +72,13 @@ public final class ColorPickerScreen extends MenuDialog {
         g.blit(WHEEL,wx,wy,0,0,diameter,diameter,diameter,diameter);
         int dotX=wx+diameter/2+(int)(Math.cos(hue*2*Math.PI)*saturation*(diameter/2-2)),dotY=wy+diameter/2+(int)(Math.sin(hue*2*Math.PI)*saturation*(diameter/2-2));
         g.renderOutline(dotX-3,dotY-3,7,7,0xFF111118);g.renderOutline(dotX-2,dotY-2,5,5,0xFFFFFFFF);
-        int rx=left+242,rw=panelWidth-260;
-        g.drawString(font,"Podgląd",rx,top+49,0xFFAAA7B6,false);
-        for(int n=0;n<rw;n+=10)g.fill(rx+n,top+65,rx+Math.min(n+10,rw),top+94,n%20==0?0xFF383A43:0xFF292B34);
-        g.fill(rx,top+65,rx+rw,top+94,((int)Math.round(alpha*255)<<24)|rgb());
-        g.drawString(font,"HEX",rx,top+103,0xFFAAA7B6,false);
-        g.drawString(font,"R",rx,top+145,0xFFAAA7B6,false);g.drawString(font,"G",rx+76,top+145,0xFFAAA7B6,false);g.drawString(font,"B",rx+152,top+145,0xFFAAA7B6,false);
+        g.drawString(font,"HEX",left+24,top+240,0xFFAAA7B6,false);
+        g.drawString(font,"R",left+170,top+240,0xFFAAA7B6,false);g.drawString(font,"G",left+236,top+240,0xFFAAA7B6,false);g.drawString(font,"B",left+302,top+240,0xFFAAA7B6,false);
+        g.drawString(font,"Podgląd",left+386,top+240,0xFFAAA7B6,false);
+        for(int row=0;row<20;row+=5)for(int col=0;col<110;col+=5)
+            g.fill(left+386+col,top+254+row,left+391+col,top+259+row,(row/5+col/5)%2==0?0xFF62616B:0xFF32313C);
+        g.fill(left+386,top+254,left+496,top+274,((int)Math.round(alpha*255)<<24)|rgb());
+        g.renderOutline(left+386,top+254,110,20,0xFF696172);
         if(!valid)g.drawString(font,"Wpisz 6 cyfr HEX i wartości RGB od 0 do 255.",left+24,top+282,0xFFFF9292,false);
     }
     private boolean wheel(double x,double y){double dx=x-(wx+diameter/2.0),dy=y-(wy+diameter/2.0);return dx*dx+dy*dy<=diameter*diameter/4.0;}

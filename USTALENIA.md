@@ -1,10 +1,10 @@
 # Crime And Law — ustalenia projektu
 
-Stan projektu: 19 października 2026.
+Stan projektu: 20 października 2026.
 
 ## Status i sposób dalszej pracy
 
-To zapis pomysłów i decyzji użytkownika, a nie opis gotowego moda. Powstaje prototyp panelu gangów, obecnie wersja 0.1.2. 19 października użytkownik odłożył DarkPerazera i wrócił do Crime And Law. Zaakceptował rozpoczęcie od podstaw panelu gangów; obecnie doprecyzowuje jego wygląd. Dla pierwszego prototypu przyjęto Minecraft 1.21.1 i NeoForge 21.1.248: użytkownik polecił rozpoczęcie bez wskazania innej platformy. Jest to jawne założenie wykonawcze, nie wcześniejsza deklaracja użytkownika.
+To zapis pomysłów i decyzji użytkownika, a nie opis gotowego moda. Powstaje prototyp panelu gangów, obecnie wersja 0.1.3. 19 października użytkownik odłożył DarkPerazera i wrócił do Crime And Law. Zaakceptował rozpoczęcie od podstaw panelu gangów; obecnie doprecyzowuje jego wygląd. Dla pierwszego prototypu przyjęto Minecraft 1.21.1 i NeoForge 21.1.248: użytkownik polecił rozpoczęcie bez wskazania innej platformy. Jest to jawne założenie wykonawcze, nie wcześniejsza deklaracja użytkownika.
 
 Crime And Law jest nowym, osobnym modem. McArk pozostaje odłożony, zachowując cel odwzorowania ASA 1:1. Nie zmieniać projektu McArk w Crime And Law ani nie usuwać jego materiałów w ramach tej pracy.
 
@@ -156,3 +156,21 @@ Szczegóły wykonawcze pierwszej wersji, możliwe do zmiany po testach:
 - Kolory wybiera się przyciskiem „Zmień…”: koło barw oraz suwaki jasności,
   nasycenia i krycia, z dodatkowymi polami HEX/RGB. Krycie dotyczy tła.
 - Zachowane rozróżnienie wspólnego wyglądu gangu i wyglądu osobistego.
+
+## Doprecyzowanie 20 października — wersja 0.1.3
+
+Poniższe decyzje zastępują wcześniejsze ustalenia o rangach i limicie członków.
+
+- Usunąć system rang; do zarządzania pozostaje lider gangu.
+- Nie ustalać limitu członków. Licznik ma pokazywać tylko „Członkowie: liczba”.
+- W głównej zakładce wyśrodkowana, ozdobna ramka z logo, nazwą gangu i pod nią
+  liczbą członków. Orientacyjna szerokość: jedna trzecia obszaru treści.
+  „Czarne Wilki” jest wyłącznie przykładem używanym w podglądach.
+- Ustawienia umieścić na dole nawigacji, nad „Opuść gang”.
+- Zgłoszenia, odświeżanie i czynności lidera przenieść do kategorii zarządzania
+  w ustawieniach. Usunąć techniczne opisy zapisu/serwera z głównej zakładki.
+- Suwaki kolorów mają być pionowe, z rzeczywistymi gradientami. Jasność:
+  czerń przy 0% na dole, wybrany kolor przy 100% u góry. Nasycenie i krycie
+  również pokazują wizualnie, jaki efekt daje przesuwanie.
+- Zachować koło barw, HEX/RGB, osobisty i wspólny wygląd oraz import i kadrowanie logo.
+- Wykonawczo długie listy są stronicowane; nie stanowi to limitu członkostwa.

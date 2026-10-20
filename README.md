@@ -1,80 +1,80 @@
 # Crime And Law
 
-Pierwszy prototyp autorskiego moda gangsterskiego: kompaktowy panel gangów,
-członkostwo, rangi i wygląd menu. Wersja **0.1.2**.
+Autorski mod gangsterski: panel gangów, członkostwo i własny wygląd menu.
+Wersja **0.1.3**.
 
 ## Uruchomienie
 
-- Minecraft **1.21.1**, Java **21**, NeoForge **21.1.248 lub nowszy z serii 21.1**.
-- Włóż `crimeandlaw-0.1.2.jar` do `mods`, zastępując poprzedni JAR tego moda.
-- Na serwerze plik musi być zainstalowany **u graczy i na serwerze**.
-- W świecie jednoosobowym część serwerowa uruchamia się razem ze światem.
-- Klawisz **G** otwiera panel; skrót można zmienić w sterowaniu Minecrafta.
+- Minecraft **1.21.1**, Java **21**, NeoForge **21.1.248**.
+- Włóż `crimeandlaw-0.1.3.jar` do `mods`, zastępując poprzedni JAR tego moda.
+- W rozgrywce sieciowej **gracze i serwer muszą mieć tę samą wersję 0.1.3**.
+  Zmieniono protokół panelu, więc klient 0.1.2 nie jest zgodny z serwerem 0.1.3.
+- W świecie jednoosobowym część serwerowa działa razem ze światem.
+- **G** otwiera panel; skrót można zmienić w sterowaniu. Esc lub X zamyka okno.
 
-## Co obejmuje wersja
+## Panel gangu
 
-Bez gangu: dwie równe zakładki u góry okna — „Stwórz gang” i „Znajdź gang”.
-Pod nimi wspólny obszar formularza lub wyszukiwarki, zgodnie ze szkicem użytkownika.
-Własna nazwa i opcjonalne logo. Esc zamyka okno.
-Zgłoszenia do istniejącego gangu akceptuje lider albo uprawniony członek.
+Bez gangu: dwie równe zakładki u góry — „Stwórz gang” i „Znajdź gang”.
+Możesz ustawić nazwę i opcjonalne logo albo wysłać zgłoszenie do istniejącego gangu.
+Zgłoszenie przyjmuje jego lider.
 
-Po dołączeniu: mały nagłówek z logo, nazwą i rangą, wąska kolumna zakładek,
-przewijana treść po prawej. Gang, Członkowie, Rangi i Ustawienia mają działającą
-logikę. Mapa wyraźnie informuje o planowanym dalszym etapie.
+Po dołączeniu: kompaktowy nagłówek, zakładki „Gang”, „Członkowie” i „Mapa”.
+Główna zakładka pokazuje ozdobną kartę na środku obszaru treści: logo, nazwę
+oraz samą liczbę członków, bez maksymalnego limitu.
+„Ustawienia” znajdują się na dole nawigacji, nad „Opuść gang”.
+Mapa pozostaje zapowiedzią kolejnego etapu.
 
-- Lista członków i zgłoszeń, przyjmowanie, odrzucanie, usuwanie.
-- Przekazanie przywództwa i opuszczenie gangu.
-- Domyślne rangi Lider i Członek oraz własne rangi.
-- Uprawnienia do zgłoszeń, usuwania członków, zarządzania rangami i wyglądem.
-- Kolory tła/obramowania oraz krycie tła. Lider/uprawniona osoba zapisuje
-  wspólny motyw; członek może zapisać osobisty motyw lub wrócić do wspólnego.
-- Zapis gangów w świecie i osobistego motywu w konfiguracji klienta.
+System własnych rang został usunięty na życzenie użytkownika. Pozostają lider
+oraz członkowie. Lista członków służy przeglądaniu; czynności administracyjne
+znajdują się w Ustawienia → Zarządzanie, widocznym wyłącznie dla lidera:
+zgłoszenia, przyjmowanie/odrzucanie, usuwanie członków, przekazanie przywództwa
+oraz odświeżanie danych. Serwer sprawdza uprawnienia niezależnie od przycisków.
+Zgłoszenia nie są wysyłane do zwykłych członków.
+
+Lider przed odejściem przekazuje przywództwo, jeśli ma innych członków.
+Odejście ostatniego członka usuwa pusty gang po potwierdzeniu.
+
+## Kolory i wygląd
+
+Ustawienia mają kategorie „Wygląd”, „Logo” oraz, dla lidera, „Zarządzanie”.
+„Zmień kolor…” otwiera koło barw, pola HEX/RGB i pionowe suwaki z gradientami:
+
+- **Jasność:** wybrany kolor u góry, czerń na dole.
+- **Nasycenie:** nasycony kolor u góry, odcień neutralny na dole.
+- **Krycie tła:** pełne krycie u góry, przezroczystość na szachownicy na dole.
+
+Suwaki obsługują kliknięcie, przeciąganie i klawisze strzałek; Home ustawia 100%,
+End 0%. Po „Zastosuj” widzisz podgląd menu. Każdy członek może zapisać wygląd
+osobisty albo używać wyglądu gangu. Wspólny motyw i logo zapisuje lider.
+Osobisty wygląd nie zmienia ustawień u pozostałych graczy.
 
 ## Własne logo
 
-Możesz wybrać obraz z okna plików, wkleić jego lokalną ścieżkę albo przeciągnąć
-jeden obraz z folderu na otwarty panel gangu w Minecraftcie. PNG i JPG, do 20 MB.
-W razie potrzeby przełącz grę w okno klawiszem F11, aby widzieć grę i folder.
+Wybierz obraz z systemowego okna, wklej lokalną ścieżkę albo przeciągnij jeden
+plik z folderu na otwarty panel gry. PNG/JPG do 20 MB. W razie potrzeby użyj F11,
+aby widzieć grę i folder jednocześnie.
 
-Po odczytaniu obrazu otwiera się „Dopasuj logo”. Przeciągaj obraz w podglądzie,
-przybliżaj kółkiem myszy lub suwakiem. Możesz wybrać kwadratowy kadr albo cały
-obraz z zachowaniem proporcji i przezroczystymi marginesami. „Anuluj”/X/Esc
-zachowuje poprzednie logo. „Zastosuj logo” przygotowuje podgląd; zapisz go
-przez „Utwórz gang” albo Ustawienia → Logo → „Zapisz logo gangu”.
+W oknie „Dopasuj logo” przesuwaj obraz, przybliżaj kółkiem lub suwakiem.
+Wybierz kwadratowy kadr albo cały obraz z zachowaniem proporcji i przezroczystymi
+marginesami. „Anuluj”/X/Esc zachowuje poprzednie logo. „Zastosuj logo” przygotowuje
+podgląd; zapisz go przez „Utwórz gang” lub Ustawienia → Logo → „Zapisz logo gangu”.
 
-Obraz jest dopasowywany do 64×64. Przesyłane logo jest sprawdzane przez serwer
-jako PNG do 20 KB; pozostali gracze nie potrzebują pliku na swoim komputerze.
-Import z linku nie jest jeszcze obsługiwany. W razie błędu pojawia się jego
-konkretna przyczyna. Nie zamieniaj rozszerzenia JPG/SVG/WebP na PNG samą zmianą nazwy.
+Serwer sprawdza miniaturę PNG 64×64 do 20 KB. Pozostali gracze nie potrzebują
+pliku źródłowego. Import z linku nie jest jeszcze obsługiwany.
 
-## Ustawienia i kolejność rang
+## Zapis i aktualizacja
 
-Ustawienia mają kategorie „Wygląd” i „Logo”. Przyciski zmiany tła i obramówki
-otwierają małe okno z kołem barw, nasyceniem, jasnością, HEX i RGB. Tło ma
-również suwak krycia. Po „Zastosuj” widzisz podgląd menu; wybierz zapis osobisty
-lub zapis dla gangu. Możesz wrócić do wspólnego wyglądu gangu.
+Gangi: `data/crimeandlaw_gangs.dat` w danych świata Overworld.
+Osobisty motyw: `config/crimeandlaw-appearance.json`.
+Starsze zapisy 0.1.0–0.1.2 zachowują gangi, właściciela, członków, zgłoszenia,
+logo i wspólny motyw. Dawne rangi oraz przypisane im uprawnienia są pomijane.
 
-W zakładce Rangi chwyć rangę na liście po lewej i przeciągnij ją w nowe miejsce.
-Można umieścić dowolną rangę nad liderem, również rangę bez uprawnień.
-To kolejność wyświetlania: nie zmienia uprawnień ani właściciela gangu.
-Porządkowanie wymaga uprawnienia do zarządzania rangami; nowy porządek zapisuje serwer.
+Nie ma limitu członków ani zgłoszeń na gang. Listy są wysyłane i wyświetlane
+stronami po sześć pozycji; licznik pokazuje pełną liczbę członków. Duży gang
+nie powoduje przesłania całej listy w jednym pakiecie. Jeden gang na gracza,
+nazwy 3–32 znaki, roboczy limit 512 gangów na świat.
 
-## Zapis i zasady prototypu
-
-Dane gangów są w `data/crimeandlaw_gangs.dat` w katalogu świata Overworld.
-Osobisty wygląd: `config/crimeandlaw-appearance.json`. Zmiana osobistego
-motywu nie zmienia danych serwera. Domyślna granatowo-grafitowa baza z bordowym
-akcentem służy pierwszym testom i jest konfigurowalna.
-
-Jeden gang na gracza, 64 członków na gang, maksymalnie 12 rang i 512 gangów
-na świat. To limity zasobów prototypu, nie ostateczny balans. Nazwy gangów
-mają 3–32 znaki. Uprawnienia są weryfikowane przez serwer. Nie można usunąć
-lidera ani nadać rangi lidera przez zwykłą zmianę rangi.
-
-Gdy lider ma innych członków, przed odejściem musi przekazać przywództwo.
-Odejście ostatniego członka usuwa pusty gang po potwierdzeniu.
-
-## Budowanie
+## Budowanie i sprawdzanie
 
 Z JDK 21:
 
@@ -83,34 +83,17 @@ Windows: gradlew.bat build
 Linux/macOS: ./gradlew build
 ```
 
-Wynik: `build/libs/crimeandlaw-0.1.2.jar`.
+Wynik: `build/libs/crimeandlaw-0.1.3.jar`.
 Gradle Wrapper 9.2.1, ModDevGradle 2.0.148, NeoForge 21.1.248.
-`./gradlew test` uruchamia testy modelu gangów, walidacji logo oraz proporcji menu.
+`./gradlew test` sprawdza model, migrację zapisów, duże listy i prywatność
+zgłoszeń, walidację/edycję logo, kolory oraz skalowanie menu.
 
-Test graficzny z przykładowymi danymi: `./gradlew -PuiSmoke runClient`.
-Wymaga działającego ekranu/OpenGL. Otwiera widoki menu i nowe edytory w prawdziwym kliencie,
-sprawdza kliknięcia, wpisywanie, wybór kolorów, kadrowanie oraz przeciąganie rang, zapisuje obrazy i raport w `build/ui-smoke`,
-po czym zamyka klienta. Kod z `src/uiTest` jest wyłączony w normalnym buildzie.
-Test nie łączy dwóch graczy i nie zastępuje testu sieciowego.
-
-## Nowe w 0.1.2
-
-- Import obrazu przez przeciągnięcie, okno wyboru i ścieżkę; edytor kadrowania.
-- Kategorie ustawień, koło kolorów, jasność, nasycenie, krycie oraz HEX/RGB.
-- Przeciąganie rang z zapisem kolejności i bez zmieniania uprawnień.
-- Dopasowany nagłówek i ramka nazwy, wyraźniejsze przyciski, usunięty napis „Esc”.
-
-## Poprawki 0.1.1
-
-- Układ tworzenia i wyszukiwania według nowego szkicu, bez bocznego menu na tym ekranie.
-- Efekt rozmycia tła nie nakłada się na tekst interfejsu.
-- Wielkość okna i kontrolek jest niezależna od globalnej skali GUI Minecrafta.
-  Współrzędne kliknięć, przeciągania i przewijania uwzględniają skalę panelu.
-- Przycisk utworzenia gangu jest widoczny bez przewijania.
+`./gradlew -PuiSmoke runClient` uruchamia prawdziwy klient z przykładowymi danymi,
+sprawdza menu i edytory oraz zapisuje obrazy i raport w `build/ui-smoke`.
+Wymaga ekranu/OpenGL. Kod z `src/uiTest` jest wyłączony z wydania JAR.
+Test graficzny nie łączy dwóch graczy na serwerze.
 
 ## Dalszy zakres
 
-Mapa, własność chunków, oznaczenia, NPC, produkcja, handel oraz rozbudowane
-animacje pozostają do wykonania. Ta wersja nie dodaje tych systemów.
-Makieta była referencją układu; elementy zmniejszono zgodnie z uwagą użytkownika.
-
+Mapa, własność chunków, oznaczenia, NPC, produkcja, handel i rozbudowane
+animacje pozostają dalszymi etapami. Ta wersja dotyczy panelu gangów.

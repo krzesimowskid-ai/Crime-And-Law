@@ -16,6 +16,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RenderFrameEvent;
 import pl.crimeandlaw.gang.GangDirectory;
+import pl.crimeandlaw.gang.GangView;
 
 /** Real Minecraft renderer, fixture data, no server. Enabled only by -PuiSmoke. */
 @EventBusSubscriber(modid="crimeandlaw", value=Dist.CLIENT)
@@ -24,6 +25,8 @@ public final class GangUiSmokeTest {
     private static final Path OUT=Path.of("../build/ui-smoke");
     private static int frames,stage=-1;
     private static int waitFrames;
+    private static GangDirectory directory;
+    private static final UUID FRIEND=new UUID(0,2);
     private static GangScreen screen;
     private static final StringBuilder REPORT=new StringBuilder();
 
@@ -38,7 +41,7 @@ public final class GangUiSmokeTest {
                 fixture(false);screen=new GangScreen();mc.setScreen(screen);
                 stage=0;frames=0;return;
             }
-            if(stage==9&&!(mc.screen instanceof LogoCropScreen)){
+            if(stage==12&&!(mc.screen instanceof LogoCropScreen)){
                 if(++waitFrames>600)throw new AssertionError("Crop dialog did not open: "+ClientState.message);return;
             }
             if(++frames<24)return;
@@ -57,50 +60,77 @@ public final class GangUiSmokeTest {
                     require(screen.children().stream().anyMatch(c->c instanceof AbstractWidget w&&w.getMessage().getString().equals("Szukaj")),"Find tab click");
                 }
                 case 2 -> {capture(mc,"03-find");fixture(true);screen.updated();}
-                case 3 -> {capture(mc,"04-gang");selectTab(1);}
-                case 4 -> {capture(mc,"05-members");selectTab(2);}
-                case 5 -> {capture(mc,"06-ranks");selectTab(4);}
-                case 6 -> {
-                    capture(mc,"07-settings");click(mc,"Zmień kolor tła…");
+                case 3 -> {
+                    capture(mc,"04-gang");
+                    require(screen.children().stream().noneMatch(c->c instanceof AbstractWidget w&&w.getMessage().getString().equals("Rangi")),"Ranks removed");
+                    require(widget(screen,"Ustawienia").getY()<widget(screen,"Opuść gang").getY(),"Settings above leave");
+                    require(widget(screen,"Ustawienia").getY()>widget(screen,"Mapa").getY()+100,"Settings in footer");
+                    selectTab(1);click(mc,"Gracz2");
                 }
-                case 7 -> {
-                    require(mc.screen instanceof ColorPickerScreen,"Color dialog opened");capture(mc,"08-color-picker");
-                    ColorPickerScreen dialog=(ColorPickerScreen)mc.screen;double scale=dialog.layout.scale();
-                    dialog.mouseClicked((dialog.left+180)*scale,(dialog.top+132)*scale,0);dialog.mouseReleased(0,0,0);
-                    AbstractWidget slider=widget(mc.screen,"Krycie:");
-                    dialog.mouseClicked((slider.getX()+slider.getWidth()/2.0)*scale,(slider.getY()+18)*scale,0);dialog.mouseReleased(0,0,0);
-                    click(mc,"Zastosuj");
-                    require(screen.currentTheme().opacity()>110&&screen.currentTheme().opacity()<145,"Opacity picker changed preview");
+                case 4 -> {
+                    capture(mc,"05-members");
+                    require(screen.children().stream().noneMatch(c->c instanceof AbstractWidget w&&w.getMessage().getString().equals("Usuń z gangu")),"Members tab is read only");
+                    // Page two must show only its six rows, not the owner/viewer extras.
+                    fixturePage(PLAYER,1);screen.updated();selectTab(1);
+                    require(screen.children().stream().filter(c->c instanceof AbstractWidget w&&w.getMessage().getString().startsWith("Gracz")).count()==6,"Member page contains six exact rows");
                 }
+                case 5 -> {capture(mc,"06-member-page2");selectTab(3);}
+                case 6 -> {capture(mc,"07-settings");click(mc,"Zarządzanie");}
+                case 7 -> {capture(mc,"08-applications");click(mc,"Skład gangu");click(mc,"Gracz7");}
                 case 8 -> {
-                    capture(mc,"09-appearance-preview");click(mc,"Logo");
+                    require(widget(screen,"Usuń z gangu").active,"Leader member actions available");
+                    capture(mc,"09-management");click(mc,"Wygląd");click(mc,"Zmień kolor tła…");
+                }
+                case 9 -> {
+                    require(mc.screen instanceof ColorPickerScreen,"Color dialog opened");
+                    ColorPickerScreen dialog=(ColorPickerScreen)mc.screen;
+                    EditBox hex=(EditBox)dialog.children().stream().filter(c->c instanceof EditBox).findFirst().orElseThrow();
+                    hex.setValue("FF0000");
+                }
+                case 10 -> {
+                    capture(mc,"10-color-gradients");checkGradients(mc);
+                    ColorPickerScreen dialog=(ColorPickerScreen)mc.screen;double scale=dialog.layout.scale();
+                    AbstractWidget slider=widget(mc.screen,"Krycie:");
+                    dialog.mouseClicked((slider.getX()+38)*scale,(slider.getY()+86)*scale,0);dialog.mouseReleased(0,0,0);
+                    // Vertical direction and keyboard adjustment are independently exercised.
+                    AbstractWidget bright=widget(mc.screen,"Jasność:");
+                    dialog.mouseClicked((bright.getX()+38)*scale,(bright.getY()+151)*scale,0);dialog.mouseReleased(0,0,0);
+                    require(bright.getMessage().getString().endsWith("0%"),"Brightness bottom is zero");
+                    dialog.keyPressed(org.lwjgl.glfw.GLFW.GLFW_KEY_HOME,0,0);
+                    require(bright.getMessage().getString().endsWith("100%"),"Brightness Home is full");
+                    dialog.keyPressed(org.lwjgl.glfw.GLFW.GLFW_KEY_DOWN,0,0);
+                    require(bright.getMessage().getString().endsWith("99%"),"Brightness keyboard adjustment");
+                    dialog.mouseClicked((bright.getX()+38)*scale,(bright.getY()+80)*scale,0);
+                    dialog.mouseDragged((bright.getX()+38)*scale,(bright.getY()+21)*scale,0,0,-59*scale);dialog.mouseReleased(0,0,0);
+                    require(bright.getMessage().getString().endsWith("100%"),"Brightness drag reaches top");
+                    click(mc,"Zastosuj");
+                    require(screen.currentTheme().opacity()>110&&screen.currentTheme().opacity()<145,"Vertical opacity changed preview");
+                }
+                case 11 -> {
+                    capture(mc,"11-appearance-preview");click(mc,"Logo");
                     var image=new java.awt.image.BufferedImage(512,256,java.awt.image.BufferedImage.TYPE_INT_ARGB);
                     for(int y=0;y<256;y++)for(int x=0;x<512;x++)image.setRGB(x,y,0xFF000000|(x/2)<<16|(y<<8)|150);
                     Path png=OUT.resolve("logo-fixture.png").toAbsolutePath();Files.write(png,LogoImages.png(image));
                     screen.onFilesDrop(java.util.List.of(png));
                 }
-                case 9 -> {
-                    capture(mc,"10-logo-crop");LogoCropScreen dialog=(LogoCropScreen)mc.screen;double scale=dialog.layout.scale();
+                case 12 -> {
+                    capture(mc,"12-logo-crop");LogoCropScreen dialog=(LogoCropScreen)mc.screen;double scale=dialog.layout.scale();
                     double x=(dialog.left+110)*scale,y=(dialog.top+145)*scale;
                     require(dialog.mouseClicked(x,y,0),"Crop click");dialog.mouseDragged(x+30*scale,y+10*scale,0,30*scale,10*scale);
-                    dialog.mouseReleased(x+30*scale,y+10*scale,0);dialog.mouseScrolled(x,y,0,2);
-                    click(mc,"Zastosuj logo");
+                    dialog.mouseReleased(x+30*scale,y+10*scale,0);dialog.mouseScrolled(x,y,0,2);click(mc,"Zastosuj logo");
                     var field=GangScreen.class.getDeclaredField("draftLogo");field.setAccessible(true);String encoded=(String)field.get(screen);
                     require(!encoded.isBlank()&&!pl.crimeandlaw.gang.GangLogo.validate(encoded).isBlank(),"Dropped image cropped and encoded");
                 }
-                case 10 -> {
-                    capture(mc,"11-logo-preview");selectTab(2);
-                    AbstractWidget row=widget(screen,"≡  Nowa Ranga"),first=widget(screen,"≡  Lider");
-                    var l=GangLayout.of(screen.width,screen.height);double x=(row.getX()+30)*l.scale(),y=(row.getY()+9)*l.scale();
-                    screen.mouseClicked(x,y,0);screen.mouseDragged(x,(first.getY()+4)*l.scale(),0,0,-40*l.scale());
-                    var field=GangScreen.class.getDeclaredField("roleMoved");field.setAccessible(true);require(field.getBoolean(screen),"Role drag active");
+                case 13 -> {
+                    capture(mc,"13-logo-preview");fixturePage(FRIEND,0);screen.updated();selectTab(3);click(mc,"Wygląd");
+                    require(screen.children().stream().noneMatch(c->c instanceof AbstractWidget w&&w.getMessage().getString().equals("Zarządzanie")),"Management hidden from ordinary member");
+                    require(!widget(screen,"Zapisz dla gangu").active,"Member cannot save shared appearance");
+                    require(!ClientState.state.has("requestCount"),"Private requests not sent to member");
                 }
-                case 11 -> {
-                    capture(mc,"12-role-reordering");AbstractWidget first=widget(screen,"≡  Lider");var l=GangLayout.of(screen.width,screen.height);
-                    screen.mouseReleased((first.getX()+20)*l.scale(),(first.getY()+4)*l.scale(),0);
-                    REPORT.append("PASS: actual Minecraft renderer, 12 captures, GUI scales 2/4, typing, color/opacity, file-drop handler, cropping and role dragging.\n");
-                    Files.writeString(OUT.resolve("result.txt"),REPORT.toString());
-                    System.out.println("CRIME_UI_SMOKE_PASS");mc.stop();
+                case 14 -> {
+                    capture(mc,"14-member-settings");
+                    REPORT.append("PASS: actual Minecraft renderer, 14 captures, GUI scales 2/4, typing, centered gang card, paged members, leader management, ordinary member restrictions, vertical gradient pixels, keyboard/drag color input, opacity, file-drop handler and cropping.\n");
+                    Files.writeString(OUT.resolve("result.txt"),REPORT.toString());System.out.println("CRIME_UI_SMOKE_PASS");mc.stop();
                 }
             }
         } catch(Throwable error) {
@@ -112,6 +142,11 @@ public final class GangUiSmokeTest {
     private static void capture(Minecraft mc,String name)throws Exception {
         try(var image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){
             require((image.getPixelRGBA(1600,850)&0xFFFFFF)!=0,"Panel background after scale/tab change: "+name);
+            if(mc.screen instanceof GangScreen&&ClientState.gang()!=null){
+                require((image.getPixelRGBA(600,200)&0xFFFFFF)!=0,"Header background after tab change: "+name);
+                require((image.getPixelRGBA(250,500)&0xFFFFFF)!=0,"Sidebar background after tab change: "+name);
+                require((image.getPixelRGBA(900,150)&0xFFFFFF)!=0,"Gang name frame after tab change: "+name);
+            }
             if(mc.screen instanceof MenuDialog dialog){
                 AbstractWidget cancel=widget(mc.screen,"Anuluj");double scale=dialog.layout.scale()*mc.getWindow().getGuiScale();int bright=0;
                 for(int y=(int)((cancel.getY()+3)*scale);y<(cancel.getY()+cancel.getHeight()-3)*scale;y++)
@@ -160,12 +195,33 @@ public final class GangUiSmokeTest {
         }
         state.add("gangs",rows);
         if(joined) {
-            GangDirectory directory=new GangDirectory();var gang=directory.create(PLAYER,"Gracz","Czarne Wilki","");
-            UUID friend=UUID.fromString("00000000-0000-0000-0000-000000000002");directory.request(friend,"DrugiGracz",gang.id);directory.accept(PLAYER,friend);
-            directory.role(PLAYER,"","Nowa Ranga",java.util.Set.of());
-            state.add("gang",ClientState.JSON.toJsonTree(gang));
+            if(directory==null){
+                directory=new GangDirectory();var gang=directory.create(PLAYER,"Gracz","Czarne Wilki","");
+                for(int i=2;i<=13;i++){UUID friend=new UUID(0,i);directory.request(friend,"Gracz"+i,gang.id);directory.accept(PLAYER,friend);}
+                for(int i=14;i<=21;i++)directory.request(new UUID(0,i),"Kandydat"+i,gang.id);
+            }
+            JsonObject snapshot=GangView.snapshot(directory.of(PLAYER),PLAYER,0,0);
+            for(var entry:snapshot.entrySet())state.add(entry.getKey(),entry.getValue());
         }
         ClientState.state=state;ClientState.message="";
+    }
+    private static void fixturePage(UUID player,int page){
+        JsonObject state=GangView.snapshot(directory.of(PLAYER),player,page,0);
+        state.addProperty("player",player.toString());state.addProperty("message","");
+        state.add("gangs",new JsonArray());state.addProperty("page",0);state.addProperty("pages",1);
+        ClientState.state=state;ClientState.message="";
+    }
+    private static void checkGradients(Minecraft mc){
+        ColorPickerScreen d=(ColorPickerScreen)mc.screen;double scale=d.layout.scale()*mc.getWindow().getGuiScale();
+        AbstractWidget bright=widget(d,"Jasność:"),sat=widget(d,"Nasycenie:");
+        try(var image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){
+            int top=image.getPixelRGBA((int)((bright.getX()+38)*scale),(int)((bright.getY()+29)*scale));
+            int bottom=image.getPixelRGBA((int)((bright.getX()+38)*scale),(int)((bright.getY()+144)*scale));
+            require((top&255)>200&&(top>>8&255)<30&&(top>>16&255)<30,"Brightness top shows red");
+            require((bottom&255)<30&&(bottom>>8&255)<10&&(bottom>>16&255)<10,"Brightness bottom shows black");
+            int gray=image.getPixelRGBA((int)((sat.getX()+38)*scale),(int)((sat.getY()+144)*scale));
+            require((gray>>8&255)>200&&(gray>>16&255)>200,"Saturation bottom shows pale neutral color");
+        }
     }
     private static void require(boolean condition,String message){if(!condition)throw new AssertionError(message);}
 }

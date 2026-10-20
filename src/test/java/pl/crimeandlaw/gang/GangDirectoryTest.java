@@ -1,5 +1,6 @@
 package pl.crimeandlaw.gang;
 
+import com.google.gson.*;
 import org.junit.jupiter.api.Test;
 import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -8,30 +9,31 @@ import pl.crimeandlaw.gang.GangDirectory.*;
 class GangDirectoryTest {
     private final UUID leader=UUID.randomUUID(),member=UUID.randomUUID(),stranger=UUID.randomUUID();
     private GangDirectory setup(){var d=new GangDirectory();d.create(leader,"Lider","Testowy Gang","");return d;}
+    private void join(GangDirectory d,UUID id,String name){d.request(id,name,d.of(leader).id);d.accept(leader,id);}
     @Test void preventsDuplicateMembershipAndNames(){
         var d=setup();assertThrows(IllegalArgumentException.class,()->d.create(leader,"Lider","Drugi Gang",""));
         assertThrows(IllegalArgumentException.class,()->d.create(member,"Gracz","testowy gang",""));
     }
-    @Test void joiningRequiresApprovalAndRejectsForgedOwnerActions(){
+    @Test void joiningRequiresApprovalAndRejectsForgedLeaderActions(){
         var d=setup();d.request(member,"Gracz",d.of(leader).id);assertNull(d.of(member));
         assertThrows(IllegalArgumentException.class,()->d.accept(stranger,member));
         d.accept(leader,member);assertSame(d.of(leader),d.of(member));
+        d.request(stranger,"Nowy",d.of(leader).id);
+        assertThrows(IllegalArgumentException.class,()->d.accept(member,stranger));
+        assertThrows(IllegalArgumentException.class,()->d.reject(member,stranger));
         assertThrows(IllegalArgumentException.class,()->d.theme(member,Theme.DEFAULT));
-        assertThrows(IllegalArgumentException.class,()->d.role(member,"","Szef",EnumSet.allOf(Permission.class)));
+        assertThrows(IllegalArgumentException.class,()->d.logo(member,""));
+        assertThrows(IllegalArgumentException.class,()->d.kick(member,leader));
+        assertThrows(IllegalArgumentException.class,()->d.transfer(member,stranger));
     }
     @Test void leaderCannotLeaveGroupOrBeKickedUntilTransfer(){
-        var d=setup();d.request(member,"Gracz",d.of(leader).id);d.accept(leader,member);
+        var d=setup();join(d,member,"Gracz");
         assertThrows(IllegalArgumentException.class,()->d.leave(leader));
         assertThrows(IllegalArgumentException.class,()->d.kick(leader,leader));
-        assertThrows(IllegalArgumentException.class,()->d.assign(leader,member,"leader"));
-        d.transfer(leader,member);d.leave(leader);assertNull(d.of(leader));assertEquals(member,d.of(member).owner);
-    }
-    @Test void assignedRolesAreEnforced(){
-        var d=setup();d.request(member,"Gracz",d.of(leader).id);d.accept(leader,member);
-        d.role(leader,"","Rekruter",Set.of(Permission.INVITE));
-        Role role=d.of(leader).roles.values().stream().filter(r->r.name.equals("Rekruter")).findFirst().orElseThrow();
-        d.assign(leader,member,role.id);d.request(stranger,"Nowy",d.of(leader).id);d.accept(member,stranger);
-        assertNotNull(d.of(stranger));assertThrows(IllegalArgumentException.class,()->d.kick(member,stranger));
+        d.transfer(leader,member);
+        assertFalse(d.isLeader(d.of(leader),leader));assertTrue(d.isLeader(d.of(member),member));
+        assertThrows(IllegalArgumentException.class,()->d.theme(leader,Theme.DEFAULT));
+        d.leave(leader);assertNull(d.of(leader));assertEquals(member,d.of(member).owner);
     }
     @Test void applicationCannotJoinTwoGangsAndIsClearedOnAcceptance(){
         var d=setup();d.create(stranger,"Inny","Drugi Gang","");
@@ -39,12 +41,37 @@ class GangDirectoryTest {
         d.accept(leader,member);assertFalse(d.of(stranger).requests.containsKey(member));
         assertThrows(IllegalArgumentException.class,()->d.request(member,"Gracz",d.of(stranger).id));
     }
-    @Test void survivesJsonRoundTripIncludingPermissionsAndTheme(){
-        var d=setup();d.theme(leader,new Theme(0x123456,0xABCDEF,105));d.request(member,"Gracz",d.of(leader).id);
-        var restored=GangDirectory.fromJson(d.toJson());
-        assertEquals(d.toJson(),restored.toJson());restored.accept(leader,member);
-        assertTrue(restored.allowed(restored.of(leader),leader,Permission.MANAGE_THEME));
-        assertEquals(105,restored.of(leader).theme.opacity());
+    @Test void survivesJsonRoundTripIncludingMembersRequestsLogoAndTheme(){
+        var d=setup();join(d,member,"Gracz");d.theme(leader,new Theme(0x123456,0xABCDEF,105));
+        d.request(stranger,"Nowy",d.of(leader).id);d.logo(leader,"retained-logo");
+        var restored=GangDirectory.fromJson(d.toJson());assertEquals(d.toJson(),restored.toJson());
+        restored.accept(leader,stranger);assertTrue(restored.isLeader(restored.of(leader),leader));
+        assertEquals(105,restored.of(leader).theme.opacity());assertEquals("retained-logo",restored.of(leader).logo);
+    }
+    @Test void migratesLegacyRankDataWithoutLosingMembershipOrDelegatingAdministration(){
+        var d=setup();join(d,member,"Gracz");d.request(stranger,"Nowy",d.of(leader).id);
+        d.theme(leader,new Theme(0x123456,0xABCDEF,105));d.logo(leader,"old-logo");
+        JsonObject old=JsonParser.parseString(d.toJson()).getAsJsonObject();
+        JsonObject gang=old.getAsJsonObject("gangs").getAsJsonObject(d.of(leader).id.toString());
+        JsonObject roles=new JsonObject(),recruiter=new JsonObject();recruiter.addProperty("id","recruiter");recruiter.addProperty("name","Rekruter");
+        JsonArray rights=new JsonArray();rights.add("INVITE");rights.add("MANAGE_THEME");recruiter.add("permissions",rights);roles.add("recruiter",recruiter);gang.add("roles",roles);
+        gang.getAsJsonObject("members").getAsJsonObject(member.toString()).addProperty("role","recruiter");
+        var restored=GangDirectory.fromJson(old.toString());
+        assertEquals(d.toJson(),restored.toJson());assertFalse(restored.toJson().contains("\"roles\""));
+        assertThrows(IllegalArgumentException.class,()->restored.accept(member,stranger));
+        restored.accept(leader,stranger);assertSame(restored.of(leader),restored.of(stranger));
+    }
+    @Test void gangSizeAndApplicationCountHaveNoGameplayCapAndSurviveSave(){
+        var d=setup();UUID id=d.of(leader).id;
+        for(int i=1;i<=1000;i++){UUID player=new UUID(1,i);d.request(player,"Player"+i,id);d.accept(leader,player);}
+        for(int i=1;i<=2000;i++)d.request(new UUID(2,i),"Applicant"+i,id);
+        assertEquals(1001,d.of(leader).members.size());assertEquals(2000,d.of(leader).requests.size());
+        var restored=GangDirectory.fromJson(d.toJson());assertEquals(1001,restored.of(leader).members.size());assertEquals(2000,restored.of(leader).requests.size());
+    }
+    @Test void rejectsCorruptedMembershipInSave(){
+        var d=setup();JsonObject json=JsonParser.parseString(d.toJson()).getAsJsonObject();
+        JsonObject gang=json.getAsJsonObject("gangs").getAsJsonObject(d.of(leader).id.toString());gang.addProperty("owner",stranger.toString());
+        assertThrows(IllegalArgumentException.class,()->GangDirectory.fromJson(json.toString()));
     }
     @Test void lastMemberLeavingDeletesGang(){var d=setup();d.leave(leader);assertTrue(d.gangs().isEmpty());}
     @Test void themeClampsOpacityAndMasksRgb(){
@@ -52,25 +79,7 @@ class GangDirectoryTest {
         assertEquals(0,new Theme(0,0,-10).opacity());
     }
     @Test void rejectsNamesThatCouldBreakLayout(){
-        var d=new GangDirectory();assertThrows(IllegalArgumentException.class,()->d.create(leader,"Lider","§kHidden",""));
-        assertThrows(IllegalArgumentException.class,()->d.create(leader,"Lider","a".repeat(33),""));
-    }
-    @Test void independentWorldsHaveIndependentGangs(){
-        var a=setup();var b=new GangDirectory();assertNull(b.of(leader));assertEquals(1,a.gangs().size());
-    }
-    @Test void visualRoleOrderCanPutUnprivilegedRoleAboveLeaderAndSurvivesSave(){
-        var d=setup();d.role(leader,"","Nowa Ranga",Set.of());var g=d.of(leader);
-        String custom=g.roles.values().stream().filter(r->r.name.equals("Nowa Ranga")).findFirst().orElseThrow().id;
-        d.reorderRoles(leader,List.of(custom,"member","leader"));
-        assertEquals(List.of(custom,"member","leader"),new ArrayList<>(g.roles.keySet()));
-        d.request(member,"Gracz",g.id);d.accept(leader,member);d.assign(leader,member,custom);
-        assertFalse(d.allowed(g,member,Permission.MANAGE_ROLES));assertEquals(leader,g.owner);
-        var restored=GangDirectory.fromJson(d.toJson());assertEquals(List.of(custom,"member","leader"),new ArrayList<>(restored.of(leader).roles.keySet()));
-    }
-    @Test void roleReorderingChecksPermissionAndExactPermutation(){
-        var d=setup();var g=d.of(leader);d.request(member,"Gracz",g.id);d.accept(leader,member);
-        assertThrows(IllegalArgumentException.class,()->d.reorderRoles(member,List.of("member","leader")));
-        for(var invalid:List.of(List.of("member"),List.of("member","member"),List.of("member","unknown")))assertThrows(IllegalArgumentException.class,()->d.reorderRoles(leader,invalid));
-        assertEquals(List.of("leader","member"),new ArrayList<>(g.roles.keySet()));
+        for(String name:List.of("ab","x".repeat(33),"<script>","Naz\u0000wa"))
+            assertThrows(IllegalArgumentException.class,()->new GangDirectory().create(leader,"Lider",name,""));
     }
 }
