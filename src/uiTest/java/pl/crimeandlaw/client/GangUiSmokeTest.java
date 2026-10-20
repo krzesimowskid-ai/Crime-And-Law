@@ -134,7 +134,21 @@ public final class GangUiSmokeTest {
                 }
                 case 15 -> {
                     capture(mc,"15-overview-logo-long-name-scale2");checkOverview(mc);
-                    REPORT.append("PASS: actual Minecraft renderer, 15 captures, GUI scales 2/4, typing, wide identity header with divider and three information columns, long gang name and uploaded logo, paged members, leader management, ordinary member restrictions, vertical gradient pixels, keyboard/drag color input, opacity, file-drop handler and cropping.\n");
+                    directory.of(PLAYER).name="Czarne Wilki";fixturePage(PLAYER,0);
+                    screen=new GangScreen();mc.setScreen(screen);screen.updated();selectTab(4);
+                }
+                case 16 -> {
+                    capture(mc,"16-register");
+                    require(ClientState.state.getAsJsonArray("history").size()==8,"Register receives a bounded page of real events");
+                    require(widget(screen,"›").active,"History next page is available");
+                    require(screen.children().stream().noneMatch(c->c instanceof AbstractWidget w&&w.getMessage().getString().equals("Transport")),"Transport has no menu entry");
+                    selectTab(5);
+                    var field=GangScreen.class.getDeclaredField("tab");field.setAccessible(true);
+                    require(field.getInt(screen)==0,"Disabled transport route falls back to overview");
+                }
+                case 17 -> {
+                    capture(mc,"17-hidden-transport-fallback");
+                    REPORT.append("PASS: actual Minecraft renderer, 17 captures, visible register, hidden transport gate, GUI scales 2/4, typing, wide identity header with divider and three information columns, long gang name and uploaded logo, paged members, leader management, ordinary member restrictions, vertical gradient pixels, keyboard/drag color input, opacity, file-drop handler and cropping.\n");
                     Files.writeString(OUT.resolve("result.txt"),REPORT.toString());System.out.println("CRIME_UI_SMOKE_PASS");mc.stop();
                 }
             }

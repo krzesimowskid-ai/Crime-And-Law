@@ -33,6 +33,7 @@ public final class ClientState {
     public static void refresh(String query,int page){JsonObject a=new JsonObject();a.addProperty("query",query);a.addProperty("page",page);action("refresh",a);}
     public static int number(String key,int fallback){return state.has(key)?state.get(key).getAsInt():fallback;}
     public static int memberCount(){var g=gang();return number("memberCount",g==null?0:g.members.size());}
+    public static void historyPage(int page){JsonObject a=new JsonObject();a.addProperty("historyPage",page);action("list_page",a);}
     public static void listPage(boolean applications,int page){JsonObject a=new JsonObject();a.addProperty(applications?"requestPage":"memberPage",page);action("list_page",a);}
 }
 

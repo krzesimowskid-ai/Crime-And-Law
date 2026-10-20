@@ -1,14 +1,14 @@
 # Crime And Law
 
 Autorski mod gangsterski: panel gangów, członkostwo i własny wygląd menu.
-Wersja **0.1.4**.
+Wersja **0.1.5**.
 
 ## Uruchomienie
 
 - Minecraft **1.21.1**, Java **21**, NeoForge **21.1.248**.
-- Włóż `crimeandlaw-0.1.4.jar` do `mods`, zastępując poprzedni JAR tego moda.
+- Włóż `crimeandlaw-0.1.5.jar` do `mods`, zastępując poprzedni JAR tego moda.
 - W rozgrywce sieciowej mod musi być **u graczy i na serwerze**.
-  Wydanie 0.1.4 zachowuje protokół panelu wersji 0.1.3.
+  Wersja 0.1.5 wymagana po obu stronach (nowy protokół rejestru).
 - W świecie jednoosobowym część serwerowa działa razem ze światem.
 - **G** otwiera panel; skrót można zmienić w sterowaniu. Esc lub X zamyka okno.
 
@@ -18,13 +18,23 @@ Bez gangu: dwie równe zakładki u góry — „Stwórz gang” i „Znajdź gan
 Możesz ustawić nazwę i opcjonalne logo albo wysłać zgłoszenie do istniejącego gangu.
 Zgłoszenie przyjmuje jego lider.
 
-Po dołączeniu: kompaktowy nagłówek, zakładki „Gang”, „Członkowie” i „Mapa”.
+Po dołączeniu: kompaktowy nagłówek, zakładki „Gang”, „Członkowie”, „Rejestr” i „Mapa”.
 Główna zakładka ma wyśrodkowane logo i nazwę nad linią obejmującą całą szerokość
 obszaru treści. Poniżej „Informacje o gangu” i trzy równomierne kolumny:
 liczba członków, lider oraz miejsce na poziom gangu. Członkowie nie mają limitu.
 Pole poziomu pokazuje „— / Wkrótce”; system zdobywania poziomów jest do ustalenia.
 „Ustawienia” znajdują się na dole nawigacji, nad „Opuść gang”.
-Mapa pozostaje zapowiedzią kolejnego etapu.
+Mapa pozostaje podstawą przyszłej kontroli terytorialnej.
+Rejestr pokazuje rzeczywiste wydarzenia: utworzenie gangu, dołączenia, odejścia,
+usunięcia członków, przekazanie przywództwa oraz zmiany wspólnego motywu/logo.
+Wpisy powstają na serwerze i zapisują się ze światem; ostatnie 200 wydarzeń,
+po osiem na stronę, od najnowszego. Nie ujawnia nazw osób z prywatnych zgłoszeń.
+Starsze zapisy zaczynają z pustym rejestrem; wydarzenia nie są odtwarzane wstecz.
+
+Transport ma wyłącznie ukrytą definicję kategorii w kodzie. Nie ma przycisku,
+widoku, zadań działających w tle ani mechanik transportu. Próba wybrania jego
+nieaktywnego identyfikatora wraca do głównej zakładki. Pozostałych kategorii
+ze zdjęcia (saldo, premie, czarna lista i cele) nie dodano.
 
 System własnych rang został usunięty na życzenie użytkownika. Pozostają lider
 oraz członkowie. Lista członków służy przeglądaniu; czynności administracyjne
@@ -53,8 +63,12 @@ Osobisty wygląd nie zmienia ustawień u pozostałych graczy.
 ## Własne logo
 
 Wybierz obraz z systemowego okna, wklej lokalną ścieżkę albo przeciągnij jeden
-plik z folderu na otwarty panel gry. PNG/JPG do 20 MB. W razie potrzeby użyj F11,
+plik z folderu na otwarty panel gry. PNG/JPG/JPEG/GIF/BMP do 20 MB. W razie potrzeby użyj F11,
 aby widzieć grę i folder jednocześnie.
+
+Obrazy 256×256, poziome, pionowe i inne proporcje są przyjmowane. GIF używa
+pierwszej klatki. Limit wymiarów: 16 384 px na bok i 64 miliony pikseli;
+podgląd jest pomniejszany do maksymalnie 1024 px na dłuższym boku.
 
 W oknie „Dopasuj logo” przesuwaj obraz, przybliżaj kółkiem lub suwakiem.
 Wybierz kwadratowy kadr albo cały obraz z zachowaniem proporcji i przezroczystymi
@@ -85,7 +99,7 @@ Windows: gradlew.bat build
 Linux/macOS: ./gradlew build
 ```
 
-Wynik: `build/libs/crimeandlaw-0.1.4.jar`.
+Wynik: `build/libs/crimeandlaw-0.1.5.jar`.
 Gradle Wrapper 9.2.1, ModDevGradle 2.0.148, NeoForge 21.1.248.
 `./gradlew test` sprawdza model, migrację zapisów, duże listy i prywatność
 zgłoszeń, walidację/edycję logo, kolory oraz skalowanie menu.
@@ -99,3 +113,5 @@ Test graficzny nie łączy dwóch graczy na serwerze.
 
 Mapa, własność chunków, oznaczenia, NPC, produkcja, handel i rozbudowane
 animacje pozostają dalszymi etapami. Ta wersja dotyczy panelu gangów.
+
+Definicje kategorii: `GangCategory.java`. Tylko `TRANSPORT` ma umiejscowienie `HIDDEN`; aktywację i mechaniki pozostawiono do dalszej pracy.

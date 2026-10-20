@@ -15,7 +15,7 @@ import pl.crimeandlaw.gang.*;
 import pl.crimeandlaw.gang.GangDirectory.*;
 
 public final class GangScreen extends Screen {
-    private static final String[] TABS={"Gang","Członkowie","Mapa"};
+    private static final List<GangCategory> TABS=GangCategory.navigation();
     private final List<Label> labels=new ArrayList<>();
     private record Label(int x,int y,String value,int color,int width){}
     private int left,top,w,h,cx,cy,cw,tab,memberPage,listPage,bodyScroll,maxBodyScroll;
@@ -46,6 +46,7 @@ public final class GangScreen extends Screen {
         left=(layout.canvasWidth()-w)/2;top=(layout.canvasHeight()-h)/2;
         labels.clear();
         Gang g=gang();
+        if(g!=null)tab=GangCategory.visibleOrOverview(tab).tabId();
         if(g==null){
             cx=left+20;cy=top+62;cw=w-40;
             int half=(w-2)/2;
@@ -55,13 +56,13 @@ public final class GangScreen extends Screen {
         }else{
             cx=left+116;cy=top+55;cw=w-130;
             button(left+w-25,top+10,16,"×",b->onClose());
-            for(int i=0;i<TABS.length;i++){
-                final int chosen=i;button(left+10,cy+i*24,96,TABS[i],b->{tab=chosen;memberPage=0;bodyScroll=0;rebuildWidgets();},tab==i);
+            for(int i=0;i<TABS.size();i++){
+                final GangCategory category=TABS.get(i);final int chosen=category.tabId();button(left+10,cy+i*24,96,category.label(),b->{tab=chosen;memberPage=0;bodyScroll=0;rebuildWidgets();},tab==chosen);
             }
             button(left+10,top+h-75,96,"Ustawienia",b->{tab=3;bodyScroll=0;rebuildWidgets();},tab==3);
             String leaveMessage=ClientState.memberCount()==1?"Ostatni członek opuszcza gang — gang zostanie usunięty.":isLeader()?"Lider musi najpierw przekazać przywództwo.":"Czy chcesz opuścić ten gang?";
             button(left+10,top+h-48,96,"Opuść gang",b->confirm("Opuścić gang?",leaveMessage,()->send("leave",new JsonObject())));
-            switch(tab){case 1->buildMembers();case 2->buildMap();case 3->buildSettings();}
+            switch(tab){case 1->buildMembers();case 2->buildMap();case 3->buildSettings();case 4->buildRegister();}
         }
         int bottom=cy;
         for(var child:children())if(child instanceof AbstractWidget widget && widget.getX()>=cx && widget.getY()>=cy)bottom=Math.max(bottom,widget.getY()+widget.getHeight());
@@ -100,7 +101,7 @@ public final class GangScreen extends Screen {
         label(x,y+48,"lub wklej ścieżkę do obrazu:",0xFFAAAAB7);
         field(x,y+62,width,1024,file,v->file=v);
         button(x,y+88,Math.min(140,width),"Wczytaj i dopasuj",b->loadLogo()).active=creating||isLeader();
-        label(x,y+115,"PNG / JPG • możesz też przeciągnąć plik na okno gry.",0xFFAAAAB7);
+        label(x,y+115,"PNG / JPG / GIF / BMP • możesz też przeciągnąć plik na okno gry.",0xFFAAAAB7);
     }
     private void buildFind(){
         label(cx,cy,"Znajdź gang");int searchWidth=Math.max(50,cw-82);
@@ -160,6 +161,24 @@ public final class GangScreen extends Screen {
         label(cx+50,bottom+5,"Strona "+(page+1)+" / "+pages);
         button(cx+listWidth-42,bottom,42,"›",b->{selectedMember="";ClientState.listPage(applications,page+1);}).active=page+1<pages;
     }
+    private void buildRegister(){
+        label(cx,cy,"Rejestr gangu");
+        JsonArray events=ClientState.state.has("history")?ClientState.state.getAsJsonArray("history"):new JsonArray();
+        var format=java.time.format.DateTimeFormatter.ofPattern("dd.MM HH:mm").withZone(java.time.ZoneId.systemDefault());
+        if(events.isEmpty())label(cx,cy+30,"Brak wpisów. Nowe wydarzenia pojawią się tutaj.",0xFFAAAAB7);
+        for(int i=0;i<events.size();i++){
+            JsonObject event=events.get(i).getAsJsonObject();int y=cy+28+i*25;
+            String date=format.format(java.time.Instant.ofEpochMilli(event.get("timestamp").getAsLong()));
+            label(cx,y+4,date,0xFF8E869A);
+            String text=event.get("text").getAsString(),first=font.plainSubstrByWidth(text,cw-94);
+            label(cx+90,y,first);
+            if(first.length()<text.length())label(cx+90,y+11,text.substring(first.length()).strip());
+        }
+        int page=ClientState.number("historyPage",0),pages=ClientState.number("historyPages",1),y=top+h-48;
+        button(cx,y,42,"‹",b->ClientState.historyPage(page-1)).active=page>0;
+        label(cx+50,y+5,"Strona "+(page+1)+" / "+pages);
+        button(cx+cw-42,y,42,"›",b->ClientState.historyPage(page+1)).active=page+1<pages;
+    }
     private void buildMap(){
         label(cx,cy,"Mapa — kolejny etap");label(cx,cy+26,"Tu pojawią się chunki i tereny gangów.",0xFFAAAAB7);
         label(cx,cy+47,"Planowane: ręczne oznaczenia prywatne i wspólne.",0xFFAAAAB7);
@@ -208,8 +227,8 @@ public final class GangScreen extends Screen {
     }
     private void chooseLogoFile(){
         try(MemoryStack stack=MemoryStack.stackPush()){
-            var filters=stack.pointers(stack.UTF8("*.png"),stack.UTF8("*.jpg"),stack.UTF8("*.jpeg"));
-            String path=TinyFileDialogs.tinyfd_openFileDialog("Wybierz logo gangu",null,filters,"Obrazy PNG / JPG",false);
+            var filters=stack.pointers(stack.UTF8("*.png"),stack.UTF8("*.jpg"),stack.UTF8("*.jpeg"),stack.UTF8("*.gif"),stack.UTF8("*.bmp"));
+            String path=TinyFileDialogs.tinyfd_openFileDialog("Wybierz logo gangu",null,filters,"Obrazy PNG / JPG / GIF / BMP",false);
             if(path!=null){file=path;loadLogo();}
         }catch(Exception e){ClientState.message="Nie można otworzyć okna wyboru. Przeciągnij obraz albo wklej jego ścieżkę.";}
     }

@@ -4,7 +4,7 @@ Stan projektu: 20 października 2026.
 
 ## Status i sposób dalszej pracy
 
-To zapis pomysłów i decyzji użytkownika, a nie opis gotowego moda. Powstaje prototyp panelu gangów, obecnie wersja 0.1.4. 19 października użytkownik odłożył DarkPerazera i wrócił do Crime And Law. Zaakceptował rozpoczęcie od podstaw panelu gangów; obecnie doprecyzowuje jego wygląd. Dla pierwszego prototypu przyjęto Minecraft 1.21.1 i NeoForge 21.1.248: użytkownik polecił rozpoczęcie bez wskazania innej platformy. Jest to jawne założenie wykonawcze, nie wcześniejsza deklaracja użytkownika.
+To zapis pomysłów i decyzji użytkownika, a nie opis gotowego moda. Powstaje prototyp panelu gangów, obecnie wersja 0.1.5. 19 października użytkownik odłożył DarkPerazera i wrócił do Crime And Law. Zaakceptował rozpoczęcie od podstaw panelu gangów; obecnie doprecyzowuje jego wygląd. Dla pierwszego prototypu przyjęto Minecraft 1.21.1 i NeoForge 21.1.248: użytkownik polecił rozpoczęcie bez wskazania innej platformy. Jest to jawne założenie wykonawcze, nie wcześniejsza deklaracja użytkownika.
 
 Crime And Law jest nowym, osobnym modem. McArk pozostaje odłożony, zachowując cel odwzorowania ASA 1:1. Nie zmieniać projektu McArk w Crime And Law ani nie usuwać jego materiałów w ramach tej pracy.
 
@@ -189,3 +189,17 @@ Poniższe decyzje zastępują wcześniejsze ustalenia o rangach i limicie człon
 - Użytkownik zaakceptował edytor kolorów i gradienty; zachować ich wygląd i działanie.
 - Użytkownik zapowiedział inspiracje przycisków. Poczekać na materiał przed
   zmianą ich wyglądu; zachowana dotychczasowa nawigacja i miejsce na dalszą treść.
+
+## Kategorie i obrazy — 20 października, wersja 0.1.5
+
+- Użytkownik potwierdził widoczne kategorie: Gang, Członkowie, Rejestr,
+  Mapa/Kontrola terytorialna oraz Ustawienia. Nie dodawać wszystkich ze zdjęcia.
+- Wyłącznie Transport ma być nieaktywnym fundamentem w kodzie, niewidocznym
+  w menu. Wcześniejsza interpretacja asystenta wyłączająca inne kategorie była
+  błędna i została przez użytkownika skorygowana.
+- Rejestr zapisuje publiczne wydarzenia członkostwa, przywództwa i wyglądu.
+  Wykonawczo przechowywane jest ostatnie 200 wpisów, z serwerowym stronicowaniem.
+- Mapa pozostaje dotychczasową podstawą kontroli terytorialnej.
+- Logo ma przyjmować także 256×256 i obrazy o innych proporcjach/rozdzielczościach,
+  z kadrowaniem lub dopasowaniem całości. Obsługiwane PNG, JPG/JPEG, GIF i BMP;
+  GIF jest statycznym logo z pierwszej klatki. Końcowa miniatura nadal ma 64×64.

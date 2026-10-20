@@ -7,6 +7,8 @@ import java.util.*;
 public final class GangDirectory {
     private static final Gson JSON = new Gson();
     public static final int MAX_GANGS = 512;
+    public static final int HISTORY_LIMIT=200;
+    public record Event(long timestamp,String text) {}
     public record Theme(int background, int border, int opacity) {
         public static final Theme DEFAULT = new Theme(0x15161C, 0xA3425D, 235);
         public Theme { background &= 0xFFFFFF; border &= 0xFFFFFF; opacity = Math.clamp(opacity, 0, 255); }
@@ -24,6 +26,7 @@ public final class GangDirectory {
         public Theme theme=Theme.DEFAULT;
         public Map<UUID,Member> members=new LinkedHashMap<>();
         public Map<UUID,String> requests=new LinkedHashMap<>();
+        public List<Event> history=new ArrayList<>();
     }
     private final Map<UUID,Gang> gangs=new LinkedHashMap<>();
     public Collection<Gang> gangs(){return Collections.unmodifiableCollection(gangs.values());}
@@ -37,7 +40,7 @@ public final class GangDirectory {
         final String chosen=name;
         require(gangs.values().stream().noneMatch(g->g.name.equalsIgnoreCase(chosen)),"Ta nazwa jest już zajęta.");
         Gang g=new Gang();g.id=UUID.randomUUID();g.owner=actor;g.name=name;g.logo=logo;
-        g.members.put(actor,new Member(actor,playerName));gangs.put(g.id,g);return g;
+        g.members.put(actor,new Member(actor,playerName));gangs.put(g.id,g);record(g,playerName+" tworzy gang.");return g;
     }
     public void request(UUID actor,String name,UUID id){
         require(of(actor)==null,"Należysz już do gangu.");Gang g=required(id);
@@ -47,31 +50,37 @@ public final class GangDirectory {
         Gang g=own(actor);
         String name=g.requests.get(target);require(name!=null,"Nie ma takiego zgłoszenia.");
         require(of(target)==null,"Ten gracz należy już do gangu.");
-        g.members.put(target,new Member(target,name));
+        g.members.put(target,new Member(target,name));record(g,name+" dołącza do gangu.");
         for(Gang other:gangs.values())other.requests.remove(target);
     }
     public void reject(UUID actor,UUID target){own(actor).requests.remove(target);}
     public void leave(UUID actor){
         Gang g=of(actor);require(g!=null,"Nie należysz do gangu.");
         require(!g.owner.equals(actor) || g.members.size()==1,"Najpierw przekaż przywództwo innemu członkowi.");
+        record(g,g.members.get(actor).name+" opuszcza gang.");
         g.members.remove(actor);if(g.members.isEmpty())gangs.remove(g.id);
     }
     public void kick(UUID actor,UUID target){
         Gang g=own(actor);
         require(!g.owner.equals(target),"Nie można usunąć lidera.");
         require(!actor.equals(target),"Użyj przycisku opuszczenia gangu.");
-        require(g.members.remove(target)!=null,"Nie ma takiego członka.");
+        Member removed=g.members.remove(target);require(removed!=null,"Nie ma takiego członka.");
+        record(g,g.members.get(actor).name+" usuwa gracza "+removed.name+" z gangu.");
     }
     public void transfer(UUID actor,UUID target){
         Gang g=of(actor);require(g!=null && g.owner.equals(actor),"Tylko lider może przekazać przywództwo.");
         require(!actor.equals(target) && g.members.containsKey(target),"Wybierz innego członka.");
-        g.owner=target;
+        g.owner=target;record(g,g.members.get(actor).name+" przekazuje przywództwo graczowi "+g.members.get(target).name+".");
     }
-    public void theme(UUID actor,Theme theme){own(actor).theme=theme;}
-    public void logo(UUID actor,String logo){own(actor).logo=logo;}
+    public void theme(UUID actor,Theme theme){Gang g=own(actor);g.theme=theme;record(g,g.members.get(actor).name+" zmienia wygląd gangu.");}
+    public void logo(UUID actor,String logo){Gang g=own(actor);g.logo=logo;record(g,g.members.get(actor).name+" zmienia logo gangu.");}
     public void renameSeenPlayer(UUID player,String name){
         Gang g=of(player);if(g!=null)g.members.get(player).name=name;
         for(Gang other:gangs.values())if(other.requests.containsKey(player))other.requests.put(player,name);
+    }
+    private static void record(Gang g,String text){
+        g.history.add(new Event(System.currentTimeMillis(),text));
+        if(g.history.size()>HISTORY_LIMIT)g.history.subList(0,g.history.size()-HISTORY_LIMIT).clear();
     }
     private Gang own(UUID actor){
         Gang g=of(actor);require(isLeader(g,actor),"Tylko lider może wykonać tę czynność.");return g;
@@ -92,6 +101,9 @@ public final class GangDirectory {
             Gang g=entry.getValue();
             require(g!=null && entry.getKey().equals(g.id) && g.owner!=null,"Uszkodzony identyfikator gangu.");
             validName(g.name,3,32);
+            if(g.history==null)g.history=new ArrayList<>();
+            for(Event event:g.history)require(event!=null&&event.timestamp()>=0&&event.text()!=null&&event.text().length()<=256,"Uszkodzony rejestr gangu.");
+            if(g.history.size()>HISTORY_LIMIT)g.history.subList(0,g.history.size()-HISTORY_LIMIT).clear();
             require(g.members!=null && g.members.containsKey(g.owner),"Uszkodzone członkostwo.");
             for(var member:g.members.entrySet()){
                 require(member.getValue()!=null && member.getKey().equals(member.getValue().id) && seen.add(member.getKey()),"Powielone członkostwo.");

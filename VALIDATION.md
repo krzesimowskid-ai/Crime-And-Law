@@ -1,50 +1,64 @@
-# Sprawdzenie 0.1.4
+# Sprawdzenie 0.1.5
 
 20 października 2026. Minecraft 1.21.1, NeoForge 21.1.248, JDK 21.
-`clean build` zakończone poprawnie. 27 testów JUnit bez błędów.
 
-## Zakres zmiany
+## Zakres
 
-Główna zakładka gangu według szkicu `image(20261020-111515).png`:
-logo i nazwa na środku u góry szerokiej części treści, linia od nawigacji
-do prawej ramki, nagłówek „Informacje o gangu” i trzy równe kolumny.
-Pokazywane są liczba członków, lider i miejsce na poziom („— / Wkrótce”).
-Nie dodano zasad XP ani awansowania; kolory, gradienty i przyciski zachowano.
+Widoczne Gang, Członkowie, Rejestr, Mapa i Ustawienia. Tylko Transport ma
+ukrytą definicję: nie jest dodawany do nawigacji i jego identyfikator wraca
+do widoku głównego. Nie rejestruje operacji sieciowych, pojazdów ani zadań w tle.
+Mapa pozostaje dotychczasową podstawą kontroli terytorialnej.
+
+Rejestr jest zapisywany na serwerze wraz ze światem: utworzenie gangu,
+dołączenia/odejścia/usunięcia, przekazanie przywództwa, wspólny wygląd i logo.
+Ostatnie 200 wpisów, strony po osiem, najnowsze pierwsze. Zgłoszenia oraz
+odrzucenia kandydatów pozostają prywatne i nie trafiają do publicznego rejestru.
+Starsze zapisy bez historii otrzymują pustą listę; nie dopisuje się przeszłości.
+Protokół 3: wymagane 0.1.5 na kliencie i serwerze.
+
+## Testy automatyczne
+
+31 testów JUnit przeszło: dotychczasowe 27 oraz trzy testy kategorii/rejestru
+i jeden test importu różnych formatów/proporcji. Test obrazu przechodzi 12
+kombinacji: PNG/JPEG/GIF/BMP oraz 256×256, 640×160 i 80×320. Każda jest odczytana,
+kadrowana, kodowana jako poprawna miniatura 64×64 i dopasowana z zachowaniem
+przezroczystych marginesów przy prostokątnym źródle. GIF czytany jest z klatki 0.
+
+Sprawdzono jedyną wyłączoną kategorię (Transport), brak wejścia przez jej ID,
+poprawną listę nawigacji, zapis/odczyt historii, migrację starego zapisu,
+limit i strony historii oraz brak wpisów dla nieudanych działań i prywatnych
+zgłoszeń. Wcześniejsze testy członkostwa, prywatności, dużych gangów,
+bezpieczeństwa miniatur, kolorów i skalowania również przechodzą.
 
 ## Klient graficzny
 
-Rzeczywisty Minecraft 1920×1080, OpenGL 4.5 Mesa llvmpipe, dane przykładowe.
-Końcowy przebieg CRIME_UI_SMOKE_PASS: 15 zrzutów, skale GUI 2 i 4.
-Nowy panel sprawdzono bez logo i z zaimportowanym obrazem, także z nazwą
-32-znakową. Test obrazu sprawdza linię pod nagłówkiem w trzech miejscach
-oraz widoczny tekst we wszystkich trzech kolumnach. Obejrzano oba zrzuty.
+Końcowy przebieg: CRIME_UI_SMOKE_PASS, 17 zrzutów 1920×1080, GUI 2 i 4,
+OpenGL 4.5 Mesa llvmpipe. Obejrzano główny panel i Rejestr. Widoczna zakładka
+Rejestru pokazuje stronę rzeczywistych wydarzeń z danych testowych; następna
+strona jest dostępna. Transport nie ma przycisku, a wymuszenie jego ID wraca
+do widoku głównego. Przechodzą dotychczasowe sprawdzenia kolorów, kadrowania,
+klawiatury, stronicowania i ograniczeń członka. Nie jest to test dwóch graczy.
 
-Dotychczasowy przebieg dalej sprawdza tworzenie/wyszukiwanie, wpisywanie,
-stronicowanie członków, zarządzanie lidera, ograniczenia zwykłego członka,
-piksele pionowych gradientów, suwaki myszą/klawiaturą, krycie oraz import
-pliku i przesuwanie/przybliżanie/zatwierdzanie kadru. Kontrolowane są też
-tło nagłówka, nawigacja i napis „Anuluj” w edytorach.
+## Odtwarzanie
 
-Odtworzenie: `./gradlew -PuiSmoke runClient`. Kod testu graficznego nie trafia
-do produkcyjnego JAR-a; sprawdzono zawartość i wersję 0.1.4 w metadanych.
+`./gradlew build` i `./gradlew -PuiSmoke runClient`.
+Test UI używa prawdziwego renderera Minecrafta i danych przykładowych.
+Wyniki oraz zrzuty są w build/ui-smoke. Klasa testowa jest wyłączona z wydania.
 
-## Testy i zgodność
+## Ograniczenia
 
-27 testów: 11 modelu gangów (w tym migracja dawnych rang i duże grupy),
-5 stronicowania/prywatności, 2 walidacji PNG, 7 edycji obrazów i kolorów,
-2 proporcji menu. W tym wydaniu nie zmieniono modelu danych ani sieci.
-Zachowano protokół 2 i zgodność z serwerem 0.1.3.
+Testy modelu i UI nie stanowią próby synchronizacji dwóch rzeczywistych klientów.
+Fizyczne przeciąganie z Eksploratora i systemowe okno plików na komputerze
+użytkownika pozostają poza automatyzacją. WebP, SVG i animowane logo nie są
+obsługiwane; GIF daje statyczną pierwszą klatkę. Plik do 20 MB, bok do 16 384 px,
+łącznie do 64 milionów pikseli, podgląd najwyżej 1024 px na dłuższym boku.
 
-## Granice weryfikacji
+## Budowanie
 
-Test graficzny używa danych przykładowych, bez dwóch połączonych klientów.
-Nie odtwarza fizycznego przeciągania z Eksploratora Windows ani natywnego
-okna wyboru pliku na komputerze użytkownika. System poziomów, nowe przyciski,
-mapa i terytoria pozostają do dalszego ustalenia/wykonania.
+Końcowy `clean build`: BUILD SUCCESSFUL. Sprawdzono wersję 0.1.5 w JAR-ze,
+obecność definicji kategorii/rejestru oraz wykluczenie klasy testu graficznego.
 
-## Środowisko
-
-Budowanie korzysta z lokalnego NeoForm Runtime z fallbackiem java.home/bin/java
-w dwóch miejscach, gdzie środowisko nie udostępnia ścieżki ProcessHandle.
-Ta zmiana narzędzia nie trafia do repozytorium ani JAR-a. Brak dostępu do usług
-kont Minecraft nie blokował testu z danymi przykładowymi.
+Lokalny NeoForm Runtime używa fallbacku java.home/bin/java w dwóch miejscach,
+gdzie środowisko nie podaje ProcessHandle.command. Ta zmiana narzędzia nie
+trafia do kodu moda ani JAR-a. Usługi kont Minecraft są niedostępne w tym
+środowisku; dane przykładowe nie wymagają logowania.

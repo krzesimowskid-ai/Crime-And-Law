@@ -23,6 +23,20 @@ class ImageEditingTest {
         Path png=folder.resolve("large.png");ImageIO.write(new BufferedImage(4097,32,BufferedImage.TYPE_INT_ARGB),"png",png.toFile());
         assertTrue(LogoImages.read(png).getWidth()<=1024);
     }
+    @Test void accepts256SquareAndWideOrTallImagesAcrossSupportedFormats()throws Exception {
+        for(String format:List.of("png","jpeg","gif","bmp"))for(int[] size:new int[][]{{256,256},{640,160},{80,320}}){
+            BufferedImage source=new BufferedImage(size[0],size[1],BufferedImage.TYPE_INT_RGB);
+            source.setRGB(size[0]/2,size[1]/2,0xFFFF0000);
+            Path path=folder.resolve(format+"-"+size[0]+"x"+size[1]+"."+format);
+            assertTrue(ImageIO.write(source,format,path.toFile()));BufferedImage loaded=LogoImages.read(path);
+            assertEquals(size[0],loaded.getWidth());assertEquals(size[1],loaded.getHeight());
+            LogoCrop crop=new LogoCrop(loaded.getWidth(),loaded.getHeight());
+            assertFalse(GangLogo.validate(LogoImages.encode(loaded,crop)).isBlank());
+            crop.fit(true);BufferedImage fitted=ImageIO.read(new ByteArrayInputStream(Base64.getDecoder().decode(LogoImages.encode(loaded,crop))));
+            assertEquals(64,fitted.getWidth());assertEquals(64,fitted.getHeight());
+            if(size[0]!=size[1])assertEquals(0,fitted.getRGB(0,0)>>>24,"Fit preserves proportions with transparent margins");
+        }
+    }
     @Test void reportsMissingAndFakeImageFiles()throws Exception {
         assertTrue(assertThrows(IOException.class,()->LogoImages.read(folder.resolve("missing.png"))).getMessage().contains("Nie znaleziono"));
         Path fake=folder.resolve("fake.png");Files.writeString(fake,"not an image");
