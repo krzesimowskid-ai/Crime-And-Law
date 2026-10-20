@@ -4,7 +4,7 @@ Stan projektu: 20 października 2026.
 
 ## Status i sposób dalszej pracy
 
-To zapis pomysłów i decyzji użytkownika, a nie opis gotowego moda. Powstaje prototyp panelu gangów, obecnie wersja 0.1.5. 19 października użytkownik odłożył DarkPerazera i wrócił do Crime And Law. Zaakceptował rozpoczęcie od podstaw panelu gangów; obecnie doprecyzowuje jego wygląd. Dla pierwszego prototypu przyjęto Minecraft 1.21.1 i NeoForge 21.1.248: użytkownik polecił rozpoczęcie bez wskazania innej platformy. Jest to jawne założenie wykonawcze, nie wcześniejsza deklaracja użytkownika.
+To zapis pomysłów i decyzji użytkownika, a nie opis gotowego moda. Powstaje prototyp panelu gangów, obecnie wersja 0.1.6. 19 października użytkownik odłożył DarkPerazera i wrócił do Crime And Law. Zaakceptował rozpoczęcie od podstaw panelu gangów; obecnie doprecyzowuje jego wygląd. Dla pierwszego prototypu przyjęto Minecraft 1.21.1 i NeoForge 21.1.248: użytkownik polecił rozpoczęcie bez wskazania innej platformy. Jest to jawne założenie wykonawcze, nie wcześniejsza deklaracja użytkownika.
 
 Crime And Law jest nowym, osobnym modem. McArk pozostaje odłożony, zachowując cel odwzorowania ASA 1:1. Nie zmieniać projektu McArk w Crime And Law ani nie usuwać jego materiałów w ramach tej pracy.
 
@@ -203,3 +203,11 @@ Poniższe decyzje zastępują wcześniejsze ustalenia o rangach i limicie człon
 - Logo ma przyjmować także 256×256 i obrazy o innych proporcjach/rozdzielczościach,
   z kadrowaniem lub dopasowaniem całości. Obsługiwane PNG, JPG/JPEG, GIF i BMP;
   GIF jest statycznym logo z pierwszej klatki. Końcowa miniatura nadal ma 64×64.
+
+## Rejestr — przewijanie i strony, wersja 0.1.6
+
+Użytkownik potwierdził: wpisy od góry do dołu, najnowsze na górze; pionowe
+przewijanie kółkiem i pasek po prawej; strony i ich przyciski na dole.
+Nagłówek oraz sterowanie stronami pozostają na miejscu. Scroll obejmuje tylko
+wpisy bieżącej strony. Po zmianie strony lista zaczyna od góry. Zachowano
+dotychczasowe osiem wpisów na stronę, limit historii i protokół serwera.

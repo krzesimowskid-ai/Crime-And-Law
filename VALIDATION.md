@@ -1,4 +1,4 @@
-# Sprawdzenie 0.1.5
+# Sprawdzenie 0.1.6
 
 20 października 2026. Minecraft 1.21.1, NeoForge 21.1.248, JDK 21.
 
@@ -14,11 +14,11 @@ dołączenia/odejścia/usunięcia, przekazanie przywództwa, wspólny wygląd i 
 Ostatnie 200 wpisów, strony po osiem, najnowsze pierwsze. Zgłoszenia oraz
 odrzucenia kandydatów pozostają prywatne i nie trafiają do publicznego rejestru.
 Starsze zapisy bez historii otrzymują pustą listę; nie dopisuje się przeszłości.
-Protokół 3: wymagane 0.1.5 na kliencie i serwerze.
+Protokół 3 bez zmian: klient 0.1.6 współpracuje z serwerem 0.1.5.
 
 ## Testy automatyczne
 
-31 testów JUnit przeszło: dotychczasowe 27 oraz trzy testy kategorii/rejestru
+35 testów JUnit przeszło (w tym cztery testy modelu przewijania): dotychczasowe 27 oraz trzy testy kategorii/rejestru
 i jeden test importu różnych formatów/proporcji. Test obrazu przechodzi 12
 kombinacji: PNG/JPEG/GIF/BMP oraz 256×256, 640×160 i 80×320. Każda jest odczytana,
 kadrowana, kodowana jako poprawna miniatura 64×64 i dopasowana z zachowaniem
@@ -32,7 +32,7 @@ bezpieczeństwa miniatur, kolorów i skalowania również przechodzą.
 
 ## Klient graficzny
 
-Końcowy przebieg: CRIME_UI_SMOKE_PASS, 17 zrzutów 1920×1080, GUI 2 i 4,
+Końcowy przebieg: CRIME_UI_SMOKE_PASS, 20 zrzutów 1920×1080, GUI 2 i 4,
 OpenGL 4.5 Mesa llvmpipe. Obejrzano główny panel i Rejestr. Widoczna zakładka
 Rejestru pokazuje stronę rzeczywistych wydarzeń z danych testowych; następna
 strona jest dostępna. Transport nie ma przycisku, a wymuszenie jego ID wraca
@@ -55,10 +55,14 @@ obsługiwane; GIF daje statyczną pierwszą klatkę. Plik do 20 MB, bok do 16 38
 
 ## Budowanie
 
-Końcowy `clean build`: BUILD SUCCESSFUL. Sprawdzono wersję 0.1.5 w JAR-ze,
+Końcowy `clean build`: BUILD SUCCESSFUL. Sprawdzono wersję 0.1.6 w JAR-ze,
 obecność definicji kategorii/rejestru oraz wykluczenie klasy testu graficznego.
 
 Lokalny NeoForm Runtime używa fallbacku java.home/bin/java w dwóch miejscach,
 gdzie środowisko nie podaje ProcessHandle.command. Ta zmiana narzędzia nie
 trafia do kodu moda ani JAR-a. Usługi kont Minecraft są niedostępne w tym
 środowisku; dane przykładowe nie wymagają logowania.
+
+## Przewijanie Rejestru
+
+Sprawdzono kółko myszy, przeciąganie suwaka, klawisze End i granice przewijania. Nagłówek i przyciski stron pozostają nieruchome. Zmiana strony zeruje przewijanie, krótka strona ma nieaktywny suwak. Zmiana skali GUI zachowuje poprawną pozycję. Wpisy są zawijane i przycinane do obszaru listy; najnowsze pozostają na górze.

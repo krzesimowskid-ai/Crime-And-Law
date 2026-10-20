@@ -27,6 +27,11 @@ public final class GangScreen extends Screen {
     private int settingsSection;
     private boolean previewTheme;
     private long logoRequest;
+    private final ScrollPosition historyScroll=new ScrollPosition();
+    private final List<HistoryRow> historyRows=new ArrayList<>();
+    private record HistoryRow(String date,List<net.minecraft.util.FormattedCharSequence> lines,int top,int height){}
+    private int historyTop,historyBottom,lastHistoryPage=-1;
+
     public GangScreen(){super(Component.literal("Crime And Law"));}
     private Gang gang(){return ClientState.gang();}
     private boolean isLeader(){Gang g=gang();return g!=null&&g.owner.equals(ClientState.player());}
@@ -35,7 +40,7 @@ public final class GangScreen extends Screen {
     public void updated(){
         Gang g=gang();String id=g==null?"":g.id.toString();
         if(!id.equals(lastGang)){
-            lastGang=id;tab=0;selectedMember="";memberPage=0;previewTheme=false;
+            lastGang=id;tab=0;selectedMember="";memberPage=0;previewTheme=false;lastHistoryPage=-1;historyScroll.reset();
             Theme t=theme();background=String.format("%06X",t.background());border=String.format("%06X",t.border());opacity=t.opacity();
             draftLogo="";
         }
@@ -44,7 +49,7 @@ public final class GangScreen extends Screen {
     @Override protected void init(){
         layout=GangLayout.of(width,height);w=layout.panelWidth();h=layout.panelHeight();
         left=(layout.canvasWidth()-w)/2;top=(layout.canvasHeight()-h)/2;
-        labels.clear();
+        labels.clear();historyRows.clear();
         Gang g=gang();
         if(g!=null)tab=GangCategory.visibleOrOverview(tab).tabId();
         if(g==null){
@@ -57,7 +62,7 @@ public final class GangScreen extends Screen {
             cx=left+116;cy=top+55;cw=w-130;
             button(left+w-25,top+10,16,"×",b->onClose());
             for(int i=0;i<TABS.size();i++){
-                final GangCategory category=TABS.get(i);final int chosen=category.tabId();button(left+10,cy+i*24,96,category.label(),b->{tab=chosen;memberPage=0;bodyScroll=0;rebuildWidgets();},tab==chosen);
+                final GangCategory category=TABS.get(i);final int chosen=category.tabId();button(left+10,cy+i*24,96,category.label(),b->{tab=chosen;memberPage=0;bodyScroll=0;historyScroll.reset();rebuildWidgets();},tab==chosen);
             }
             button(left+10,top+h-75,96,"Ustawienia",b->{tab=3;bodyScroll=0;rebuildWidgets();},tab==3);
             String leaveMessage=ClientState.memberCount()==1?"Ostatni członek opuszcza gang — gang zostanie usunięty.":isLeader()?"Lider musi najpierw przekazać przywództwo.":"Czy chcesz opuścić ten gang?";
@@ -162,22 +167,39 @@ public final class GangScreen extends Screen {
         button(cx+listWidth-42,bottom,42,"›",b->{selectedMember="";ClientState.listPage(applications,page+1);}).active=page+1<pages;
     }
     private void buildRegister(){
-        label(cx,cy,"Rejestr gangu");
+        bodyScroll=0;label(cx,cy,"Rejestr gangu");
+        int page=ClientState.number("historyPage",0),pages=ClientState.number("historyPages",1);
+        if(lastHistoryPage!=page){lastHistoryPage=page;historyScroll.reset();}
+        historyTop=cy+26;historyBottom=top+h-60;
         JsonArray events=ClientState.state.has("history")?ClientState.state.getAsJsonArray("history"):new JsonArray();
         var format=java.time.format.DateTimeFormatter.ofPattern("dd.MM HH:mm").withZone(java.time.ZoneId.systemDefault());
-        if(events.isEmpty())label(cx,cy+30,"Brak wpisów. Nowe wydarzenia pojawią się tutaj.",0xFFAAAAB7);
-        for(int i=0;i<events.size();i++){
-            JsonObject event=events.get(i).getAsJsonObject();int y=cy+28+i*25;
+        int offset=0;
+        for(JsonElement item:events){
+            JsonObject event=item.getAsJsonObject();
             String date=format.format(java.time.Instant.ofEpochMilli(event.get("timestamp").getAsLong()));
-            label(cx,y+4,date,0xFF8E869A);
-            String text=event.get("text").getAsString(),first=font.plainSubstrByWidth(text,cw-94);
-            label(cx+90,y,first);
-            if(first.length()<text.length())label(cx+90,y+11,text.substring(first.length()).strip());
+            var lines=font.split(Component.literal(event.get("text").getAsString()),cw-112);
+            int rowHeight=Math.max(36,lines.size()*11+16);
+            historyRows.add(new HistoryRow(date,lines,offset,rowHeight));offset+=rowHeight;
         }
-        int page=ClientState.number("historyPage",0),pages=ClientState.number("historyPages",1),y=top+h-48;
-        button(cx,y,42,"‹",b->ClientState.historyPage(page-1)).active=page>0;
+        historyScroll.range(historyBottom-historyTop,offset);
+        addRenderableWidget(new RegisterScrollBar(cx+cw-10,historyTop,historyBottom-historyTop,historyScroll,this::theme));
+        int y=top+h-48;
+        button(cx,y,42,"‹",b->{historyScroll.reset();ClientState.historyPage(page-1);}).active=page>0;
         label(cx+50,y+5,"Strona "+(page+1)+" / "+pages);
-        button(cx+cw-42,y,42,"›",b->ClientState.historyPage(page+1)).active=page+1<pages;
+        button(cx+cw-42,y,42,"›",b->{historyScroll.reset();ClientState.historyPage(page+1);}).active=page+1<pages;
+    }
+    private void drawRegister(GuiGraphics g){
+        g.fill(cx,cy+18,cx+cw,cy+19,0x55000000|theme().border());
+        clip(g,cx,historyTop,cx+cw-16,historyBottom);
+        if(historyRows.isEmpty())g.drawString(font,"Brak wpisów. Nowe wydarzenia pojawią się tutaj.",cx,historyTop+8,0xFFAAAAB7,false);
+        for(HistoryRow row:historyRows){
+            int y=historyTop+row.top()-(int)Math.round(historyScroll.offset());
+            if(y+row.height()<=historyTop||y>=historyBottom)continue;
+            g.drawString(font,row.date(),cx,y+8,0xFF8E869A,false);
+            for(int i=0;i<row.lines().size();i++)g.drawString(font,row.lines().get(i),cx+90,y+8+i*11,0xFFE9E8EC,false);
+            g.fill(cx,y+row.height()-1,cx+cw-20,y+row.height(),0x22000000|theme().border());
+        }
+        g.disableScissor();
     }
     private void buildMap(){
         label(cx,cy,"Mapa — kolejny etap");label(cx,cy+26,"Tu pojawią się chunki i tereny gangów.",0xFFAAAAB7);
@@ -312,6 +334,7 @@ public final class GangScreen extends Screen {
             g.fill(cx,y+104,cx+cw,y+105,0x44000000|t.border());
         }
         if(gang!=null&&tab==0)drawGangOverview(g,gang,texture);
+        if(gang!=null&&tab==4)drawRegister(g);
         clip(g,cx,cy,cx+cw,top+h-24);
         for(Label line:labels)g.drawString(font,font.plainSubstrByWidth(line.value(),line.width()),line.x(),line.y()-bodyScroll,line.color(),false);
         g.disableScissor();
@@ -368,6 +391,10 @@ public final class GangScreen extends Screen {
     @Override public void mouseMoved(double x,double y){super.mouseMoved(layout.local(x),layout.local(y));}
     @Override public boolean mouseScrolled(double x,double y,double horizontal,double vertical){
         x=layout.local(x);y=layout.local(y);
+        if(gang()!=null&&tab==4){
+            if(x>=cx&&x<cx+cw&&y>=historyTop&&y<historyBottom){historyScroll.scroll(-vertical*24);return true;}
+            return super.mouseScrolled(x,y,horizontal,vertical);
+        }
         if(x>=cx && x<cx+cw && y>=cy && y<top+h-22){
             bodyScroll=Math.clamp(bodyScroll-(int)(vertical*18),0,maxBodyScroll);rebuildWidgets();return true;
         }

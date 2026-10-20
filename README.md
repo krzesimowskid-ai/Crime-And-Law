@@ -1,14 +1,14 @@
 # Crime And Law
 
 Autorski mod gangsterski: panel gangów, członkostwo i własny wygląd menu.
-Wersja **0.1.5**.
+Wersja **0.1.6**.
 
 ## Uruchomienie
 
 - Minecraft **1.21.1**, Java **21**, NeoForge **21.1.248**.
-- Włóż `crimeandlaw-0.1.5.jar` do `mods`, zastępując poprzedni JAR tego moda.
+- Włóż `crimeandlaw-0.1.6.jar` do `mods`, zastępując poprzedni JAR tego moda.
 - W rozgrywce sieciowej mod musi być **u graczy i na serwerze**.
-  Wersja 0.1.5 wymagana po obu stronach (nowy protokół rejestru).
+  Wersja 0.1.6 zachowuje zgodność z serwerem 0.1.5 (ten sam protokół rejestru).
 - W świecie jednoosobowym część serwerowa działa razem ze światem.
 - **G** otwiera panel; skrót można zmienić w sterowaniu. Esc lub X zamyka okno.
 
@@ -28,7 +28,11 @@ Mapa pozostaje podstawą przyszłej kontroli terytorialnej.
 Rejestr pokazuje rzeczywiste wydarzenia: utworzenie gangu, dołączenia, odejścia,
 usunięcia członków, przekazanie przywództwa oraz zmiany wspólnego motywu/logo.
 Wpisy powstają na serwerze i zapisują się ze światem; ostatnie 200 wydarzeń,
-po osiem na stronę, od najnowszego. Nie ujawnia nazw osób z prywatnych zgłoszeń.
+po osiem na stronę, od najnowszego. Wpisy na bieżącej stronie przewija się
+pionowo kółkiem lub paskiem po prawej; nagłówek i numer/przyciski stron pozostają
+nieruchome. Pasek obsługuje strzałki, Page Up/Down i Home/End po zaznaczeniu.
+Zmiana strony ustawia listę na początku. Krótka lub pusta strona nie przewija się.
+Długie wpisy zawijają się, a zmiana skali GUI zachowuje pozycję w granicach listy. Nie ujawnia nazw osób z prywatnych zgłoszeń.
 Starsze zapisy zaczynają z pustym rejestrem; wydarzenia nie są odtwarzane wstecz.
 
 Transport ma wyłącznie ukrytą definicję kategorii w kodzie. Nie ma przycisku,
@@ -99,7 +103,7 @@ Windows: gradlew.bat build
 Linux/macOS: ./gradlew build
 ```
 
-Wynik: `build/libs/crimeandlaw-0.1.5.jar`.
+Wynik: `build/libs/crimeandlaw-0.1.6.jar`.
 Gradle Wrapper 9.2.1, ModDevGradle 2.0.148, NeoForge 21.1.248.
 `./gradlew test` sprawdza model, migrację zapisów, duże listy i prywatność
 zgłoszeń, walidację/edycję logo, kolory oraz skalowanie menu.

@@ -142,13 +142,42 @@ public final class GangUiSmokeTest {
                     require(ClientState.state.getAsJsonArray("history").size()==8,"Register receives a bounded page of real events");
                     require(widget(screen,"›").active,"History next page is available");
                     require(screen.children().stream().noneMatch(c->c instanceof AbstractWidget w&&w.getMessage().getString().equals("Transport")),"Transport has no menu entry");
-                    selectTab(5);
+                    var l=GangLayout.of(screen.width,screen.height);ScrollPosition position=historyPosition();
+                    require(position.maximum()>0,"History page has scrollable content");
+                    int footerY=widget(screen,"›").getY();
+                    screen.mouseScrolled(400*l.scale(),180*l.scale(),0,-30);
+                    require(position.offset()==position.maximum(),"Wheel reaches the last event");
+                    require(widget(screen,"›").getY()==footerY&&widget(screen,"›").visible,"Pagination stays fixed while scrolling");
+                    var body=GangScreen.class.getDeclaredField("bodyScroll");body.setAccessible(true);require(body.getInt(screen)==0,"Header is outside the scroll offset");
+                }
+                case 17 -> {
+                    capture(mc,"17-register-scrolled");
+                    var l=GangLayout.of(screen.width,screen.height);var bar=widget(screen,"Przewijanie rejestru");var position=historyPosition();
+                    double x=(bar.getX()+5)*l.scale(),from=(bar.getY()+position.thumbTop()+position.thumbHeight()/2.0)*l.scale();
+                    double to=(bar.getY()+position.thumbHeight()/2.0)*l.scale();
+                    require(screen.mouseClicked(x,from,0),"Scrollbar click");screen.mouseDragged(x,to,0,0,to-from);screen.mouseReleased(x,to,0);
+                    require(position.offset()==0,"Scrollbar drag reaches start");
+                    screen.keyPressed(org.lwjgl.glfw.GLFW.GLFW_KEY_END,0,0);require(position.offset()==position.maximum(),"Scrollbar End key");
+                    screen.mouseScrolled(x,110*l.scale(),0,1);require(position.offset()==position.maximum(),"Wheel on header does not move entries");
+                    click(mc,"›");require(position.offset()==0,"Changing page resets scroll immediately");
+                    fixturePage(PLAYER,0,1);screen.updated();
+                    require(ClientState.number("historyPage",-1)==1,"Second history page loaded");
+                    require(historyPosition().offset()==0&&!widget(screen,"Przewijanie rejestru").active,"Short second page needs no scrolling");
+                }
+                case 18 -> {
+                    capture(mc,"18-register-second-page");fixturePage(PLAYER,0,0);screen.updated();
+                    var l=GangLayout.of(screen.width,screen.height);screen.mouseScrolled(400*l.scale(),180*l.scale(),0,-1);
+                    require(historyPosition().offset()==24,"Single wheel step");
+                    mc.options.guiScale().set(4);mc.resizeDisplay();require(historyPosition().offset()==24,"GUI resize preserves scroll");
+                }
+                case 19 -> {
+                    capture(mc,"19-register-scale4");selectTab(5);
                     var field=GangScreen.class.getDeclaredField("tab");field.setAccessible(true);
                     require(field.getInt(screen)==0,"Disabled transport route falls back to overview");
                 }
-                case 17 -> {
-                    capture(mc,"17-hidden-transport-fallback");
-                    REPORT.append("PASS: actual Minecraft renderer, 17 captures, visible register, hidden transport gate, GUI scales 2/4, typing, wide identity header with divider and three information columns, long gang name and uploaded logo, paged members, leader management, ordinary member restrictions, vertical gradient pixels, keyboard/drag color input, opacity, file-drop handler and cropping.\n");
+                case 20 -> {
+                    capture(mc,"20-hidden-transport-fallback");
+                    REPORT.append("PASS: actual Minecraft renderer, 20 captures, register wheel/drag/keyboard scrolling, fixed header and pagination, page reset and GUI resize, visible register, hidden transport gate, GUI scales 2/4, typing, wide identity header with divider and three information columns, long gang name and uploaded logo, paged members, leader management, ordinary member restrictions, vertical gradient pixels, keyboard/drag color input, opacity, file-drop handler and cropping.\n");
                     Files.writeString(OUT.resolve("result.txt"),REPORT.toString());System.out.println("CRIME_UI_SMOKE_PASS");mc.stop();
                 }
             }
@@ -244,8 +273,12 @@ public final class GangUiSmokeTest {
         }
         ClientState.state=state;ClientState.message="";
     }
-    private static void fixturePage(UUID player,int page){
-        JsonObject state=GangView.snapshot(directory.of(PLAYER),player,page,0);
+    private static ScrollPosition historyPosition()throws Exception {
+        var field=GangScreen.class.getDeclaredField("historyScroll");field.setAccessible(true);return (ScrollPosition)field.get(screen);
+    }
+    private static void fixturePage(UUID player,int page){fixturePage(player,page,0);}
+    private static void fixturePage(UUID player,int page,int historyPage){
+        JsonObject state=GangView.snapshot(directory.of(PLAYER),player,page,0,historyPage);
         state.addProperty("player",player.toString());state.addProperty("message","");
         state.add("gangs",new JsonArray());state.addProperty("page",0);state.addProperty("pages",1);
         ClientState.state=state;ClientState.message="";
