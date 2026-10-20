@@ -1,4 +1,4 @@
-# Sprawdzenie 0.1.6
+# Sprawdzenie 0.1.7
 
 20 października 2026. Minecraft 1.21.1, NeoForge 21.1.248, JDK 21.
 
@@ -11,10 +11,10 @@ Mapa pozostaje dotychczasową podstawą kontroli terytorialnej.
 
 Rejestr jest zapisywany na serwerze wraz ze światem: utworzenie gangu,
 dołączenia/odejścia/usunięcia, przekazanie przywództwa, wspólny wygląd i logo.
-Ostatnie 200 wpisów, strony po osiem, najnowsze pierwsze. Zgłoszenia oraz
+Ostatnie 10 000 wpisów, strony po 100, najnowsze pierwsze. Zgłoszenia oraz
 odrzucenia kandydatów pozostają prywatne i nie trafiają do publicznego rejestru.
 Starsze zapisy bez historii otrzymują pustą listę; nie dopisuje się przeszłości.
-Protokół 3 bez zmian: klient 0.1.6 współpracuje z serwerem 0.1.5.
+Protokół 3 bez zmian. Nowy rozmiar stron i limit wymagają wersji 0.1.7 na serwerze.
 
 ## Testy automatyczne
 
@@ -55,7 +55,7 @@ obsługiwane; GIF daje statyczną pierwszą klatkę. Plik do 20 MB, bok do 16 38
 
 ## Budowanie
 
-Końcowy `clean build`: BUILD SUCCESSFUL. Sprawdzono wersję 0.1.6 w JAR-ze,
+Końcowy `build`: BUILD SUCCESSFUL. Sprawdzono wersję 0.1.7 w JAR-ze,
 obecność definicji kategorii/rejestru oraz wykluczenie klasy testu graficznego.
 
 Lokalny NeoForm Runtime używa fallbacku java.home/bin/java w dwóch miejscach,
@@ -65,4 +65,7 @@ trafia do kodu moda ani JAR-a. Usługi kont Minecraft są niedostępne w tym
 
 ## Przewijanie Rejestru
 
-Sprawdzono kółko myszy, przeciąganie suwaka, klawisze End i granice przewijania. Nagłówek i przyciski stron pozostają nieruchome. Zmiana strony zeruje przewijanie, krótka strona ma nieaktywny suwak. Zmiana skali GUI zachowuje poprawną pozycję. Wpisy są zawijane i przycinane do obszaru listy; najnowsze pozostają na górze.
+Sprawdzono kółko myszy, przeciąganie suwaka, klawisze End i granice przewijania. Nagłówek i przyciski stron pozostają nieruchome. Zmiana strony zeruje przewijanie, lista mieści 100 wpisów na stronie. Zmiana skali GUI zachowuje poprawną pozycję. Wpisy są zawijane i przycinane do obszaru listy; najnowsze pozostają na górze.
+
+## Zmiana 0.1.7
+Numeracja i sąsiadujące strzałki znajdują się w prawym narożniku nagłówka. Lista zajmuje zwolnioną część dolną. Test limitu obejmuje ponad 10 000 wydarzeń, 100 stron po 100 wpisów, kolejność i ograniczenie numeru strony. Historia finansowa została zaplanowana osobno od Rejestru; nowe systemy nie są częścią wydania.

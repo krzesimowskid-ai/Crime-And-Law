@@ -27,10 +27,10 @@ class CategoryAndHistoryTest {
         UUID owner=UUID.randomUUID();var d=new GangDirectory();var g=d.create(owner,"Lider","Testowy Gang","");
         JsonObject old=JsonParser.parseString(d.toJson()).getAsJsonObject();old.getAsJsonObject("gangs").getAsJsonObject(g.id.toString()).remove("history");
         assertTrue(GangDirectory.fromJson(old.toString()).of(owner).history.isEmpty());
-        for(int i=0;i<230;i++)d.theme(owner,new GangDirectory.Theme(i,0,200));
-        assertEquals(200,g.history.size());JsonObject view=GangView.snapshot(g,owner,0,0,0);
-        assertEquals(8,view.getAsJsonArray("history").size());assertEquals(25,view.get("historyPages").getAsInt());
+        for(int i=0;i<10030;i++)d.theme(owner,new GangDirectory.Theme(i,0,200));
+        assertEquals(10000,g.history.size());JsonObject view=GangView.snapshot(g,owner,0,0,0);
+        assertEquals(100,view.getAsJsonArray("history").size());assertEquals(100,view.get("historyPages").getAsInt());
         assertEquals(g.history.getLast().text(),view.getAsJsonArray("history").get(0).getAsJsonObject().get("text").getAsString());
-        assertEquals(24,GangView.snapshot(g,owner,0,0,Integer.MAX_VALUE).get("historyPage").getAsInt());
+        assertEquals(99,GangView.snapshot(g,owner,0,0,Integer.MAX_VALUE).get("historyPage").getAsInt());
     }
 }

@@ -139,13 +139,15 @@ public final class GangUiSmokeTest {
                 }
                 case 16 -> {
                     capture(mc,"16-register");
-                    require(ClientState.state.getAsJsonArray("history").size()==8,"Register receives a bounded page of real events");
+                    require(ClientState.state.getAsJsonArray("history").size()==100,"Register receives a bounded page of real events");
                     require(widget(screen,"›").active,"History next page is available");
                     require(screen.children().stream().noneMatch(c->c instanceof AbstractWidget w&&w.getMessage().getString().equals("Transport")),"Transport has no menu entry");
                     var l=GangLayout.of(screen.width,screen.height);ScrollPosition position=historyPosition();
                     require(position.maximum()>0,"History page has scrollable content");
                     int footerY=widget(screen,"›").getY();
-                    screen.mouseScrolled(400*l.scale(),180*l.scale(),0,-30);
+                    require(footerY<widget(screen,"Przewijanie rejestru").getY(),"Pagination is in the header");
+                    require(widget(screen,"›").getX()-widget(screen,"‹").getX()==26,"Arrow buttons are adjacent");
+                    screen.mouseScrolled(400*l.scale(),180*l.scale(),0,-10000);
                     require(position.offset()==position.maximum(),"Wheel reaches the last event");
                     require(widget(screen,"›").getY()==footerY&&widget(screen,"›").visible,"Pagination stays fixed while scrolling");
                     var body=GangScreen.class.getDeclaredField("bodyScroll");body.setAccessible(true);require(body.getInt(screen)==0,"Header is outside the scroll offset");
@@ -162,7 +164,7 @@ public final class GangUiSmokeTest {
                     click(mc,"›");require(position.offset()==0,"Changing page resets scroll immediately");
                     fixturePage(PLAYER,0,1);screen.updated();
                     require(ClientState.number("historyPage",-1)==1,"Second history page loaded");
-                    require(historyPosition().offset()==0&&!widget(screen,"Przewijanie rejestru").active,"Short second page needs no scrolling");
+                    require(historyPosition().offset()==0&&widget(screen,"Przewijanie rejestru").active,"Second page with remaining events scrolls correctly");
                 }
                 case 18 -> {
                     capture(mc,"18-register-second-page");fixturePage(PLAYER,0,0);screen.updated();
@@ -266,6 +268,7 @@ public final class GangUiSmokeTest {
             if(directory==null){
                 directory=new GangDirectory();var gang=directory.create(PLAYER,"Gracz","Czarne Wilki","");
                 for(int i=2;i<=13;i++){UUID friend=new UUID(0,i);directory.request(friend,"Gracz"+i,gang.id);directory.accept(PLAYER,friend);}
+                for(int i=0;i<100;i++)directory.theme(PLAYER,new GangDirectory.Theme(i,0,200));
                 for(int i=14;i<=21;i++)directory.request(new UUID(0,i),"Kandydat"+i,gang.id);
             }
             JsonObject snapshot=GangView.snapshot(directory.of(PLAYER),PLAYER,0,0);

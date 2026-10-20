@@ -1,14 +1,14 @@
 # Crime And Law
 
 Autorski mod gangsterski: panel gangów, członkostwo i własny wygląd menu.
-Wersja **0.1.6**.
+Wersja **0.1.7**.
 
 ## Uruchomienie
 
 - Minecraft **1.21.1**, Java **21**, NeoForge **21.1.248**.
-- Włóż `crimeandlaw-0.1.6.jar` do `mods`, zastępując poprzedni JAR tego moda.
+- Włóż `crimeandlaw-0.1.7.jar` do `mods`, zastępując poprzedni JAR tego moda.
 - W rozgrywce sieciowej mod musi być **u graczy i na serwerze**.
-  Wersja 0.1.6 zachowuje zgodność z serwerem 0.1.5 (ten sam protokół rejestru).
+  Protokół sieciowy pozostaje zgodny. Dla 100 wpisów na stronę i limitu 10 000 wydarzeń zainstaluj 0.1.7 również na serwerze; starszy serwer nadal stosuje swój limit i rozmiar stron.
 - W świecie jednoosobowym część serwerowa działa razem ze światem.
 - **G** otwiera panel; skrót można zmienić w sterowaniu. Esc lub X zamyka okno.
 
@@ -27,8 +27,8 @@ Pole poziomu pokazuje „— / Wkrótce”; system zdobywania poziomów jest do 
 Mapa pozostaje podstawą przyszłej kontroli terytorialnej.
 Rejestr pokazuje rzeczywiste wydarzenia: utworzenie gangu, dołączenia, odejścia,
 usunięcia członków, przekazanie przywództwa oraz zmiany wspólnego motywu/logo.
-Wpisy powstają na serwerze i zapisują się ze światem; ostatnie 200 wydarzeń,
-po osiem na stronę, od najnowszego. Wpisy na bieżącej stronie przewija się
+Wpisy powstają na serwerze i zapisują się ze światem; ostatnie 10 000 wydarzeń,
+po 100 na stronę, od najnowszego. Wpisy na bieżącej stronie przewija się
 pionowo kółkiem lub paskiem po prawej; nagłówek i numer/przyciski stron pozostają
 nieruchome. Pasek obsługuje strzałki, Page Up/Down i Home/End po zaznaczeniu.
 Zmiana strony ustawia listę na początku. Krótka lub pusta strona nie przewija się.
@@ -103,7 +103,7 @@ Windows: gradlew.bat build
 Linux/macOS: ./gradlew build
 ```
 
-Wynik: `build/libs/crimeandlaw-0.1.6.jar`.
+Wynik: `build/libs/crimeandlaw-0.1.7.jar`.
 Gradle Wrapper 9.2.1, ModDevGradle 2.0.148, NeoForge 21.1.248.
 `./gradlew test` sprawdza model, migrację zapisów, duże listy i prywatność
 zgłoszeń, walidację/edycję logo, kolory oraz skalowanie menu.
@@ -119,3 +119,5 @@ Mapa, własność chunków, oznaczenia, NPC, produkcja, handel i rozbudowane
 animacje pozostają dalszymi etapami. Ta wersja dotyczy panelu gangów.
 
 Definicje kategorii: `GangCategory.java`. Tylko `TRANSPORT` ma umiejscowienie `HIDDEN`; aktywację i mechaniki pozostawiono do dalszej pracy.
+
+Rejestr: numer strony i dwie sąsiadujące strzałki w prawym narożniku nagłówka; powiększona lista. Maksymalnie 100 stron po sto wydarzeń.

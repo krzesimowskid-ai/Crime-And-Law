@@ -6,7 +6,7 @@ import pl.crimeandlaw.gang.GangDirectory.*;
 
 /** Bounded network views allow large gangs without a gameplay member cap. */
 public final class GangView {
-    public static final int PAGE_SIZE=6,HISTORY_PAGE_SIZE=8;
+    public static final int PAGE_SIZE=6,HISTORY_PAGE_SIZE=100;
     private static final Gson JSON=new Gson();
     private GangView(){}
     private static int page(int requested,int size){return Math.clamp(requested,0,Math.max(0,(size-1)/PAGE_SIZE));}

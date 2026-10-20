@@ -69,6 +69,7 @@ public final class GangScreen extends Screen {
             button(left+10,top+h-48,96,"Opuść gang",b->confirm("Opuścić gang?",leaveMessage,()->send("leave",new JsonObject())));
             switch(tab){case 1->buildMembers();case 2->buildMap();case 3->buildSettings();case 4->buildRegister();}
         }
+        if(g!=null&&tab==4){maxBodyScroll=0;bodyScroll=0;return;}
         int bottom=cy;
         for(var child:children())if(child instanceof AbstractWidget widget && widget.getX()>=cx && widget.getY()>=cy)bottom=Math.max(bottom,widget.getY()+widget.getHeight());
         for(Label line:labels)bottom=Math.max(bottom,line.y()+10);
@@ -170,7 +171,7 @@ public final class GangScreen extends Screen {
         bodyScroll=0;label(cx,cy,"Rejestr gangu");
         int page=ClientState.number("historyPage",0),pages=ClientState.number("historyPages",1);
         if(lastHistoryPage!=page){lastHistoryPage=page;historyScroll.reset();}
-        historyTop=cy+26;historyBottom=top+h-60;
+        historyTop=cy+26;historyBottom=top+h-16;
         JsonArray events=ClientState.state.has("history")?ClientState.state.getAsJsonArray("history"):new JsonArray();
         var format=java.time.format.DateTimeFormatter.ofPattern("dd.MM HH:mm").withZone(java.time.ZoneId.systemDefault());
         int offset=0;
@@ -183,10 +184,11 @@ public final class GangScreen extends Screen {
         }
         historyScroll.range(historyBottom-historyTop,offset);
         addRenderableWidget(new RegisterScrollBar(cx+cw-10,historyTop,historyBottom-historyTop,historyScroll,this::theme));
-        int y=top+h-48;
-        button(cx,y,42,"‹",b->{historyScroll.reset();ClientState.historyPage(page-1);}).active=page>0;
-        label(cx+50,y+5,"Strona "+(page+1)+" / "+pages);
-        button(cx+cw-42,y,42,"›",b->{historyScroll.reset();ClientState.historyPage(page+1);}).active=page+1<pages;
+        String pageText="Strona "+(page+1)+" / "+pages;
+        int pageX=cx+cw-font.width(pageText),arrowsX=pageX-54;
+        button(arrowsX,cy-5,23,"‹",b->{historyScroll.reset();ClientState.historyPage(page-1);}).active=page>0;
+        button(arrowsX+26,cy-5,23,"›",b->{historyScroll.reset();ClientState.historyPage(page+1);}).active=page+1<pages;
+        label(pageX,cy,pageText);
     }
     private void drawRegister(GuiGraphics g){
         g.fill(cx,cy+18,cx+cw,cy+19,0x55000000|theme().border());

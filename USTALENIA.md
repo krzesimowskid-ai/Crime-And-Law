@@ -4,7 +4,7 @@ Stan projektu: 20 października 2026.
 
 ## Status i sposób dalszej pracy
 
-To zapis pomysłów i decyzji użytkownika, a nie opis gotowego moda. Powstaje prototyp panelu gangów, obecnie wersja 0.1.6. 19 października użytkownik odłożył DarkPerazera i wrócił do Crime And Law. Zaakceptował rozpoczęcie od podstaw panelu gangów; obecnie doprecyzowuje jego wygląd. Dla pierwszego prototypu przyjęto Minecraft 1.21.1 i NeoForge 21.1.248: użytkownik polecił rozpoczęcie bez wskazania innej platformy. Jest to jawne założenie wykonawcze, nie wcześniejsza deklaracja użytkownika.
+To zapis pomysłów i decyzji użytkownika, a nie opis gotowego moda. Powstaje prototyp panelu gangów, obecnie wersja 0.1.7. 19 października użytkownik odłożył DarkPerazera i wrócił do Crime And Law. Zaakceptował rozpoczęcie od podstaw panelu gangów; obecnie doprecyzowuje jego wygląd. Dla pierwszego prototypu przyjęto Minecraft 1.21.1 i NeoForge 21.1.248: użytkownik polecił rozpoczęcie bez wskazania innej platformy. Jest to jawne założenie wykonawcze, nie wcześniejsza deklaracja użytkownika.
 
 Crime And Law jest nowym, osobnym modem. McArk pozostaje odłożony, zachowując cel odwzorowania ASA 1:1. Nie zmieniać projektu McArk w Crime And Law ani nie usuwać jego materiałów w ramach tej pracy.
 
@@ -198,7 +198,7 @@ Poniższe decyzje zastępują wcześniejsze ustalenia o rangach i limicie człon
   w menu. Wcześniejsza interpretacja asystenta wyłączająca inne kategorie była
   błędna i została przez użytkownika skorygowana.
 - Rejestr zapisuje publiczne wydarzenia członkostwa, przywództwa i wyglądu.
-  Wykonawczo przechowywane jest ostatnie 200 wpisów, z serwerowym stronicowaniem.
+  Od 0.1.7 przechowywane jest ostatnie 10 000 wpisów, z serwerowym stronicowaniem.
 - Mapa pozostaje dotychczasową podstawą kontroli terytorialnej.
 - Logo ma przyjmować także 256×256 i obrazy o innych proporcjach/rozdzielczościach,
   z kadrowaniem lub dopasowaniem całości. Obsługiwane PNG, JPG/JPEG, GIF i BMP;
@@ -210,4 +210,8 @@ Użytkownik potwierdził: wpisy od góry do dołu, najnowsze na górze; pionowe
 przewijanie kółkiem i pasek po prawej; strony i ich przyciski na dole.
 Nagłówek oraz sterowanie stronami pozostają na miejscu. Scroll obejmuje tylko
 wpisy bieżącej strony. Po zmianie strony lista zaczyna od góry. Zachowano
-dotychczasowe osiem wpisów na stronę, limit historii i protokół serwera.
+protokół serwera. Od 0.1.7: 100 wpisów na stronę i limit 10 000 wydarzeń.
+
+## Rejestr — ustalenia 0.1.7
+Strzałki poprzedniej/następnej strony są obok siebie w nagłówku po prawej, tuż przed faktycznym numerem strony/liczbą stron. Dolna część jest przeznaczona na listę. Limit 10 000 wpisów (100 stron po 100), najstarsze usuwane po przekroczeniu limitu.
+Docelowo Rejestr obejmie magazyn: kto, kiedy, co i ile włożył/wyjął; członkostwo oraz awanse/degradacje z opcjonalnym powodem. Historia wpłat i wypłat (kto, kiedy, kwota) należy osobno do Zarządzania saldem. Magazyn, saldo i system rang nie są dodawane w tej zmianie.

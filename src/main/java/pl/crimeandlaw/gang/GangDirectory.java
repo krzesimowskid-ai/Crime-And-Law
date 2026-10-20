@@ -7,7 +7,7 @@ import java.util.*;
 public final class GangDirectory {
     private static final Gson JSON = new Gson();
     public static final int MAX_GANGS = 512;
-    public static final int HISTORY_LIMIT=200;
+    public static final int HISTORY_LIMIT=10000;
     public record Event(long timestamp,String text) {}
     public record Theme(int background, int border, int opacity) {
         public static final Theme DEFAULT = new Theme(0x15161C, 0xA3425D, 235);
