@@ -62,12 +62,12 @@ public final class GangScreen extends Screen {
             cx=left+116;cy=top+55;cw=w-130;
             button(left+w-25,top+10,16,"×",b->onClose());
             for(int i=0;i<TABS.size();i++){
-                final GangCategory category=TABS.get(i);final int chosen=category.tabId();button(left+10,cy+i*24,96,category.label(),b->{tab=chosen;memberPage=0;bodyScroll=0;historyScroll.reset();rebuildWidgets();},tab==chosen);
+                final GangCategory category=TABS.get(i);final int chosen=category.tabId();button(left+10,cy+i*24,96,category==GangCategory.BALANCE?"Saldo gangu":category.label(),b->{tab=chosen;memberPage=0;bodyScroll=0;historyScroll.reset();rebuildWidgets();},tab==chosen);
             }
             button(left+10,top+h-75,96,"Ustawienia",b->{tab=3;bodyScroll=0;rebuildWidgets();},tab==3);
             String leaveMessage=ClientState.memberCount()==1?"Ostatni członek opuszcza gang — gang zostanie usunięty.":isLeader()?"Lider musi najpierw przekazać przywództwo.":"Czy chcesz opuścić ten gang?";
             button(left+10,top+h-48,96,"Opuść gang",b->confirm("Opuścić gang?",leaveMessage,()->send("leave",new JsonObject())));
-            switch(tab){case 1->buildMembers();case 2->buildMap();case 3->buildSettings();case 4->buildRegister();}
+            switch(tab){case 1->buildMembers();case 2->buildMap();case 3->buildSettings();case 4->buildRegister();case 6,7,8,9->buildPlannedCategory();}
         }
         if(g!=null&&tab==4){maxBodyScroll=0;bodyScroll=0;return;}
         int bottom=cy;
@@ -202,6 +202,10 @@ public final class GangScreen extends Screen {
             g.fill(cx,y+row.height()-1,cx+cw-20,y+row.height(),0x22000000|theme().border());
         }
         g.disableScissor();
+    }
+    private void buildPlannedCategory(){
+        label(cx,cy,GangCategory.visibleOrOverview(tab).label());
+        label(cx,cy+30,"Ta część gangu będzie rozwijana w kolejnych wersjach.");
     }
     private void buildMap(){
         label(cx,cy,"Mapa — kolejny etap");label(cx,cy+26,"Tu pojawią się chunki i tereny gangów.",0xFFAAAAB7);

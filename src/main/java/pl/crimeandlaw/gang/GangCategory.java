@@ -8,6 +8,10 @@ public enum GangCategory {
     MEMBERS(1,"Członkowie",Placement.NAVIGATION),
     REGISTER(4,"Rejestr",Placement.NAVIGATION),
     TERRITORY(2,"Mapa",Placement.NAVIGATION),
+    BONUSES(6,"Premie",Placement.NAVIGATION),
+    BALANCE(7,"Zarządzanie saldem",Placement.NAVIGATION),
+    BLACKLIST(8,"Czarna lista",Placement.NAVIGATION),
+    GOALS(9,"Cele",Placement.NAVIGATION),
     SETTINGS(3,"Ustawienia",Placement.FOOTER),
     TRANSPORT(5,"Transport",Placement.HIDDEN);
     public enum Placement { NAVIGATION, FOOTER, HIDDEN }

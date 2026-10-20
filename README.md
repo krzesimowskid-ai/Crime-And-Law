@@ -1,14 +1,14 @@
 # Crime And Law
 
 Autorski mod gangsterski: panel gangów, członkostwo i własny wygląd menu.
-Wersja **0.1.7**.
+Wersja **0.1.8**.
 
 ## Uruchomienie
 
 - Minecraft **1.21.1**, Java **21**, NeoForge **21.1.248**.
-- Włóż `crimeandlaw-0.1.7.jar` do `mods`, zastępując poprzedni JAR tego moda.
+- Włóż `crimeandlaw-0.1.8.jar` do `mods`, zastępując poprzedni JAR tego moda.
 - W rozgrywce sieciowej mod musi być **u graczy i na serwerze**.
-  Protokół sieciowy pozostaje zgodny. Dla 100 wpisów na stronę i limitu 10 000 wydarzeń zainstaluj 0.1.7 również na serwerze; starszy serwer nadal stosuje swój limit i rozmiar stron.
+  Protokół sieciowy pozostaje zgodny. Dla 100 wpisów na stronę i limitu 10 000 wydarzeń zainstaluj 0.1.8 również na serwerze; starszy serwer nadal stosuje swój limit i rozmiar stron.
 - W świecie jednoosobowym część serwerowa działa razem ze światem.
 - **G** otwiera panel; skrót można zmienić w sterowaniu. Esc lub X zamyka okno.
 
@@ -103,7 +103,7 @@ Windows: gradlew.bat build
 Linux/macOS: ./gradlew build
 ```
 
-Wynik: `build/libs/crimeandlaw-0.1.7.jar`.
+Wynik: `build/libs/crimeandlaw-0.1.8.jar`.
 Gradle Wrapper 9.2.1, ModDevGradle 2.0.148, NeoForge 21.1.248.
 `./gradlew test` sprawdza model, migrację zapisów, duże listy i prywatność
 zgłoszeń, walidację/edycję logo, kolory oraz skalowanie menu.
@@ -121,3 +121,5 @@ animacje pozostają dalszymi etapami. Ta wersja dotyczy panelu gangów.
 Definicje kategorii: `GangCategory.java`. Tylko `TRANSPORT` ma umiejscowienie `HIDDEN`; aktywację i mechaniki pozostawiono do dalszej pracy.
 
 Rejestr: numer strony i dwie sąsiadujące strzałki w prawym narożniku nagłówka; powiększona lista. Maksymalnie 100 stron po sto wydarzeń.
+
+W 0.1.8 dodano przyciski Premie, Zarządzanie saldem, Czarna lista i Cele. Otwierają panele informacyjne; funkcje tych systemów są do rozwijania. Transport nadal jest ukryty.

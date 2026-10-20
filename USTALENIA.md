@@ -215,3 +215,6 @@ protokół serwera. Od 0.1.7: 100 wpisów na stronę i limit 10 000 wydarzeń.
 ## Rejestr — ustalenia 0.1.7
 Strzałki poprzedniej/następnej strony są obok siebie w nagłówku po prawej, tuż przed faktycznym numerem strony/liczbą stron. Dolna część jest przeznaczona na listę. Limit 10 000 wpisów (100 stron po 100), najstarsze usuwane po przekroczeniu limitu.
 Docelowo Rejestr obejmie magazyn: kto, kiedy, co i ile włożył/wyjął; członkostwo oraz awanse/degradacje z opcjonalnym powodem. Historia wpłat i wypłat (kto, kiedy, kwota) należy osobno do Zarządzania saldem. Magazyn, saldo i system rang nie są dodawane w tej zmianie.
+
+## Kategorie 0.1.8
+Dodane widoczne zakładki Premie, Zarządzanie saldem, Czarna lista i Cele. Na razie panele informacyjne bez mechaniki; tylko Transport pozostaje ukryty. Historia finansowa docelowo w Zarządzaniu saldem.

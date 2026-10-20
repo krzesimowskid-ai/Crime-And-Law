@@ -179,6 +179,10 @@ public final class GangUiSmokeTest {
                 }
                 case 20 -> {
                     capture(mc,"20-hidden-transport-fallback");
+                    for(String name:new String[]{"Premie","Saldo gangu","Czarna lista","Cele"}){
+                        var entry=widget(screen,name);require(entry.visible&&entry.active,"Visible category "+name);click(mc,name);
+                    }
+                    selectTab(0);
                     REPORT.append("PASS: actual Minecraft renderer, 20 captures, register wheel/drag/keyboard scrolling, fixed header and pagination, page reset and GUI resize, visible register, hidden transport gate, GUI scales 2/4, typing, wide identity header with divider and three information columns, long gang name and uploaded logo, paged members, leader management, ordinary member restrictions, vertical gradient pixels, keyboard/drag color input, opacity, file-drop handler and cropping.\n");
                     Files.writeString(OUT.resolve("result.txt"),REPORT.toString());System.out.println("CRIME_UI_SMOKE_PASS");mc.stop();
                 }
@@ -249,6 +253,8 @@ public final class GangUiSmokeTest {
         var field=GangScreen.class.getDeclaredField("tab");field.setAccessible(true);field.setInt(screen,tab);screen.updated();
     }
     private static AbstractWidget widget(Screen screen,String prefix){
+        var exact=screen.children().stream().filter(c->c instanceof AbstractWidget w&&w.getMessage().getString().equals(prefix)).map(c->(AbstractWidget)c).findFirst();
+        if(exact.isPresent())return exact.get();
         return screen.children().stream().filter(c->c instanceof AbstractWidget w&&w.getMessage().getString().startsWith(prefix))
                 .map(c->(AbstractWidget)c).findFirst().orElseThrow(()->new AssertionError("Missing widget: "+prefix));
     }

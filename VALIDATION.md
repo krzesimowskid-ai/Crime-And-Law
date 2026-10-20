@@ -1,4 +1,4 @@
-# Sprawdzenie 0.1.7
+# Sprawdzenie 0.1.8
 
 20 października 2026. Minecraft 1.21.1, NeoForge 21.1.248, JDK 21.
 
@@ -55,7 +55,7 @@ obsługiwane; GIF daje statyczną pierwszą klatkę. Plik do 20 MB, bok do 16 38
 
 ## Budowanie
 
-Końcowy `build`: BUILD SUCCESSFUL. Sprawdzono wersję 0.1.7 w JAR-ze,
+Końcowy `build`: BUILD SUCCESSFUL. Sprawdzono wersję 0.1.8 w JAR-ze,
 obecność definicji kategorii/rejestru oraz wykluczenie klasy testu graficznego.
 
 Lokalny NeoForm Runtime używa fallbacku java.home/bin/java w dwóch miejscach,
@@ -69,3 +69,6 @@ Sprawdzono kółko myszy, przeciąganie suwaka, klawisze End i granice przewijan
 
 ## Zmiana 0.1.7
 Numeracja i sąsiadujące strzałki znajdują się w prawym narożniku nagłówka. Lista zajmuje zwolnioną część dolną. Test limitu obejmuje ponad 10 000 wydarzeń, 100 stron po 100 wpisów, kolejność i ograniczenie numeru strony. Historia finansowa została zaplanowana osobno od Rejestru; nowe systemy nie są częścią wydania.
+
+## Kategorie 0.1.8
+Test kategorii obejmuje osiem widocznych zakładek nawigacji i wyłącznie ukryty Transport. Test klienta sprawdza widoczność, aktywność i kliknięcie czterech dodanych przycisków.
