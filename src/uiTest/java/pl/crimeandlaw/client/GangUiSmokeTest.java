@@ -61,7 +61,7 @@ public final class GangUiSmokeTest {
                 }
                 case 2 -> {capture(mc,"03-find");fixture(true);screen.updated();}
                 case 3 -> {
-                    capture(mc,"04-gang");
+                    capture(mc,"04-gang");checkOverview(mc);
                     require(screen.children().stream().noneMatch(c->c instanceof AbstractWidget w&&w.getMessage().getString().equals("Rangi")),"Ranks removed");
                     require(widget(screen,"Ustawienia").getY()<widget(screen,"Opuść gang").getY(),"Settings above leave");
                     require(widget(screen,"Ustawienia").getY()>widget(screen,"Mapa").getY()+100,"Settings in footer");
@@ -129,7 +129,12 @@ public final class GangUiSmokeTest {
                 }
                 case 14 -> {
                     capture(mc,"14-member-settings");
-                    REPORT.append("PASS: actual Minecraft renderer, 14 captures, GUI scales 2/4, typing, centered gang card, paged members, leader management, ordinary member restrictions, vertical gradient pixels, keyboard/drag color input, opacity, file-drop handler and cropping.\n");
+                    directory.of(PLAYER).name="W".repeat(32);fixturePage(PLAYER,0);screen.updated();selectTab(0);
+                    mc.options.guiScale().set(2);mc.resizeDisplay();
+                }
+                case 15 -> {
+                    capture(mc,"15-overview-logo-long-name-scale2");checkOverview(mc);
+                    REPORT.append("PASS: actual Minecraft renderer, 15 captures, GUI scales 2/4, typing, wide identity header with divider and three information columns, long gang name and uploaded logo, paged members, leader management, ordinary member restrictions, vertical gradient pixels, keyboard/drag color input, opacity, file-drop handler and cropping.\n");
                     Files.writeString(OUT.resolve("result.txt"),REPORT.toString());System.out.println("CRIME_UI_SMOKE_PASS");mc.stop();
                 }
             }
@@ -174,6 +179,26 @@ public final class GangUiSmokeTest {
                 .map(c->(AbstractWidget)c).toList();
         require(tabs.size()==2&&tabs.get(0).getWidth()==tabs.get(1).getWidth()&&tabs.get(0).getY()==tabs.get(1).getY(),"Two equal horizontal tabs");
         REPORT.append("PASS creation, scale ").append(mc.getWindow().getGuiScale()).append('\n');
+    }
+    private static void checkOverview(Minecraft mc){
+        var layout=GangLayout.of(screen.width,screen.height);double scale=layout.scale()*mc.getWindow().getGuiScale();
+        int left=(layout.canvasWidth()-layout.panelWidth())/2,top=(layout.canvasHeight()-layout.panelHeight())/2;
+        int cy=top+55,cx=left+116,cw=layout.panelWidth()-130,accent=screen.currentTheme().border();
+        try(var image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){
+            for(int x:new int[]{left+110,left+layout.panelWidth()/2,left+layout.panelWidth()-3}){
+                int rgba=image.getPixelRGBA((int)((x+.5)*scale),(int)((cy+110.5)*scale));
+                int rgb=(rgba&255)<<16|(rgba&0xFF00)|(rgba>>16&255);
+                require(rgb==accent,"Divider spans the full content pane");
+            }
+            // Each third must contain bright text below the section heading.
+            for(int column=0;column<3;column++){
+                int bright=0;
+                for(int y=(int)((cy+158)*scale);y<(cy+210)*scale;y++)for(int x=(int)((cx+cw*column/3+8)*scale);x<(cx+cw*(column+1)/3-8)*scale;x++){
+                    int rgba=image.getPixelRGBA(x,y);if((rgba&255)>145&&(rgba>>8&255)>145&&(rgba>>16&255)>145)bright++;
+                }
+                require(bright>40,"Information column "+column+" contains visible text");
+            }
+        }
     }
     private static void selectTab(int tab)throws Exception {
         var field=GangScreen.class.getDeclaredField("tab");field.setAccessible(true);field.setInt(screen,tab);screen.updated();

@@ -292,7 +292,7 @@ public final class GangScreen extends Screen {
             g.fill(cx+half+12,y+70,cx+cw,y+75,0xFF000000|Integer.parseInt(border,16));
             g.fill(cx,y+104,cx+cw,y+105,0x44000000|t.border());
         }
-        if(gang!=null&&tab==0)drawGangCard(g,gang,texture);
+        if(gang!=null&&tab==0)drawGangOverview(g,gang,texture);
         clip(g,cx,cy,cx+cw,top+h-24);
         for(Label line:labels)g.drawString(font,font.plainSubstrByWidth(line.value(),line.width()),line.x(),line.y()-bodyScroll,line.color(),false);
         g.disableScissor();
@@ -305,35 +305,40 @@ public final class GangScreen extends Screen {
             for(int i=0;i<wrapped.size();i++)g.drawString(font,wrapped.get(i),left+12,tipY+i*11,0xFFE9E8EC,false);
         }
     }
-    private void drawGangCard(GuiGraphics g,Gang gang,net.minecraft.resources.ResourceLocation logo){
-        Theme t=theme();int width=Math.max(180,cw/3),height=180;
-        int x=cx+(cw-width)/2,y=cy+(top+h-24-cy-height)/2,accent=t.borderArgb();
-        // A quiet central emblem with layered, clipped-corner framing.
-        g.fill(x+6,y+4,x+width-2,y+height+4,0x30000000);
-        g.fill(x+1,y+6,x+width-1,y+height-6,t.backgroundArgb());
-        g.fill(x+6,y+1,x+width-6,y+height-1,t.backgroundArgb());
-        g.fillGradient(x+7,y+2,x+width-7,y+height-2,0x20000000|t.border(),0x08000000);
-        g.fill(x+6,y,x+width-6,y+1,accent);g.fill(x+6,y+height-1,x+width-6,y+height,accent);
-        g.fill(x,y+6,x+1,y+height-6,accent);g.fill(x+width-1,y+6,x+width,y+height-6,accent);
-        for(int n=0;n<6;n++){
-            g.fill(x+5-n,y+n,x+6-n,y+n+1,accent);g.fill(x+width-6+n,y+n,x+width-5+n,y+n+1,accent);
-            g.fill(x+n,y+height-6+n,x+n+1,y+height-5+n,accent);g.fill(x+width-1-n,y+height-6+n,x+width-n,y+height-5+n,accent);
-        }
-        g.renderOutline(x+8,y+8,width-16,height-16,0x44000000|t.border());
-        g.fill(x+width/2-23,y,x+width/2+23,y+2,accent);
-        g.fill(x+width/2-23,y+height-2,x+width/2+23,y+height,accent);
-        int center=x+width/2;
-        if(logo!=null)g.blit(logo,center-24,y+25,0,0,48,48,48,48);
+    private void drawGangOverview(GuiGraphics g,Gang gang,net.minecraft.resources.ResourceLocation logo){
+        int center=cx+cw/2,logoY=cy,accent=theme().borderArgb();
+        if(logo!=null)g.blit(logo,center-32,logoY,0,0,64,64,64,64);
         else{
-            g.fill(center-24,y+25,center+24,y+73,0x28000000);
-            g.renderOutline(center-24,y+25,48,48,0x77000000|t.border());
-            g.drawCenteredString(font,"G",center,y+45,0xFFE9E4EB);
+            g.fill(center-32,logoY,center+32,logoY+64,0x18000000);
+            g.renderOutline(center-32,logoY,64,64,accent);
+            centeredText(g,"G",center,logoY+12,4.5f,accent);
         }
-        var lines=font.split(Component.literal(gang.name),width-28);
-        int nameY=y+94-(lines.size()-1)*5;
-        for(int i=0;i<lines.size();i++)g.drawCenteredString(font,lines.get(i),center,nameY+i*11,0xFFF2EDF3);
-        g.fill(x+28,y+126,x+width-28,y+127,0x66000000|t.border());
-        g.drawCenteredString(font,"Członkowie: "+ClientState.memberCount(),center,y+142,0xFFBDB6C5);
+        var lines=font.split(Component.literal(gang.name),cw-48);
+        for(int i=0;i<lines.size();i++)g.drawCenteredString(font,lines.get(i),center,cy+80+i*11,0xFFF2EDF3);
+        // The identity area spans the content pane, matching the user's sketch.
+        g.fill(left+109,cy+110,left+w-1,cy+111,accent);
+        g.drawCenteredString(font,"Informacje o gangu",center,cy+126,0xFFE8E3ED);
+        int gap=14,tileWidth=(cw-24-gap*2)/3;
+        int x=cx+(cw-(tileWidth*3+gap*2))/2,y=cy+152;
+        Member leader=gang.members.get(gang.owner);
+        informationTile(g,x,y,tileWidth,"Członkowie",Integer.toString(ClientState.memberCount()),"");
+        informationTile(g,x+tileWidth+gap,y,tileWidth,"Lider gangu",leader==null?"—":leader.name,"");
+        informationTile(g,x+2*(tileWidth+gap),y,tileWidth,"Poziom gangu","—","Wkrótce");
+    }
+    private void informationTile(GuiGraphics g,int x,int y,int width,String label,String value,String detail){
+        int center=x+width/2,accent=theme().border();
+        g.fill(x,y,x+width,y+64,0x18000000);
+        g.renderOutline(x,y,width,64,0x55000000|accent);
+        g.drawCenteredString(font,label,center,y+10,0xFFAAA3B3);
+        float scale=1.35f;
+        String fitted=font.plainSubstrByWidth(value,(int)((width-16)/scale));
+        centeredText(g,fitted,center,y+29,scale,0xFFEFE9F3);
+        if(!detail.isEmpty())g.drawCenteredString(font,detail,center,y+49,0xFF8E869A);
+    }
+    private void centeredText(GuiGraphics g,String text,int center,int y,float scale,int color){
+        g.pose().pushPose();
+        g.pose().translate(center-font.width(text)*scale/2,y,0);g.pose().scale(scale,scale,1);
+        g.drawString(font,text,0,0,color,false);g.pose().popPose();
     }
     private static int mix(int a,int b,float ratio){int r=(int)((a>>16&255)*(1-ratio)+(b>>16&255)*ratio),g=(int)((a>>8&255)*(1-ratio)+(b>>8&255)*ratio),blue=(int)((a&255)*(1-ratio)+(b&255)*ratio);return r<<16|g<<8|blue;}
     @Override public boolean mouseClicked(double x,double y,int button){return super.mouseClicked(layout.local(x),layout.local(y),button);}

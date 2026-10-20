@@ -4,7 +4,7 @@ Stan projektu: 20 października 2026.
 
 ## Status i sposób dalszej pracy
 
-To zapis pomysłów i decyzji użytkownika, a nie opis gotowego moda. Powstaje prototyp panelu gangów, obecnie wersja 0.1.3. 19 października użytkownik odłożył DarkPerazera i wrócił do Crime And Law. Zaakceptował rozpoczęcie od podstaw panelu gangów; obecnie doprecyzowuje jego wygląd. Dla pierwszego prototypu przyjęto Minecraft 1.21.1 i NeoForge 21.1.248: użytkownik polecił rozpoczęcie bez wskazania innej platformy. Jest to jawne założenie wykonawcze, nie wcześniejsza deklaracja użytkownika.
+To zapis pomysłów i decyzji użytkownika, a nie opis gotowego moda. Powstaje prototyp panelu gangów, obecnie wersja 0.1.4. 19 października użytkownik odłożył DarkPerazera i wrócił do Crime And Law. Zaakceptował rozpoczęcie od podstaw panelu gangów; obecnie doprecyzowuje jego wygląd. Dla pierwszego prototypu przyjęto Minecraft 1.21.1 i NeoForge 21.1.248: użytkownik polecił rozpoczęcie bez wskazania innej platformy. Jest to jawne założenie wykonawcze, nie wcześniejsza deklaracja użytkownika.
 
 Crime And Law jest nowym, osobnym modem. McArk pozostaje odłożony, zachowując cel odwzorowania ASA 1:1. Nie zmieniać projektu McArk w Crime And Law ani nie usuwać jego materiałów w ramach tej pracy.
 
@@ -174,3 +174,18 @@ Poniższe decyzje zastępują wcześniejsze ustalenia o rangach i limicie człon
   również pokazują wizualnie, jaki efekt daje przesuwanie.
 - Zachować koło barw, HEX/RGB, osobisty i wspólny wygląd oraz import i kadrowanie logo.
 - Wykonawczo długie listy są stronicowane; nie stanowi to limitu członkostwa.
+
+## Nowy szkic 20 października — wersja 0.1.4
+
+- Szkic użytkownika `image(20261020-111515).png` zastępuje poprzednią centralną
+  kartę o szerokości jednej trzeciej obszaru treści.
+- Duże logo na środku u góry części treści; nazwa gangu pod nim.
+- Niżej pozioma linia przez całą szerokość tej części panelu.
+- Pod linią nagłówek „Informacje o gangu” i schludnie rozmieszczone informacje
+  od lewej do prawej, zamiast skupiania ich w lewej kolumnie.
+- Aktualny układ ma trzy równe kolumny: członkowie, lider i miejsce na poziom.
+  Poziom gangu został wspomniany jako przykład przyszłej informacji; nie ustalono
+  zasad awansowania, XP, kosztów ani korzyści. Na teraz widnieje „Wkrótce”.
+- Użytkownik zaakceptował edytor kolorów i gradienty; zachować ich wygląd i działanie.
+- Użytkownik zapowiedział inspiracje przycisków. Poczekać na materiał przed
+  zmianą ich wyglądu; zachowana dotychczasowa nawigacja i miejsce na dalszą treść.
