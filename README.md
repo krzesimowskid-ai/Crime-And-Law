@@ -1,12 +1,12 @@
 # Crime And Law
 
 Autorski mod gangsterski: panel gangów, członkostwo i własny wygląd menu.
-Wersja **0.1.9**.
+Wersja **0.1.10**.
 
 ## Uruchomienie
 
 - Minecraft **1.21.1**, Java **21**, NeoForge **21.1.248**.
-- Włóż `crimeandlaw-0.1.9.jar` do `mods`, zastępując poprzedni JAR tego moda.
+- Włóż `crimeandlaw-0.1.10.jar` do `mods`, zastępując poprzedni JAR tego moda.
 - W rozgrywce sieciowej mod musi być **u graczy i na serwerze**.
   Protokół sieciowy pozostaje zgodny. Dla 100 wpisów na stronę i limitu 10 000 wydarzeń zainstaluj 0.1.8 również na serwerze; starszy serwer nadal stosuje swój limit i rozmiar stron.
 - W świecie jednoosobowym część serwerowa działa razem ze światem.
@@ -66,6 +66,10 @@ Osobisty wygląd nie zmienia ustawień u pozostałych graczy.
 
 ## Własne logo
 
+Importer nie analizuje symboliki, treści ani nazw obrazów i nie ma listy
+zakazanych flag. Własne grafiki i flagi przechodzą tę samą ścieżkę odczytu,
+kadrowania oraz zapisu. Sprawdzane są poprawność pliku i limity zasobów.
+
 Wybierz obraz z systemowego okna, wklej lokalną ścieżkę albo przeciągnij jeden
 plik z folderu na otwarty panel gry. PNG/JPG/JPEG/GIF/BMP oraz WebP, SVG, TIFF, ICO, ICNS, PSD, TGA, PCX i PNM. Plik rastrowy do 64 MB; SVG do 8 MB. W razie potrzeby użyj F11,
 aby widzieć grę i folder jednocześnie.
@@ -103,7 +107,7 @@ Windows: gradlew.bat build
 Linux/macOS: ./gradlew build
 ```
 
-Wynik: `build/libs/crimeandlaw-0.1.9.jar`.
+Wynik: `build/libs/crimeandlaw-0.1.10.jar`.
 Gradle Wrapper 9.2.1, ModDevGradle 2.0.148, NeoForge 21.1.248.
 `./gradlew test` sprawdza model, migrację zapisów, duże listy i prywatność
 zgłoszeń, walidację/edycję logo, kolory oraz skalowanie menu.
@@ -126,3 +130,10 @@ W 0.1.8 dodano przyciski Premie, Zarządzanie saldem, Czarna lista i Cele. Otwie
 
 ## Import logo 0.1.9
 Format jest rozpoznawany po danych, a nie rozszerzeniu. Czytniki są dołączone do JAR-a. Przykładowo WebP lub SVG zapisany pod nazwą PNG może zostać odczytany bez ręcznej konwersji. Podgląd ma najwyżej 1024 px na dłuższym boku, a po kadrowaniu do serwera trafia PNG 64×64. SVG renderuje lokalne kształty wektorowe; odwołania do obrazów i plików zewnętrznych są pomijane. Formatów HEIC/AVIF, PDF i animowanego logo nie obsługuje to wydanie.
+
+## Odczyt logo 0.1.10
+Jeśli pierwszy czytnik rozpoznaje format, lecz nie potrafi odczytać danego wariantu,
+importer próbuje kolejnych dostępnych czytników. Każda próba zaczyna od osobnego
+strumienia danych, a nie od pozycji pozostawionej przez poprzedni czytnik.
+Błędy odczytu mają komunikat po polsku; szczegóły czytnika trafiają na poziom DEBUG.
+Obsługiwane formaty oraz limity plików pozostają takie jak w 0.1.9.

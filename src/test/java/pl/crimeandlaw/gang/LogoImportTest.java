@@ -5,10 +5,19 @@ import java.io.*;
 import java.nio.file.*;
 import java.util.Base64;
 import java.awt.image.BufferedImage;
+import java.util.*;
+import javax.imageio.ImageReader;
+import javax.imageio.ImageReadParam;
+import javax.imageio.ImageTypeSpecifier;
 import javax.imageio.ImageIO;
+import javax.imageio.metadata.IIOMetadata;
+import javax.imageio.spi.IIORegistry;
+import javax.imageio.spi.ImageReaderSpi;
+import javax.imageio.stream.ImageInputStream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import pl.crimeandlaw.client.LogoImages;
+import pl.crimeandlaw.client.LogoCrop;
 import static org.junit.jupiter.api.Assertions.*;
 
 class LogoImportTest {
@@ -66,10 +75,71 @@ class LogoImportTest {
         Path file=folder.resolve("panorama.png");ImageIO.write(new BufferedImage(20000,4,BufferedImage.TYPE_INT_RGB),"png",file.toFile());
         var image=LogoImages.read(file);assertTrue(image.getWidth()<=1024);assertTrue(image.getHeight()>=1);
     }
+    @Test void pngColorModelsAndFileNamesDoNotRestrictImport()throws Exception {
+        int[] types={BufferedImage.TYPE_INT_RGB,BufferedImage.TYPE_INT_ARGB,BufferedImage.TYPE_BYTE_GRAY,
+            BufferedImage.TYPE_USHORT_GRAY,BufferedImage.TYPE_BYTE_BINARY,BufferedImage.TYPE_BYTE_INDEXED};
+        String[] names={"flaga ZSRR.png","flaga Izraela.png","logo gangu.png","żółć 漢字.bin","bez rozszerzenia","obraz.JPG"};
+        for(int i=0;i<types.length;i++){
+            var source=new BufferedImage(256,128,types[i]);
+            var graphics=source.createGraphics();
+            try{graphics.setColor(new java.awt.Color(40,120,200));graphics.fillRect(0,0,256,128);}finally{graphics.dispose();}
+            Path file=folder.resolve(names[i]);assertTrue(ImageIO.write(source,"png",file.toFile()));
+            var loaded=LogoImages.read(file);assertEquals(256,loaded.getWidth());assertEquals(128,loaded.getHeight());
+            assertEquals(source.getRGB(100,64),loaded.getRGB(100,64),names[i]);
+            assertFalse(LogoImages.encode(loaded,new LogoCrop(256,128)).isBlank(),names[i]);
+        }
+    }
+    @Test void failingReaderDoesNotPreventAnotherReaderFromLoadingTheImage()throws Exception {
+        var source=new BufferedImage(16,16,BufferedImage.TYPE_INT_ARGB);source.setRGB(8,8,0xFF2878C8);
+        Path file=folder.resolve("flag.png");ImageIO.write(source,"png",file.toFile());
+        // Initialize bundled providers before placing a deliberately incompatible
+        // PNG reader first, as may happen with overlapping ImageIO plugins.
+        LogoImages.read(file);
+        IIORegistry registry=IIORegistry.getDefaultInstance();var broken=new FailingPngSpi();
+        var providers=new ArrayList<ImageReaderSpi>();registry.getServiceProviders(ImageReaderSpi.class,true).forEachRemaining(providers::add);
+        registry.registerServiceProvider(broken,ImageReaderSpi.class);
+        for(var provider:providers)registry.setOrdering(ImageReaderSpi.class,broken,provider);
+        try{
+            for(boolean runtime:new boolean[]{false,true}){
+                broken.runtime=runtime;
+                assertEquals(0xFF2878C8,LogoImages.read(file).getRGB(8,8));
+            }
+            assertEquals(2,broken.attempts);assertEquals(2,broken.disposals);
+        }finally{registry.deregisterServiceProvider(broken,ImageReaderSpi.class);}
+    }
     @Test void rejectsCorruptEmptyAndOverBudgetFilesClearly()throws Exception {
         Path file=folder.resolve("broken.png");Files.write(file,new byte[0]);
         assertTrue(assertThrows(IOException.class,()->LogoImages.read(file)).getMessage().contains("Nie można odczytać"));
         try(var large=new RandomAccessFile(file.toFile(),"rw")){large.setLength((long)LogoImages.MAX_FILE_BYTES+1);}
         assertTrue(assertThrows(IOException.class,()->LogoImages.read(file)).getMessage().contains("64 MB"));
+    }
+    private static final class FailingPngSpi extends ImageReaderSpi {
+        boolean runtime;int attempts,disposals;
+        FailingPngSpi(){super("Test","1",new String[]{"png"},new String[]{"png"},new String[]{"image/png"},
+            FailingPngReader.class.getName(),new Class<?>[]{ImageInputStream.class},null,false,null,null,null,null,false,null,null,null,null);}
+        @Override public boolean canDecodeInput(Object source)throws IOException {
+            if(!(source instanceof ImageInputStream input))return false;
+            long position=input.getStreamPosition();
+            try{return input.readInt()==0x89504E47;}finally{input.seek(position);}
+        }
+        @Override public ImageReader createReaderInstance(Object extension){return new FailingPngReader(this);}
+        @Override public String getDescription(Locale locale){return "Deliberately incompatible PNG reader";}
+    }
+    private static final class FailingPngReader extends ImageReader {
+        private final FailingPngSpi provider;
+        FailingPngReader(FailingPngSpi provider){super(provider);this.provider=provider;}
+        @Override public int getNumImages(boolean allowSearch){return 1;}
+        @Override public int getWidth(int index){return 16;}
+        @Override public int getHeight(int index){return 16;}
+        @Override public Iterator<ImageTypeSpecifier> getImageTypes(int index){return List.of(ImageTypeSpecifier.createFromBufferedImageType(BufferedImage.TYPE_INT_ARGB)).iterator();}
+        @Override public IIOMetadata getStreamMetadata(){return null;}
+        @Override public IIOMetadata getImageMetadata(int index){return null;}
+        @Override public BufferedImage read(int index,ImageReadParam param)throws IOException {
+            provider.attempts++;
+            var stream=(ImageInputStream)getInput();stream.seek(stream.length()<0?8:stream.length());stream.flushBefore(stream.getStreamPosition());
+            if(provider.runtime)throw new IllegalArgumentException("Unsupported PNG variant");
+            throw new IOException("Unsupported PNG variant");
+        }
+        @Override public void dispose(){provider.disposals++;super.dispose();}
     }
 }

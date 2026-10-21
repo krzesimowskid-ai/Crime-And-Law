@@ -19,7 +19,7 @@ import com.github.weisj.jsvg.parser.resources.ResourcePolicy;
 import com.github.weisj.jsvg.view.ViewBox;
 import pl.crimeandlaw.gang.GangLogo;
 
-/** Decoding, preview downsampling and final encoding run outside rendering. */
+/** Content-neutral decoding, preview downsampling and final encoding outside rendering. */
 public final class LogoImages {
     public static final String FORMATS="PNG / JPG / GIF / BMP / WebP / SVG / TIFF / ICO / ICNS / PSD / TGA / PCX / PNM";
     public static final int MAX_FILE_BYTES=64_000_000,PREVIEW_SIDE=1024;
@@ -53,17 +53,29 @@ public final class LogoImages {
         try(var in=new MemoryCacheImageInputStream(new ByteArrayInputStream(bytes))){
             var readers=ImageIO.getImageReaders(in);
             if(!readers.hasNext())throw new IOException("Nie można odczytać obrazu: nieznany format lub uszkodzony plik. Obsługiwane: "+FORMATS+".");
-            var reader=readers.next();
-            try {
-                reader.setInput(in);
-                int width=reader.getWidth(0),height=reader.getHeight(0);
-                if(width<1||height<1||width>100_000||height>100_000||(long)width*height>1_000_000_000L)throw new IOException("Obraz przekracza limit wymiarów: bok 100 000 px lub miliard pikseli.");
-                var param=reader.getDefaultReadParam();int step=Math.max(1,(Math.max(width,height)+PREVIEW_SIDE-1)/PREVIEW_SIDE);
-                param.setSourceSubsampling(step,step,0,0);
-                BufferedImage image=reader.read(0,param);
-                if(image==null)throw new IOException("Nie można odczytać danych obrazu.");
-                return image;
-            }finally{reader.dispose();}
+            boolean dimensionsRejected=false;
+            // Several providers can recognize the same format. A failure in one
+            // must not reject a valid file that another provider can decode.
+            while(readers.hasNext()){
+                var reader=readers.next();
+                // Keep detection and each decode on separate streams. Readers may
+                // seek/flush their input before failing; the next one starts clean.
+                try(var input=new MemoryCacheImageInputStream(new ByteArrayInputStream(bytes))){
+                    reader.setInput(input);
+                    int width=reader.getWidth(0),height=reader.getHeight(0);
+                    if(width<1||height<1)continue;
+                    if(width>100_000||height>100_000||(long)width*height>1_000_000_000L){dimensionsRejected=true;continue;}
+                    var param=reader.getDefaultReadParam();int step=Math.max(1,(Math.max(width,height)+PREVIEW_SIDE-1)/PREVIEW_SIDE);
+                    param.setSourceSubsampling(step,step,0,0);
+                    BufferedImage image=reader.read(0,param);
+                    if(image!=null)return image;
+                }catch(IOException|RuntimeException error){
+                    System.getLogger(LogoImages.class.getName()).log(System.Logger.Level.DEBUG,
+                        "Czytnik logo "+reader.getClass().getSimpleName()+" nie odczytał pliku.",error);
+                }finally{reader.dispose();}
+            }
+            if(dimensionsRejected)throw new IOException("Obraz przekracza limit wymiarów: bok 100 000 px lub miliard pikseli.");
+            throw new IOException("Nie można odczytać obrazu: dostępne czytniki nie obsługują tego wariantu albo plik jest uszkodzony. Obsługiwane: "+FORMATS+".");
         }
     }
     private static boolean looksLikeSvg(byte[] bytes){

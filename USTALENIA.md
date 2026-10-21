@@ -1,10 +1,10 @@
 # Crime And Law — ustalenia projektu
 
-Stan projektu: 20 października 2026.
+Stan projektu: 21 października 2026.
 
 ## Status i sposób dalszej pracy
 
-To zapis pomysłów i decyzji użytkownika, a nie opis gotowego moda. Powstaje prototyp panelu gangów, obecnie wersja 0.1.9. 19 października użytkownik odłożył DarkPerazera i wrócił do Crime And Law. Zaakceptował rozpoczęcie od podstaw panelu gangów; obecnie doprecyzowuje jego wygląd. Dla pierwszego prototypu przyjęto Minecraft 1.21.1 i NeoForge 21.1.248: użytkownik polecił rozpoczęcie bez wskazania innej platformy. Jest to jawne założenie wykonawcze, nie wcześniejsza deklaracja użytkownika.
+To zapis pomysłów i decyzji użytkownika, a nie opis gotowego moda. Powstaje prototyp panelu gangów, obecnie wersja 0.1.10. 19 października użytkownik odłożył DarkPerazera i wrócił do Crime And Law. Zaakceptował rozpoczęcie od podstaw panelu gangów; obecnie doprecyzowuje jego wygląd. Dla pierwszego prototypu przyjęto Minecraft 1.21.1 i NeoForge 21.1.248: użytkownik polecił rozpoczęcie bez wskazania innej platformy. Jest to jawne założenie wykonawcze, nie wcześniejsza deklaracja użytkownika.
 
 Crime And Law jest nowym, osobnym modem. McArk pozostaje odłożony, zachowując cel odwzorowania ASA 1:1. Nie zmieniać projektu McArk w Crime And Law ani nie usuwać jego materiałów w ramach tej pracy.
 
@@ -221,3 +221,10 @@ Dodane widoczne zakładki Premie, Zarządzanie saldem, Czarna lista i Cele. Na r
 
 ## Naprawa importu 0.1.9
 21 października po powrocie środowiska odtworzono 0.1.8 z GitHuba. Rozszerzony import: format rozpoznawany po zawartości, WebP/SVG/TIFF/ICO/ICNS/PSD/TGA/PCX/PNM obok PNG/JPEG/GIF/BMP. Podgląd do 1024 px, kadrowanie i wyjściowe PNG 64×64 zachowane. Limity źródła 64 MB, raster do 100 000 px na bok i miliarda pikseli; SVG 8 MB, bez zewnętrznych zasobów. Oryginalny plik logo użytkownika nie został dostarczony, więc jego konkretny przypadek pozostaje do sprawdzenia na pliku.
+
+## Logo — doprecyzowanie 21 października, wersja 0.1.10
+Użytkownik chce importu niezależnego od tego, co przedstawia obraz. Nie dodawać
+filtrów nazw, flag ani symboliki; wszystkie obrazy mają ten sam proces importu.
+Nie oznacza to obsługi uszkodzonych danych ani każdego istniejącego formatu.
+Dodano próbę kolejnych czytników, gdy jeden zawiedzie, i testy sześciu modeli
+kolorów PNG, nietypowych nazw oraz izolacji strumieni po błędzie czytnika.

@@ -1,4 +1,4 @@
-# Sprawdzenie 0.1.9
+# Sprawdzenie 0.1.10
 
 21 października 2026. Minecraft 1.21.1, NeoForge 21.1.248, JDK 21.
 
@@ -17,9 +17,23 @@ odczytywany z subsamplingiem do maksymalnie 1024 px na dłuższym boku. SVG do
 Odwołania SVG do innych plików i obrazów są pomijane. Kadrowanie i dopasowanie
 proporcji kończą się PNG 64×64 do 20 KB. Protokół 3 pozostaje zgodny z 0.1.8.
 
+W 0.1.10 błędy jednego czytnika nie kończą importu: kolejne rozpoznające format
+czytniki próbują odczytu, każdy z osobnego strumienia. Importer nie analizuje
+symboliki ani treści obrazu i nie ma listy zakazanych flag lub nazw plików.
+
 ## Testy automatyczne
 
-42 testy JUnit, zero błędów. Zachowano dotychczasowe 35 testów, dodano siedem:
+44 testy JUnit, zero błędów i pominiętych testów. Zachowano 42 testy z 0.1.9,
+dodano dwa scenariusze:
+
+- Sześć modeli PNG: RGB, ARGB, 8- i 16-bitowa szarość, jednobitowy i paletowy.
+  Różne nazwy, znaki Unicode, brak rozszerzenia i niezgodne rozszerzenie nie
+  blokują odczytu; pliki przechodzą również końcowe kodowanie logo.
+- Czytnik rozpoznający PNG, ale zawodzący przy odczycie: zarówno IOException,
+  jak i RuntimeException. Następny czytnik poprawnie ładuje obraz, nawet gdy
+  poprzedni przesunął i opróżnił swój strumień. Każdy czytnik jest zwalniany.
+
+Zachowane sprawdzenia rozszerzonego importu z 0.1.9:
 
 - Dziewięć rzeczywistych plików: WebP lossless/lossy, TIFF, ICO (DIB), ICNS,
   PSD, TGA, PCX i PPM. Każdy ma mylące rozszerzenie PNG; sprawdzane są wymiary,
