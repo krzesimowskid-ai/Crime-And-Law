@@ -25,6 +25,7 @@ public final class GangUiSmokeTest {
     private static final Path OUT=Path.of("../build/ui-smoke");
     private static int frames,stage=-1;
     private static int waitFrames;
+    private static int startupFrames;
     private static GangDirectory directory;
     private static final UUID FRIEND=new UUID(0,2);
     private static GangScreen screen;
@@ -35,6 +36,8 @@ public final class GangUiSmokeTest {
         Minecraft mc=Minecraft.getInstance();
         try {
             if(stage<0) {
+                if(++startupFrames>1800)throw new AssertionError("Client startup did not reach the title screen: "+mc.screen);
+                if(mc.getOverlay()==null&&mc.screen instanceof net.minecraft.client.gui.screens.AccessibilityOnboardingScreen onboarding){mc.options.onboardingAccessibilityFinished();onboarding.onClose();return;}
                 if(!(mc.screen instanceof TitleScreen)||mc.getOverlay()!=null)return;
                 Files.createDirectories(OUT);
                 mc.options.guiScale().set(2);mc.resizeDisplay();
@@ -278,7 +281,30 @@ public final class GangUiSmokeTest {
                     require(mc.screen==screen&&directory.of(PLAYER).roles.size()==count,"Close icon cancels the rank without changes");
                     click(mc,"+ Nowa ranga");click(mc,"Anuluj");
                     require(mc.screen==screen&&directory.of(PLAYER).roles.size()==count,"Cancel returns without creating a rank");
-                    REPORT.append("PASS: actual Minecraft renderer, 27 captures, separate new-rank dialog, typed name and permissions, save return and fixture acknowledgement, cancellation via Esc/X/Cancel, rank draft across GUI resize, symmetric square close controls in main/color/rank views, full Polish dates, removed explanatory hints, rank ordering above leader, ordinary member restrictions, delegated recruitment and appearance, simplified logo form, register wheel/drag/keyboard scrolling, fixed header and pagination, hidden transport gate, GUI scales 2/4, uploaded logo, paged members, color gradients, file-drop handler and cropping.\n");
+                    terrainFixture();selectTab(2);
+                }
+                case 28 -> {
+                    capture(mc,"28-terrain-map-scale2");
+                    var panel=widget(screen,"Mapa terenu");var l=GangLayout.of(screen.width,screen.height);
+                    require(panel.visible,"Terrain panel is visible without body scrolling");
+                    screen.mouseClicked((panel.getX()+4*28+14)*l.scale(),(panel.getY()+2*28+14)*l.scale(),0);
+                    var sx=GangScreen.class.getDeclaredField("terrainX");sx.setAccessible(true);var sz=GangScreen.class.getDeclaredField("terrainZ");sz.setAccessible(true);
+                    require(sx.getInt(screen)==1&&sz.getInt(screen)==-1,"Scaled click selects the correct chunk");
+                    screen.mouseScrolled((panel.getX()+250)*l.scale(),(panel.getY()+80)*l.scale(),0,-100);
+                    var scroll=GangScreen.class.getDeclaredField("terrainScroll");scroll.setAccessible(true);
+                    require(((ScrollPosition)scroll.get(screen)).offset()>0,"Long terrain details scroll independently");
+                    mc.options.guiScale().set(4);mc.resizeDisplay();
+                }
+                case 29 -> {
+                    capture(mc,"29-terrain-map-scale4");
+                    var sx=GangScreen.class.getDeclaredField("terrainX");sx.setAccessible(true);require(sx.getInt(screen)==1,"GUI scale preserves selected chunk");
+                    var panel=widget(screen,"Mapa terenu");var l=GangLayout.of(screen.width,screen.height);
+                    screen.mouseClicked((panel.getX()+14)*l.scale(),(panel.getY()+14)*l.scale(),0);
+                }
+                case 30 -> {
+                    capture(mc,"30-terrain-unavailable");
+                    var sx=GangScreen.class.getDeclaredField("terrainX");sx.setAccessible(true);require(sx.getInt(screen)==-3,"Unavailable cell remains inspectable");
+                    REPORT.append("PASS: actual Minecraft renderer, 30 captures, real terrain-summary grid with fixture data, scaled chunk selection, scrolling terrain inspector, map selection across GUI resize and unavailable cells; new-rank dialog, save and cancellation, role dragging, register, full Polish dates, colors and logo import.\n");
                     Files.writeString(OUT.resolve("result.txt"),REPORT.toString());System.out.println("CRIME_UI_SMOKE_PASS");mc.stop();
                 }
             }
@@ -423,6 +449,18 @@ public final class GangUiSmokeTest {
         state.addProperty("player",player.toString());state.addProperty("message","");
         state.add("gangs",new JsonArray());state.addProperty("page",0);state.addProperty("pages",1);
         ClientState.state=state;ClientState.message="";
+    }
+    private static void terrainFixture(){
+        var atlas=new pl.crimeandlaw.territory.TerrainAtlas();
+        for(int z=-2;z<=3;z++)for(int x=-3;x<=3;x++){
+            if(x==-3&&z==-2)continue;
+            var key=new pl.crimeandlaw.territory.TerrainKey("minecraft:overworld",x,z);
+            var surface=x< -1?pl.crimeandlaw.territory.TerrainProfile.Surface.WATER:x>1?pl.crimeandlaw.territory.TerrainProfile.Surface.ROCK:pl.crimeandlaw.territory.TerrainProfile.Surface.SOIL;
+            var sample=new pl.crimeandlaw.territory.TerrainProfile.Sample(64,surface,x==0,"minecraft:plains");
+            var templates=(x==0&&z==0||x==1&&z==-1)?java.util.List.of("minecraft:village/plains/houses/plains_weaponsmith_1","minecraft:village/plains/houses/plains_small_farm_1","minecraft:village/plains/houses/plains_library_1"):java.util.List.<String>of();
+            atlas.remember(pl.crimeandlaw.territory.TerrainProfile.analyse(key,java.util.Collections.nCopies(16,sample),!templates.isEmpty(),templates,10));
+        }
+        TerrainClient.view=pl.crimeandlaw.territory.TerrainView.snapshot(atlas,"minecraft:overworld",0,0,key->key.z()!=-3,id->"Czarne Wilki");
     }
     private static void checkGradients(Minecraft mc){
         ColorPickerScreen d=(ColorPickerScreen)mc.screen;double scale=d.layout.scale()*mc.getWindow().getGuiScale();

@@ -16,7 +16,7 @@ public final class ClientEvents {
     @EventBusSubscriber(modid="crimeandlaw",value=Dist.CLIENT,bus=EventBusSubscriber.Bus.MOD)
     public static final class Registration {
         @SubscribeEvent public static void keys(RegisterKeyMappingsEvent event){event.register(OPEN);}
-        @SubscribeEvent public static void setup(FMLClientSetupEvent event){event.enqueueWork(()->GangNetwork.clientReceiver=ClientState::receive);}
+        @SubscribeEvent public static void setup(FMLClientSetupEvent event){event.enqueueWork(()->{GangNetwork.clientReceiver=ClientState::receive;GangNetwork.terrainReceiver=TerrainClient::receive;});}
     }
     @EventBusSubscriber(modid="crimeandlaw",value=Dist.CLIENT)
     public static final class Gameplay {
@@ -28,7 +28,7 @@ public final class ClientEvents {
             }
         }
         @SubscribeEvent public static void logout(ClientPlayerNetworkEvent.LoggingOut event){
-            ClientState.state=new com.google.gson.JsonObject();ClientState.message="";LogoTexture.clear();
+            ClientState.state=new com.google.gson.JsonObject();ClientState.message="";LogoTexture.clear();TerrainClient.clear();
         }
     }
 }

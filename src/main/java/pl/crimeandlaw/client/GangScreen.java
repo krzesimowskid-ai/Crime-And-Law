@@ -37,8 +37,13 @@ public final class GangScreen extends Screen {
     private final List<HistoryRow> historyRows=new ArrayList<>();
     private record HistoryRow(String date,List<net.minecraft.util.FormattedCharSequence> lines,int top,int height){}
     private int historyTop,historyBottom,lastHistoryPage=-1;
+    private final ScrollPosition terrainScroll=new ScrollPosition();
+    private String terrainCenter="";
+    private int terrainX,terrainZ,terrainTicks;
 
     public GangScreen(){super(Component.literal("Crime And Law"));}
+    public void terrainUpdated(){if(tab==2)rebuildWidgets();}
+    @Override public void tick(){super.tick();if(gang()!=null&&tab==2&&++terrainTicks%40==0)TerrainClient.request();}
     private Gang gang(){return ClientState.gang();}
     private boolean isLeader(){Gang g=gang();return g!=null&&g.owner.equals(ClientState.player());}
     private boolean can(Permission permission){return GangDirectory.allowed(gang(),ClientState.player(),permission);}
@@ -238,9 +243,12 @@ public final class GangScreen extends Screen {
         label(cx,cy+30,"Ta część gangu będzie rozwijana w kolejnych wersjach.");
     }
     private void buildMap(){
-        label(cx,cy,"Mapa — kolejny etap");label(cx,cy+26,"Tu pojawią się chunki i tereny gangów.",0xFFAAAAB7);
-        label(cx,cy+47,"Planowane: ręczne oznaczenia prywatne i wspólne.",0xFFAAAAB7);
-        label(cx,cy+68,"W tej wersji nie ma jeszcze przejmowania ziemi.",0xFFAAAAB7);
+        label(cx,cy,"Mapa terenu");TerrainClient.request();var view=TerrainClient.view;
+        if(view!=null){String center=view.dimension()+"|"+view.centerX()+","+view.centerZ();
+            if(!center.equals(terrainCenter)){terrainCenter=center;terrainX=view.centerX();terrainZ=view.centerZ();terrainScroll.reset();}
+        }
+        button(cx+cw-96,cy-5,96,"Odśwież",b->TerrainClient.request());
+        addRenderableWidget(new TerrainPanel(cx,cy+25,cw,top+h-26-(cy+25),view,terrainX,terrainZ,this::theme,terrainScroll,cell->{terrainX=cell.x();terrainZ=cell.z();terrainScroll.reset();rebuildWidgets();}));
     }
     private Theme draftTheme(){return new Theme(Integer.parseInt(background.replace("#",""),16),Integer.parseInt(border.replace("#",""),16),opacity);}
     private void buildSettings(){
@@ -462,6 +470,7 @@ public final class GangScreen extends Screen {
     @Override public void mouseMoved(double x,double y){super.mouseMoved(layout.local(x),layout.local(y));}
     @Override public boolean mouseScrolled(double x,double y,double horizontal,double vertical){
         x=layout.local(x);y=layout.local(y);
+        if(gang()!=null&&tab==2)return super.mouseScrolled(x,y,horizontal,vertical);
         if(gang()!=null&&tab==4){
             if(x>=cx&&x<cx+cw&&y>=historyTop&&y<historyBottom){historyScroll.scroll(-vertical*24);return true;}
             return super.mouseScrolled(x,y,horizontal,vertical);

@@ -1,14 +1,14 @@
 # Crime And Law
 
 Autorski mod gangsterski: panel gangów, członkostwo i własny wygląd menu.
-Wersja **0.1.13**.
+Wersja **0.1.14**.
 
 ## Uruchomienie
 
 - Minecraft **1.21.1**, Java **21**, NeoForge **21.1.248**.
-- Włóż `crimeandlaw-0.1.13.jar` do `mods`, zastępując poprzedni JAR tego moda.
+- Włóż `crimeandlaw-0.1.14.jar` do `mods`, zastępując poprzedni JAR tego moda.
 - W rozgrywce sieciowej mod musi być **u graczy i na serwerze**.
-  Zaktualizuj serwer i wszystkich klientów do 0.1.13. Protokół rang i uprawnień pozostaje 5.
+  Zaktualizuj serwer i wszystkich klientów do 0.1.14. Dane terenu używają protokołu 6.
 - W świecie jednoosobowym część serwerowa działa razem ze światem.
 - **G** otwiera panel; skrót można zmienić w sterowaniu. Esc lub X zamyka okno.
 
@@ -24,7 +24,7 @@ obszaru treści. Poniżej „Informacje o gangu” i trzy równomierne kolumny:
 liczba członków, lider oraz miejsce na poziom gangu. Członkowie nie mają limitu.
 Pole poziomu pokazuje „— / Wkrótce”; system zdobywania poziomów jest do ustalenia.
 „Ustawienia” znajdują się na dole nawigacji, nad „Opuść gang”.
-Mapa pozostaje podstawą przyszłej kontroli terytorialnej.
+Mapa pokazuje rozpoznawane tereny w otoczeniu gracza; przejmowanie pozostaje dalszym etapem.
 Rejestr pokazuje rzeczywiste wydarzenia: utworzenie gangu, dołączenia, odejścia,
 usunięcia członków, przekazanie przywództwa i przypisywanie rang członkom.
 Zmiany kolorów, logo, definicji i kolejności rang nie tworzą nowych wpisów.
@@ -131,7 +131,7 @@ Windows: gradlew.bat build
 Linux/macOS: ./gradlew build
 ```
 
-Wynik: `build/libs/crimeandlaw-0.1.13.jar`.
+Wynik: `build/libs/crimeandlaw-0.1.14.jar`.
 Gradle Wrapper 9.2.1, ModDevGradle 2.0.148, NeoForge 21.1.248.
 `./gradlew test` sprawdza model, migrację zapisów, duże listy i prywatność
 zgłoszeń, walidację/edycję logo, kolory oraz skalowanie menu.
@@ -143,8 +143,8 @@ Test graficzny nie łączy dwóch graczy na serwerze.
 
 ## Dalszy zakres
 
-Mapa, własność chunków, oznaczenia, NPC, produkcja, handel i rozbudowane
-animacje pozostają dalszymi etapami. Ta wersja dotyczy panelu gangów.
+Własność chunków w rozgrywce, oznaczenia, NPC, produkcja, handel i rozbudowane
+animacje pozostają dalszymi etapami. Mapa ma już zapis i podgląd stałych cech terenu.
 
 Definicje kategorii: `GangCategory.java`. Tylko `TRANSPORT` ma umiejscowienie `HIDDEN`; aktywację i mechaniki pozostawiono do dalszej pracy.
 
@@ -183,3 +183,57 @@ Nową rangę tworzy się w osobnym oknie. Usunięto wskazane instrukcje z rang
 oraz wyglądu; opis logo pozostaje. Przycisk zamykania jest kwadratowy,
 a X ma równe przekątne i jest wyśrodkowany. Rejestr nie dopisuje konfiguracji
 wyglądu ani definicji/kolejności rang; pełna data z rokiem jest nad opisem.
+
+
+## Stałe cechy terenu — 0.1.14
+W **Mapa** dostępna jest siatka 7×7 chunków wokół gracza. Kolor komórki
+opisuje charakter terenu; mała ikona oznacza wygenerowaną wioskę, krzyżyk
+pozycję gracza. Kliknij chunk, aby obejrzeć cechy i potencjał zastosowań.
+Dłuższy opis przewija się kółkiem po prawej. Zmiana skali GUI zachowuje wybór.
+Odczyt aktualizuje się podczas otwarcia mapy, bez ponownego przesyłania logo.
+To mapa rozpoznania terenu, a nie pełny obraz wszystkich bloków świata.
+
+Rozpoznawane są cechy podłoża, obecność wody, leśny charakter i różnice
+wysokości. Mogą występować razem z obiektami wygenerowanej wioski: farmą,
+warsztatem, zagrodą, domem rybaka, biblioteką lub garbarnią. Wioska liczy się
+w chunku, jeśli przecina go choć fragment wygenerowanej części struktury.
+Identyfikacja obiektów korzysta z danych struktur i nazw szablonów wiosek
+vanilla. Inne mody z własnymi szablonami mogą wymagać rozszerzenia reguł.
+
+**Cechy zapisują się na stałe**, osobno dla wymiaru i współrzędnych chunka.
+Wycinka, zburzenie warsztatu i przebudowa nie zmieniają zapisanego profilu.
+Postawienie własnego stołu kowalskiego lub farmy nie dodaje cechy wygenerowanego
+budynku. Pełna kolumna chunka ma jeden profil.
+
+Nowo generowane chunki zapisują pomiary w chwili pierwszego wczytania:
+16 próbek podłoża/wysokości i dane biomów. Zapis źródłowy jest przechowywany
+w danych chunka. Dane budynków są dołączane przy analizie mapy na podstawie
+wygenerowanych struktur, z zachowaniem oryginalnych pomiarów.
+
+**Starsze chunki:** jeśli powstały przed instalacją tego wydania, nie da się
+odzyskać z nich dokładnego stanu sprzed przebudowy. Wtedy używany jest
+bazowy generator terenu i jego biomy, a źródło pokazuje „rekonstrukcja
+generatora”. Pokrycie powierzchni jest wtedy przybliżane z biomu, bez
+odczytywania budowli graczy; nie jest to dokładna rekonstrukcja wszystkich
+dekoracji i zmian generatora z dawnych wersji. Taki profil także zostaje stały.
+
+Analiza korzysta z dostępnych chunków. Nie generuje odległych obszarów.
+Brak wczytanego początku struktury wioski wstrzymuje zapis danego profilu,
+aby nie utrwalić niepełnej listy budynków. Należy podejść bliżej wioski.
+Praca jest porcjowana: maksymalnie dwa kroki na tick serwera i miękki budżet
+2 ms; pojedyncza operacja generatora może ten budżet przekroczyć. Kolejka
+ma najwyżej 128 zadań; nieodświeżane zadania wygasają po 200 tickach.
+
+Trwałe profile i przygotowana własność: `data/crimeandlaw_terrain.dat` w
+Overworld. API własności i lokalnych możliwości działa po stronie serwera;
+klient nie może przesłać właściciela ani cech. Przyszły kontroler zakupu/walki
+będzie z niego korzystał. Sam interfejs jeszcze nie pozwala zajmować ziemi.
+Nie ma aktywnych mnożników wzrostu, nowych receptur ani kamizelek.
+„Potencjał” w podglądzie opisuje kierunek rozwoju, nie przyznany już bonus.
+Korzyści mają być lokalne dla gangu kontrolującego dokładnie ten chunk.
+
+Dodatkowy test integracyjny: `./gradlew -PserverSmoke runServer` uruchamia
+jednorazowy serwer testowy w `run-server-smoke-current` (wymaga zaakceptowania EULA
+w tym katalogu). Drugi start tego samego świata sprawdza ponowny odczyt danych.
+Kod testów serwera i klienta jest wyłączony z JAR-a wydania.
+Opcja `-PserverSmokeId=nazwa` wybiera osobny świat i katalog raportu dla danego testu.

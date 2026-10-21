@@ -1,71 +1,70 @@
-# Sprawdzenie 0.1.13
+# Sprawdzenie 0.1.14
 
 21 października 2026. Minecraft 1.21.1, NeoForge 21.1.248, JDK 21.
 
-## Zmiana
+## Zakres
 
-„+ Nowa ranga” otwiera osobne okno z nazwą, czterema uprawnieniami,
-Anuluj oraz Zapisz rangę. Pusta i jednoliterowa nazwa nie pozwala zapisać;
-reguły nazwy i uprawnienia nadal zatwierdza serwer. Szkic przetrwa zmianę
-skali GUI. Anuluj, X i Esc nie wysyłają operacji utworzenia rangi.
-Edycja istniejących rang i przeciąganie kolejności pozostają dostępne.
+Fundament stałych cech terenów: dane źródłowe nowych chunków, rekonstrukcja
+starszych, wygenerowane budynki wiosek, trwałe profile oraz lokalne API
+własności/możliwości. Mapa 7×7 wokół gracza, wybór chunka i przewijany opis.
+Nie dodano zakupu/przejmowania, aktywnych mnożników, receptur ani przedmiotów.
 
-Przycisk zamykania ma 20×20 jednostek, wyśrodkowany X z dwiema równymi
-przekątnymi; jest wspólny dla panelu i okien dialogowych. Usunięto instrukcje
-o przeciąganiu/kolejności rang oraz o podglądzie i wyborze odbiorcy wyglądu.
-Opis wspólnej zmiany logo pozostał. Ustawienia wyglądu zajmują mniej miejsca.
+Cechy terenu pochodzą z 16 próbek i biomów; obiekty z danych wygenerowanych
+struktur oraz nazw szablonów vanilla. Każdy profil zostaje niezmienny.
+Starsze chunki bez źródła mają jawnie oznaczoną rekonstrukcję z generatora:
+nie odtwarza ona dokładnie wszystkich historycznych dekoracji powierzchni.
 
-Rejestr nie tworzy wpisów po zmianach motywu, logo, definicji rang i ich
-kolejności. Zachowano zdarzenia członkostwa, przywództwa i przypisania rang.
-Stare wpisy ze świata są zachowane. Pełna polska data zawiera rok i godzinę,
-np. „21 października 2026 o godzinie 18:15”, według lokalnej strefy gracza,
-w osobnym wierszu nad opisem. Nadal 100 wpisów na stronę, maksymalnie 100 stron,
-przewijanie pionowe i stały nagłówek. Magazyn i pojazdy nie są implementowane
-w tej zmianie; transport nadal pozostaje ukrytą definicją.
+## Testy JUnit
 
-## Testy automatyczne
+64 testy, bez błędów, niepowodzeń i pominięć.
+Nowe sprawdzenia obejmują teren i struktury jako niezależne źródła cech,
+wpływ rzeźby/wody, stałość profilu po zmianach i zapisie, własność w dokładnym
+chunku i wymiarze, ujemne współrzędne, fragmenty wsi na granicy chunków,
+mapę przy granicy świata, nieprawidłowe zapisy i niemodyfikowalne kolekcje.
+Osobny kodek przesyła ograniczone podsumowanie bez logo i odrzuca za duże dane.
+Wcześniejsze testy rang, członkostwa, rejestru, kolorów oraz importu logo przechodzą.
 
-55 testów JUnit, zero niepowodzeń, błędów i pominięć.
+## Prawdziwy serwer dedykowany
 
-- Zmiany konfiguracji nie zwiększają rejestru, natomiast dołączenie,
-  przypisanie rangi i usunięcie członka dodają właściwe zdarzenia.
-- Limit, zapis i strony rejestru sprawdzono na rzeczywistych operacjach
-  członkostwa, zamiast na zmianach koloru.
-- Zachowano testy serwerowych uprawnień, chronionego Lidera, przypisań,
-  kolejności rang, migracji zapisów i prywatności zgłoszeń.
-- Nadal przechodzą testy importu i detali logo 512×512, kodeków sieciowych,
-  limitów, członkostwa bez limitu, kolorów i układu.
+CRIME_TERRAIN_SERVER_PASS, świeży świat i ponowny start tego samego świata.
+Ziarno testowe 123456789, wygenerowany warsztat w chunku (-17, 12) Overworld.
 
-## Klient graficzny
+- Odczyt prawdziwej wioski i szablonu warsztatu, nie danych przykładowych.
+- Zapis źródłowy pomiarów powstaje przy generowaniu chunka.
+- Postawienie bloków przed analizą nie zmienia pierwotnych pomiarów.
+- Chunk bez zapisu źródłowego otrzymuje rekonstrukcję generatora; wysokie
+  konstrukcje postawione przez gracza nie zmieniają odtworzonych wysokości.
+- Zapis źródłowy i profil przetrwały zamknięcie oraz ponowny start serwera.
+- Własność udostępnia możliwości lokalnie; sąsiedni chunk ich nie otrzymuje.
+- Rzeczywisty zapis SavedData do NBT i ponowny odczyt zachowują profil.
 
-CRIME_UI_SMOKE_PASS: rzeczywisty renderer Minecrafta, 27 zrzutów 1920×1080,
-GUI 2 i 4, Mesa llvmpipe. Zrzuty nowej rangi, rejestru i wyglądu obejrzano.
+Test działa bez graczy w izolowanym świecie; utrzymuje wczytaną wioskę
+biletami testowymi. Bilety nie są dodawane przez produkcyjną analizę mapy.
+Nie jest to test rozgrywki dwóch klientów. Test odtwarza stary chunk przez
+usunięcie wyłącznie testowego zapisu źródłowego w świeżym świecie.
 
-Sprawdzono otwarcie osobnego okna, wpisanie nazwy, wybór uprawnień,
-przycisk zapisu i powrót do rang. Sprawdzono zachowanie szkicu po zmianie
-skali, anulowanie przez Esc/X/Anuluj, pełną polską datę, brak wskazanych
-instrukcji i geometrię X w panelu oraz oknach koloru i rangi. Sprawdzono
-przeciąganie rang, zwykłego członka, delegowane uprawnienia, paginację,
-przewijanie rejestru, kolory, import logo i kadrowanie.
+## Interfejs Minecrafta
 
-Potwierdzenia operacji rang w tym teście pochodzą z danych przykładowych
-przez rzeczywiste metody modelu; nie jest to gra dwóch klientów na serwerze.
+CRIME_UI_SMOKE_PASS: rzeczywisty renderer, 30 zrzutów 1920×1080, GUI 2 i 4.
+Mapa używa danych przykładowych w tym teście. Sprawdzono skalowany wybór
+chunka, przewijanie długiego opisu, zachowanie wyboru po zmianie skali
+oraz wybór pola bez danych. Zachowano sprawdzenia rang, kolorów, rejestru
+oraz logo. To nie są zrzuty mapy z wymienionego wyżej świata serwera.
 
-## Budowanie i ograniczenia
+## Wydanie i ograniczenia
 
-`./gradlew build --rerun-tasks` oraz `./gradlew -PuiSmoke runClient`.
-Protokół pozostaje 5. Aby część serwerowa nie zapisywała zmian konfiguracji
-w rejestrze, należy zaktualizować również serwer do 0.1.13.
-Kod testu graficznego nie jest dołączany do produkcyjnego JAR-a.
-Test kodeków nie jest testem sieci TCP. Fizyczne okno wyboru pliku w Windows
-ani przeciąganie z Eksploratora nie były automatyzowane.
+`./gradlew build --rerun-tasks`, `./gradlew -PuiSmoke runClient`,
+`./gradlew -PserverSmoke -PserverSmokeId=terrain14a runServer` (dwa starty).
+Produkcja wyklucza klasy obu testów graficznych/serwera, zawiera 15 bibliotek
+odczytu logo i ma protokół 6. Należy zaktualizować klienta oraz serwer.
 
-Źródła logo: PNG, JPEG, GIF, BMP, WebP, SVG, TIFF, ICO, ICNS, PSD, TGA, PCX i PNM.
-Limit źródła rastrowego 64 MB, 100 000 px na bok i miliard pikseli, podgląd
-do 1024 px; zapis PNG 512×512 do 1,1 MB, filtrowanie liniowe.
-SVG do 8 MB bez zewnętrznych zasobów. HEIC/AVIF/PDF i animowane logo
-pozostają nieobsługiwane. GIF używa pierwszej klatki.
+Analiza mapy nie generuje odległych chunków. Czeka na dostępność początku
+struktury zamiast utrwalać niepełną listę budynków. Maksymalnie dwa kroki
+na tick i miękki limit 2 ms; pojedynczy krok generatora nie jest przerywany.
+Brak benchmarku FPS/TPS dla dużego serwera. Reguły rozpoznawania są prototypem;
+nie stanowią ustalonego balansu przyszłych bonusów.
 
-Lokalny fallback java.home/bin/java w NeoForm Runtime pozostaje narzędziem
-środowiska; nie trafia do JAR-a ani repozytorium. Niedostępność usług kont
-Minecraft nie blokuje testu z danymi przykładowymi.
+Dotychczasowe ograniczenia importu logo pozostają: wspierane formaty opisano
+w README, HEIC/AVIF/PDF i animowane logo nie są obsługiwane. Zapis PNG 512×512
+do 1,1 MB i filtr liniowy pozostają bez zmian.
+Lokalny fallback narzędzia NeoForm Runtime nie trafia do repozytorium ani JAR-a.

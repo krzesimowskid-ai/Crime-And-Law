@@ -19,6 +19,7 @@ public final class GangNetwork {
     public static final int STATE_MAX_JSON=GangLogo.MAX_ENCODED_LENGTH+100_000;
     private static final Gson JSON=new Gson();
     public static Consumer<String> clientReceiver=ignored->{};
+    public static Consumer<String> terrainReceiver=ignored->{};
     private static final Map<ServerPlayer,View> views=new WeakHashMap<>();
     private static final Map<ServerPlayer,Rate> rates=new WeakHashMap<>();
     private record View(String query,int page,int memberPage,int requestPage,int historyPage){}
@@ -39,10 +40,19 @@ public final class GangNetwork {
         };
         @Override public Type<? extends CustomPacketPayload> type(){return TYPE;}
     }
+    public record Terrain(String json) implements CustomPacketPayload {
+        public static final Type<Terrain> TYPE=new Type<>(ResourceLocation.fromNamespaceAndPath("crimeandlaw","terrain"));
+        public static final StreamCodec<RegistryFriendlyByteBuf,Terrain> CODEC=new StreamCodec<>(){
+            public Terrain decode(RegistryFriendlyByteBuf b){return new Terrain(b.readUtf(pl.crimeandlaw.territory.TerrainView.MAX_JSON));}
+            public void encode(RegistryFriendlyByteBuf b,Terrain p){b.writeUtf(p.json,pl.crimeandlaw.territory.TerrainView.MAX_JSON);}
+        };
+        @Override public Type<? extends CustomPacketPayload> type(){return TYPE;}
+    }
     public static void register(RegisterPayloadHandlersEvent event){
-        var registrar=event.registrar("5");
+        var registrar=event.registrar("6");
         registrar.playToServer(Action.TYPE,Action.CODEC,GangNetwork::handle);
         registrar.playToClient(State.TYPE,State.CODEC,(p,c)->clientReceiver.accept(p.json));
+        registrar.playToClient(Terrain.TYPE,Terrain.CODEC,(p,c)->terrainReceiver.accept(p.json));
     }
     public static void send(JsonObject action){PacketDistributor.sendToServer(new Action(JSON.toJson(action)));}
     private static void handle(Action packet,IPayloadContext context){
@@ -53,6 +63,10 @@ public final class GangNetwork {
         GangSavedData saved=GangSavedData.get(player.server);GangDirectory d=saved.directory;UUID actor=player.getUUID();
         try{
             JsonObject a=JsonParser.parseString(packet.json).getAsJsonObject();String action=text(a,"action");
+            if(action.equals("terrain_view")){
+                if(d.of(actor)==null)throw new IllegalArgumentException("Najpierw dołącz do gangu.");
+                PacketDistributor.sendToPlayer(player,new Terrain(JSON.toJson(pl.crimeandlaw.territory.TerrainAnalysis.view(player))));return;
+            }
             if(action.equals("refresh")){
                 String query=text(a,"query");if(query.length()>32)query=query.substring(0,32);
                 View old=views.getOrDefault(player,new View("",0,0,0,0));

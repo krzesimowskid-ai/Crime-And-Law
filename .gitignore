@@ -1,6 +1,7 @@
 .gradle/
 build/
 run/
+run-server-smoke*/
 logs/
 .idea/
 *.iml

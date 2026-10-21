@@ -47,6 +47,21 @@ class GangNetworkTest {
             assertThrows(RuntimeException.class,()->GangNetwork.Action.CODEC.encode(buffer,new GangNetwork.Action("a".repeat(GangNetwork.ACTION_MAX_JSON+1))));
             buffer.clear();
             assertThrows(RuntimeException.class,()->GangNetwork.State.CODEC.encode(buffer,new GangNetwork.State("a".repeat(GangNetwork.STATE_MAX_JSON+1))));
+            buffer.clear();
+            assertThrows(RuntimeException.class,()->GangNetwork.Terrain.CODEC.encode(buffer,new GangNetwork.Terrain("a".repeat(pl.crimeandlaw.territory.TerrainView.MAX_JSON+1))));
+        }finally{buffer.release();}
+    }
+    @Test void terrainSummaryUsesItsOwnCodecWithoutSendingLogoData(){
+        var atlas=new pl.crimeandlaw.territory.TerrainAtlas();
+        var key=new pl.crimeandlaw.territory.TerrainKey("minecraft:overworld",-2,3);
+        var sample=new pl.crimeandlaw.territory.TerrainProfile.Sample(64,pl.crimeandlaw.territory.TerrainProfile.Surface.SOIL,false,"minecraft:plains");
+        atlas.remember(pl.crimeandlaw.territory.TerrainProfile.analyse(key,Collections.nCopies(16,sample),false,List.of(),10));
+        var view=pl.crimeandlaw.territory.TerrainView.snapshot(atlas,key.dimension(),key.x(),key.z(),k->true,id->"Gang");
+        String json=new Gson().toJson(view);var buffer=new RegistryFriendlyByteBuf(Unpooled.buffer(),RegistryAccess.EMPTY);
+        try{
+            GangNetwork.Terrain.CODEC.encode(buffer,new GangNetwork.Terrain(json));
+            var decoded=new Gson().fromJson(GangNetwork.Terrain.CODEC.decode(buffer).json(),pl.crimeandlaw.territory.TerrainView.class);
+            assertEquals(view,decoded);assertFalse(buffer.isReadable());assertFalse(json.contains("logo"));
         }finally{buffer.release();}
     }
 }

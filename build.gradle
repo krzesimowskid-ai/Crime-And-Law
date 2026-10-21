@@ -2,14 +2,17 @@ plugins {
     id 'java-library'
     id 'net.neoforged.moddev' version '2.0.148'
 }
-version = '0.1.13'
+version = '0.1.14'
 group = 'pl.crimeandlaw'
 base { archivesName = 'crimeandlaw' }
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 repositories { mavenCentral() }
 // Opt-in graphical check with fixture data; excluded from normal builds/JARs.
 def uiSmoke = providers.gradleProperty('uiSmoke').isPresent()
+def serverSmoke = providers.gradleProperty('serverSmoke').isPresent()
+def serverSmokeId = providers.gradleProperty('serverSmokeId').getOrElse('current')
 if (uiSmoke) sourceSets.main.java.srcDir('src/uiTest/java')
+if (serverSmoke) sourceSets.main.java.srcDir('src/serverTest/java')
 neoForge {
     version = '21.1.248'
     runs {
@@ -21,7 +24,14 @@ neoForge {
                 programArguments.addAll '--width', '1920', '--height', '1080'
             }
         }
-        server { server(); programArgument '--nogui' }
+        server {
+            server(); programArgument '--nogui'
+            if (serverSmoke) {
+                systemProperty 'crimeandlaw.serverSmoke', 'true'
+                systemProperty 'crimeandlaw.serverSmokeOutput', file('build/server-smoke-'+serverSmokeId).absolutePath
+                gameDirectory = file('run-server-smoke-'+serverSmokeId)
+            }
+        }
     }
     mods { crimeandlaw { sourceSet sourceSets.main } }
     unitTest {
@@ -56,6 +66,6 @@ configurations.additionalRuntimeClasspath.extendsFrom(configurations.jarJar)
 tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
 tasks.named('test') { useJUnitPlatform() }
 // Keep fixture automation out of releases even after a prior smoke-test compile.
-tasks.named('jar') { exclude 'pl/crimeandlaw/client/GangUiSmokeTest*' }
+tasks.named('jar') { exclude 'pl/crimeandlaw/client/GangUiSmokeTest*', 'pl/crimeandlaw/territory/TerrainServerSmoke*' }
 tasks.named('wrapper') { distributionType = Wrapper.DistributionType.BIN }
 

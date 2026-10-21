@@ -4,7 +4,7 @@ Stan projektu: 21 października 2026.
 
 ## Status i sposób dalszej pracy
 
-To zapis pomysłów i decyzji użytkownika, a nie opis gotowego moda. Powstaje prototyp panelu gangów, obecnie wersja 0.1.13. 19 października użytkownik odłożył DarkPerazera i wrócił do Crime And Law. Zaakceptował rozpoczęcie od podstaw panelu gangów; obecnie doprecyzowuje jego wygląd. Dla pierwszego prototypu przyjęto Minecraft 1.21.1 i NeoForge 21.1.248: użytkownik polecił rozpoczęcie bez wskazania innej platformy. Jest to jawne założenie wykonawcze, nie wcześniejsza deklaracja użytkownika.
+To zapis pomysłów i decyzji użytkownika, a nie opis gotowego moda. Powstaje prototyp panelu gangów, obecnie wersja 0.1.14. 19 października użytkownik odłożył DarkPerazera i wrócił do Crime And Law. Zaakceptował rozpoczęcie od podstaw panelu gangów; obecnie doprecyzowuje jego wygląd. Dla pierwszego prototypu przyjęto Minecraft 1.21.1 i NeoForge 21.1.248: użytkownik polecił rozpoczęcie bez wskazania innej platformy. Jest to jawne założenie wykonawcze, nie wcześniejsza deklaracja użytkownika.
 
 Crime And Law jest nowym, osobnym modem. McArk pozostaje odłożony, zachowując cel odwzorowania ASA 1:1. Nie zmieniać projektu McArk w Crime And Law ani nie usuwać jego materiałów w ramach tej pracy.
 
@@ -285,3 +285,40 @@ nie należy, ich rolę przejmują NPC z AI. Dowody/ryzyko mają prowadzić do
 najazdów na bazy. Szczegóły zasad i zachowań pozostają do uzgodnienia.
 Wspólna dokumentacja śledztw i płynne przejmowanie rozpoczętych akcji są
 propozycjami asystenta, nie zatwierdzonymi jeszcze mechanikami.
+
+
+## Potencjał terenu — decyzje 21 października, wersja 0.1.14
+Użytkownik przekazał 19 zrzutów z różnych paneli jako inspirację. Widoczne
+były m.in. rejestry i ewidencja magazynu/pojazdów, członkowie i obecność,
+saldo, kategorie uprawnień, dostęp do przedmiotów, zestawy, premie finansowe,
+czarna lista z historią, cele tygodniowe, mapa zajętych pól, kontrakty i wpływy.
+Nie oznacza to zatwierdzenia przeniesienia wszystkich tych mechanik.
+Transport nadal ma pozostać wyłącznie nieaktywną definicją.
+
+Potwierdzone w rozmowie:
+- Mod ma oceniać charakter terenu i to, do czego się nadaje. Nie ograniczać
+  analizy do samych budynków wiosek; liczą się m.in. podłoże, rzeźba,
+  roślinność/biomy i woda.
+- Niektóre budynki wygenerowanych wiosek mogą dodawać możliwości materialne
+  i produkcyjne; inne cechy mogą dawać atrybuty/premie.
+- Korzyści są **lokalne**, dotyczą danego chunka i kontrolującego go gangu.
+- Specjalne cechy budynków pochodzą **tylko z obiektów wygenerowanych**.
+  Budowle graczy nie tworzą nowych takich cech.
+- Potencjał jest **stały**: późniejsza przebudowa, wycinka i zniszczenia nie
+  odbierają zapisanych cech ani korzyści.
+- Kowal z produkcją lekkiej kamizelki i farma ze wzrostem upraw były
+  przykładami, nie zamkniętą listą ani zatwierdzonymi recepturami/wartościami.
+- Użytkownik polecił wykonanie fundamentu. Konkretne premie, przedmioty
+  i wartości są do dalszego ustalania.
+
+Wykonanie fundamentu 0.1.14: niezmienne profile i zapis serwera, pomiary
+nowo wygenerowanych chunków utrwalane w danych chunka, dane wiosek z szablonów
+wygenerowanych struktur oraz siatka 7×7 w menu Mapa z wyborem i opisem.
+Starsze chunki bez zapisu źródłowego otrzymują jawnie oznaczoną rekonstrukcję
+z generatora i biomów; nie obiecywać dokładnego odtworzenia oryginalnych
+dekoracji lub danych dawnych wersji świata. Próbkowanie 4×4 i progi
+rozpoznawania są regułami prototypu, a nie ustalonym balansem bonusów.
+Możliwości warsztatów, upraw, wydobycia itd. są obecnie opisem potencjału.
+Przejmowanie/zakup oraz aktywne mnożniki i receptury pozostają dalszym etapem.
+Nie pomijać wcześniejszych ustaleń o ukrytych gangach i ręcznych oznaczeniach,
+gdy właściwe systemy własności oraz mapy będą rozwijane.
