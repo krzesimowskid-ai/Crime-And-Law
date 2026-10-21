@@ -4,7 +4,7 @@ Stan projektu: 21 października 2026.
 
 ## Status i sposób dalszej pracy
 
-To zapis pomysłów i decyzji użytkownika, a nie opis gotowego moda. Powstaje prototyp panelu gangów, obecnie wersja 0.1.12. 19 października użytkownik odłożył DarkPerazera i wrócił do Crime And Law. Zaakceptował rozpoczęcie od podstaw panelu gangów; obecnie doprecyzowuje jego wygląd. Dla pierwszego prototypu przyjęto Minecraft 1.21.1 i NeoForge 21.1.248: użytkownik polecił rozpoczęcie bez wskazania innej platformy. Jest to jawne założenie wykonawcze, nie wcześniejsza deklaracja użytkownika.
+To zapis pomysłów i decyzji użytkownika, a nie opis gotowego moda. Powstaje prototyp panelu gangów, obecnie wersja 0.1.13. 19 października użytkownik odłożył DarkPerazera i wrócił do Crime And Law. Zaakceptował rozpoczęcie od podstaw panelu gangów; obecnie doprecyzowuje jego wygląd. Dla pierwszego prototypu przyjęto Minecraft 1.21.1 i NeoForge 21.1.248: użytkownik polecił rozpoczęcie bez wskazania innej platformy. Jest to jawne założenie wykonawcze, nie wcześniejsza deklaracja użytkownika.
 
 Crime And Law jest nowym, osobnym modem. McArk pozostaje odłożony, zachowując cel odwzorowania ASA 1:1. Nie zmieniać projektu McArk w Crime And Law ani nie usuwać jego materiałów w ramach tej pracy.
 
@@ -259,3 +259,29 @@ Zapisy bez rang otrzymują domyślne rangi i przypisania. Jeśli stare dane rang
 są obecne w pliku świata, są zachowywane. Zdarzenia tworzenia/zmiany rangi,
 przypisania i kolejności są rejestrowane. Protokół 5; nowy JAR na kliencie
 i serwerze. Logo nadal 512×512 z wygładzaniem.
+
+
+## Formularz rang, rejestr i zamykanie — 21 października, wersja 0.1.13
+- „+ Nowa ranga” otwiera osobne okno „Nowa ranga”: nazwa, uprawnienia, zapis.
+  Anuluj/X/Esc zamykają je bez utworzenia rangi; skalowanie GUI zachowuje szkic.
+- Usunięto informacje o przeciąganiu/kolejności rang oraz polecenie podglądu
+  i wyboru odbiorcy zapisu wyglądu. Opis wspólnej zmiany logo pozostaje.
+- Kwadratowy przycisk zamykania ma symetryczny, wyśrodkowany X zarówno
+  w panelu gangu, jak i w oknach koloru, kadrowania i nowej rangi.
+- Rejestr nie dopisuje zmian kolorów, logo, tworzenia/edycji definicji rang
+  ani ich kolejności. Zachowano wcześniej ustalone zdarzenia członkostwa,
+  przywództwa i przypisania rang członkom. Istniejące wpisy nie są kasowane.
+- Pełna polska data z rokiem i czasem jest nad opisem, np.
+  „21 października 2026 o godzinie 18:15”, w strefie czasowej komputera gracza.
+- W przyszłości rejestr obejmie operacje magazynu oraz użycie gangowych/
+  frakcyjnych pojazdów. To źródła zdarzeń do dodania razem z ich systemami;
+  transport nadal ma wyłącznie ukrytą definicję. Historia salda jest osobna.
+
+## Policja — pomysł na później, bez implementacji
+Użytkownik chce różnych jednostek, na razie omawianych wspólnie jako policja.
+Gracze z policji obecni na serwerze sami planują akcje i mogą zbierać ekipę
+na najazd na gang. Gdy nie ma aktywnych graczy z policji lub nikt do niej
+nie należy, ich rolę przejmują NPC z AI. Dowody/ryzyko mają prowadzić do
+najazdów na bazy. Szczegóły zasad i zachowań pozostają do uzgodnienia.
+Wspólna dokumentacja śledztw i płynne przejmowanie rozpoczętych akcji są
+propozycjami asystenta, nie zatwierdzonymi jeszcze mechanikami.

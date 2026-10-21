@@ -101,7 +101,6 @@ public final class GangDirectory {
         if(creating){require(g.roles.size()<MAX_ROLES,"Maksymalnie 12 rang.");roleId=UUID.randomUUID().toString();}
         else require(g.roles.containsKey(roleId),"Nie ma takiej rangi.");
         g.roles.put(roleId,new Role(roleId,name,permissions));
-        record(g,g.members.get(actor).name+(creating?" tworzy rangę ":" zmienia rangę ")+name+".");
     }
     public void assign(UUID actor,UUID target,String role){
         Gang g=own(actor,Permission.MANAGE_ROLES);
@@ -119,10 +118,9 @@ public final class GangDirectory {
             &&g.roles.keySet().containsAll(order),"Kolejność musi zawierać każdą rangę dokładnie raz.");
         if(order.equals(new ArrayList<>(g.roles.keySet())))return;
         Map<String,Role> sorted=new LinkedHashMap<>();for(String id:order)sorted.put(id,g.roles.get(id));g.roles=sorted;
-        record(g,g.members.get(actor).name+" zmienia kolejność rang.");
     }
-    public void theme(UUID actor,Theme theme){Gang g=own(actor,Permission.MANAGE_THEME);g.theme=theme;record(g,g.members.get(actor).name+" zmienia wygląd gangu.");}
-    public void logo(UUID actor,String logo){Gang g=own(actor,Permission.MANAGE_THEME);g.logo=logo;record(g,g.members.get(actor).name+" zmienia logo gangu.");}
+    public void theme(UUID actor,Theme theme){own(actor,Permission.MANAGE_THEME).theme=theme;}
+    public void logo(UUID actor,String logo){own(actor,Permission.MANAGE_THEME).logo=logo;}
     public void renameSeenPlayer(UUID player,String name){
         Gang g=of(player);if(g!=null)g.members.get(player).name=name;
         for(Gang other:gangs.values())if(other.requests.containsKey(player))other.requests.put(player,name);

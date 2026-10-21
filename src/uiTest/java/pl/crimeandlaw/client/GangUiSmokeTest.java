@@ -61,7 +61,7 @@ public final class GangUiSmokeTest {
                 }
                 case 2 -> {capture(mc,"03-find");fixture(true);screen.updated();}
                 case 3 -> {
-                    capture(mc,"04-gang");checkOverview(mc);
+                    capture(mc,"04-gang");checkOverview(mc);checkCloseButton(mc);
                     require(widget(screen,"Rangi").visible,"Ranks navigation restored");
                     require(widget(screen,"Ustawienia").getY()<widget(screen,"Opuść gang").getY(),"Settings above leave");
                     require(widget(screen,"Ustawienia").getY()>widget(screen,"Mapa").getY()+100,"Settings in footer");
@@ -88,7 +88,7 @@ public final class GangUiSmokeTest {
                     hex.setValue("FF0000");
                 }
                 case 10 -> {
-                    capture(mc,"10-color-gradients");checkGradients(mc);
+                    capture(mc,"10-color-gradients");checkGradients(mc);checkCloseButton(mc);
                     ColorPickerScreen dialog=(ColorPickerScreen)mc.screen;double scale=dialog.layout.scale();
                     AbstractWidget slider=widget(mc.screen,"Krycie:");
                     dialog.mouseClicked((slider.getX()+38)*scale,(slider.getY()+86)*scale,0);dialog.mouseReleased(0,0,0);
@@ -107,7 +107,7 @@ public final class GangUiSmokeTest {
                     require(screen.currentTheme().opacity()>110&&screen.currentTheme().opacity()<145,"Vertical opacity changed preview");
                 }
                 case 11 -> {
-                    capture(mc,"11-appearance-preview");click(mc,"Logo");
+                    capture(mc,"11-appearance-preview");checkCleanHints();click(mc,"Logo");
                     var cases=com.google.gson.JsonParser.parseString(Files.readString(Path.of(System.getProperty("crimeandlaw.logoFixtures")))).getAsJsonObject();
                     for(var entry:cases.entrySet()){
                         Path raster=OUT.resolve("fixture-"+entry.getKey()+".png").toAbsolutePath();
@@ -157,12 +157,14 @@ public final class GangUiSmokeTest {
                     mc.options.guiScale().set(2);mc.resizeDisplay();
                 }
                 case 15 -> {
-                    capture(mc,"15-overview-logo-long-name-scale2");checkOverview(mc);
+                    capture(mc,"15-overview-logo-long-name-scale2");checkOverview(mc);checkCloseButton(mc);
                     directory.of(PLAYER).name="Czarne Wilki";fixturePage(PLAYER,0);
                     screen=new GangScreen();mc.setScreen(screen);screen.updated();selectTab(4);
                 }
                 case 16 -> {
                     capture(mc,"16-register");
+                    var dates=GangScreen.class.getDeclaredField("historyRows");dates.setAccessible(true);
+                    require(dates.get(screen).toString().contains("21 października 2026 o godzinie"),"Register uses a full Polish date, year and time");
                     require(ClientState.state.getAsJsonArray("history").size()==100,"Register receives a bounded page of real events");
                     require(widget(screen,"›").active,"History next page is available");
                     require(screen.children().stream().noneMatch(c->c instanceof AbstractWidget w&&w.getMessage().getString().equals("Transport")),"Transport has no menu entry");
@@ -209,22 +211,25 @@ public final class GangUiSmokeTest {
                     selectTab(pl.crimeandlaw.gang.GangCategory.ROLES.tabId());
                 }
                 case 21 -> {
-                    capture(mc,"21-ranks");require(widget(screen,"+ Nowa ranga").active,"Owner can create a rank");
+                    capture(mc,"21-ranks");checkCleanHints();require(widget(screen,"+ Nowa ranga").active,"Owner can create a rank");
                     click(mc,"+ Nowa ranga");
-                    var edit=screen.children().stream().filter(c->c instanceof EditBox).map(c->(EditBox)c).findFirst().orElseThrow();
+                    require(mc.screen instanceof NewRoleScreen,"New rank opens a separate dialog");
+                    require(!widget(mc.screen,"Zapisz rangę").active,"Blank rank cannot be saved");
+                    var edit=mc.screen.children().stream().filter(c->c instanceof EditBox).map(c->(EditBox)c).findFirst().orElseThrow();
                     edit.setValue("Rekruter");click(mc,"[ ] Zapraszanie / zgłoszenia");click(mc,"[ ] Wygląd i logo gangu");
-                    require(widget(screen,"Zapisz rangę").active,"Rank form can be saved");
+                    require(widget(mc.screen,"Zapisz rangę").active,"Rank form can be saved");
                 }
                 case 22 -> {
-                    capture(mc,"22-create-rank");
-                    var name=GangScreen.class.getDeclaredField("roleName");name.setAccessible(true);
-                    var rights=GangScreen.class.getDeclaredField("rolePermissions");rights.setAccessible(true);
-                    @SuppressWarnings("unchecked") var selected=(java.util.Set<GangDirectory.Permission>)rights.get(screen);
-                    require(name.get(screen).equals("Rekruter")&&selected.equals(java.util.Set.of(GangDirectory.Permission.INVITE,GangDirectory.Permission.MANAGE_THEME)),"Rank form retains typed name and selected permissions");
+                    capture(mc,"22-create-rank");checkCloseButton(mc);
+                    var name=mc.screen.children().stream().filter(c->c instanceof EditBox).map(c->((EditBox)c).getValue()).findFirst().orElseThrow();
+                    var rights=NewRoleScreen.class.getDeclaredField("permissions");rights.setAccessible(true);
+                    @SuppressWarnings("unchecked") var selected=java.util.Set.copyOf((java.util.Set<GangDirectory.Permission>)rights.get(mc.screen));
+                    require(name.equals("Rekruter")&&selected.equals(java.util.Set.of(GangDirectory.Permission.INVITE,GangDirectory.Permission.MANAGE_THEME)),"Rank dialog retains typed name and selected permissions");
                     click(mc,"Zapisz rangę");
+                    require(mc.screen==screen,"Saving the rank returns to the ranks list");
                     // Fixture acknowledgements use the same domain operations as
                     // the server; this graphical run has no network connection.
-                    directory.role(PLAYER,"",(String)name.get(screen),selected);
+                    directory.role(PLAYER,"",name,selected);
                     fixturePage(PLAYER,0);screen.updated();selectTab(pl.crimeandlaw.gang.GangCategory.ROLES.tabId());
                     click(mc,"≡  Rekruter");
                 }
@@ -257,7 +262,23 @@ public final class GangUiSmokeTest {
                 }
                 case 26 -> {
                     capture(mc,"26-clean-logo");
-                    REPORT.append("PASS: actual Minecraft renderer, 26 captures, restored rank creation/permissions/drag controls with fixture acknowledgements, rank ordering above leader, ordinary member restrictions, delegated recruitment and appearance, simplified logo form, register wheel/drag/keyboard scrolling, fixed header and pagination, hidden transport gate, GUI scales 2/4, typing, wide identity header, uploaded logo, paged members, color gradients, opacity, file-drop handler and cropping.\n");
+                    fixturePage(PLAYER,0);screen.updated();selectTab(pl.crimeandlaw.gang.GangCategory.ROLES.tabId());click(mc,"+ Nowa ranga");
+                    var edit=mc.screen.children().stream().filter(c->c instanceof EditBox).map(c->(EditBox)c).findFirst().orElseThrow();
+                    edit.setValue("Bez zapisu");click(mc,"[ ] Usuwanie członków");
+                    mc.options.guiScale().set(2);mc.resizeDisplay();
+                }
+                case 27 -> {
+                    capture(mc,"27-rank-dialog-scale2");checkCloseButton(mc);
+                    var edit=mc.screen.children().stream().filter(c->c instanceof EditBox).map(c->(EditBox)c).findFirst().orElseThrow();
+                    require(edit.getValue().equals("Bez zapisu")&&widget(mc.screen,"[x] Usuwanie członków").active,"Rank draft survives a GUI resize");
+                    int count=directory.of(PLAYER).roles.size();
+                    mc.screen.keyPressed(org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE,0,0);
+                    require(mc.screen==screen&&directory.of(PLAYER).roles.size()==count,"Escape cancels the rank without changes");
+                    click(mc,"+ Nowa ranga");click(mc,"Zamknij");
+                    require(mc.screen==screen&&directory.of(PLAYER).roles.size()==count,"Close icon cancels the rank without changes");
+                    click(mc,"+ Nowa ranga");click(mc,"Anuluj");
+                    require(mc.screen==screen&&directory.of(PLAYER).roles.size()==count,"Cancel returns without creating a rank");
+                    REPORT.append("PASS: actual Minecraft renderer, 27 captures, separate new-rank dialog, typed name and permissions, save return and fixture acknowledgement, cancellation via Esc/X/Cancel, rank draft across GUI resize, symmetric square close controls in main/color/rank views, full Polish dates, removed explanatory hints, rank ordering above leader, ordinary member restrictions, delegated recruitment and appearance, simplified logo form, register wheel/drag/keyboard scrolling, fixed header and pagination, hidden transport gate, GUI scales 2/4, uploaded logo, paged members, color gradients, file-drop handler and cropping.\n");
                     Files.writeString(OUT.resolve("result.txt"),REPORT.toString());System.out.println("CRIME_UI_SMOKE_PASS");mc.stop();
                 }
             }
@@ -328,6 +349,23 @@ public final class GangUiSmokeTest {
         require(!labels.contains("ścieżk")&&!labels.contains("PNG /")&&!labels.contains("opcjonalne")&&!labels.contains("później"),"Removed path, format and optional-logo notices");
         require(screen.children().stream().noneMatch(c->c instanceof AbstractWidget w&&w.getMessage().getString().equals("Wczytaj i dopasuj")),"Manual path loading button removed");
     }
+    private static void checkCleanHints()throws ReflectiveOperationException {
+        var field=GangScreen.class.getDeclaredField("labels");field.setAccessible(true);String labels=field.get(screen).toString();
+        require(!labels.contains("Przeciągaj rangi")&&!labels.contains("Pozycja na liście")&&!labels.contains("Zobacz podgląd"),"Removed rank-order and appearance instructions");
+    }
+    private static void checkCloseButton(Minecraft mc){
+        var close=widget(mc.screen,"Zamknij");require(close.getWidth()==close.getHeight(),"Close button is square");
+        double scale=GangLayout.of(mc.screen.width,mc.screen.height).scale()*mc.getWindow().getGuiScale();
+        try(var image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){
+            for(int y=0;y<8;y++)for(int x=0;x<8;x++){
+                int a=image.getPixelRGBA((int)((close.getX()+6+x+.5)*scale),(int)((close.getY()+6+y+.5)*scale));
+                int b=image.getPixelRGBA((int)((close.getX()+13-x+.5)*scale),(int)((close.getY()+6+y+.5)*scale));
+                require(a==b,"Close icon is horizontally symmetric");
+                boolean bright=(a&255)>180&&(a>>8&255)>180&&(a>>16&255)>180;
+                require(bright==(x==y||x==7-y),"Close icon has two centered, equal diagonals");
+            }
+        }
+    }
     private static void checkLogoTexture(Minecraft mc,net.minecraft.resources.ResourceLocation id,int width,int height){
         require(id!=null,"Logo texture registered");
         var texture=mc.getTextureManager().getTexture(id);
@@ -363,7 +401,12 @@ public final class GangUiSmokeTest {
             if(directory==null){
                 directory=new GangDirectory();var gang=directory.create(PLAYER,"Gracz","Czarne Wilki","");
                 for(int i=2;i<=13;i++){UUID friend=new UUID(0,i);directory.request(friend,"Gracz"+i,gang.id);directory.accept(PLAYER,friend);}
-                for(int i=0;i<100;i++)directory.theme(PLAYER,new GangDirectory.Theme(i,0,200));
+                for(int i=0;i<50;i++){
+                    UUID visitor=new UUID(1000,i+1);directory.request(visitor,"Gość"+i,gang.id);directory.accept(PLAYER,visitor);directory.leave(visitor);
+                }
+                // Fixed date makes the full month/year/time rendering reproducible.
+                var when=java.time.LocalDateTime.of(2026,10,21,18,15).atZone(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli();
+                for(int i=0;i<gang.history.size();i++)gang.history.set(i,new GangDirectory.Event(when+i*60000,gang.history.get(i).text()));
                 for(int i=14;i<=21;i++)directory.request(new UUID(0,i),"Kandydat"+i,gang.id);
             }
             JsonObject snapshot=GangView.snapshot(directory.of(PLAYER),PLAYER,0,0);

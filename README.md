@@ -1,14 +1,14 @@
 # Crime And Law
 
 Autorski mod gangsterski: panel gangów, członkostwo i własny wygląd menu.
-Wersja **0.1.12**.
+Wersja **0.1.13**.
 
 ## Uruchomienie
 
 - Minecraft **1.21.1**, Java **21**, NeoForge **21.1.248**.
-- Włóż `crimeandlaw-0.1.12.jar` do `mods`, zastępując poprzedni JAR tego moda.
+- Włóż `crimeandlaw-0.1.13.jar` do `mods`, zastępując poprzedni JAR tego moda.
 - W rozgrywce sieciowej mod musi być **u graczy i na serwerze**.
-  Zaktualizuj serwer i wszystkich klientów do 0.1.12: rangi i uprawnienia używają protokołu 5.
+  Zaktualizuj serwer i wszystkich klientów do 0.1.13. Protokół rang i uprawnień pozostaje 5.
 - W świecie jednoosobowym część serwerowa działa razem ze światem.
 - **G** otwiera panel; skrót można zmienić w sterowaniu. Esc lub X zamyka okno.
 
@@ -26,8 +26,12 @@ Pole poziomu pokazuje „— / Wkrótce”; system zdobywania poziomów jest do 
 „Ustawienia” znajdują się na dole nawigacji, nad „Opuść gang”.
 Mapa pozostaje podstawą przyszłej kontroli terytorialnej.
 Rejestr pokazuje rzeczywiste wydarzenia: utworzenie gangu, dołączenia, odejścia,
-usunięcia członków, przekazanie przywództwa, tworzenie/edycję i kolejność rang,
-przypisywanie rang członkom oraz zmiany wspólnego motywu/logo.
+usunięcia członków, przekazanie przywództwa i przypisywanie rang członkom.
+Zmiany kolorów, logo, definicji i kolejności rang nie tworzą nowych wpisów.
+Historyczne wpisy ze starszych światów są zachowane. Data jest pełna,
+np. „21 października 2026 o godzinie 18:15”, według czasu komputera gracza,
+w osobnym wierszu nad opisem. Magazyn i pojazdy będą źródłami zdarzeń po
+zaimplementowaniu tych systemów. Historia finansowa pozostaje osobną częścią salda.
 Wpisy powstają na serwerze i zapisują się ze światem; ostatnie 10 000 wydarzeń,
 po 100 na stronę, od najnowszego. Wpisy na bieżącej stronie przewija się
 pionowo kółkiem lub paskiem po prawej; nagłówek i numer/przyciski stron pozostają
@@ -41,7 +45,9 @@ widoku, zadań działających w tle ani mechanik transportu. Próba wybrania jeg
 nieaktywnego identyfikatora wraca do głównej zakładki. Saldo, premie, czarna lista i cele są widocznymi panelami informacyjnymi;
 ich mechaniki pozostają dalszym etapem.
 
-Własne rangi tworzy się w **Rangi → + Nowa ranga → Zapisz rangę**. Można
+Własne rangi tworzy się w **Rangi → + Nowa ranga**. Osobne okno „Nowa ranga”
+ma nazwę, uprawnienia i „Zapisz rangę”. Anuluj, X i Esc odrzucają nowy szkic.
+Zmiana skali GUI zachowuje wpisaną nazwę i wybrane uprawnienia. Można
 ustawić nazwę i uprawnienia: zgłoszenia, usuwanie członków, zarządzanie rangami
 oraz wspólny wygląd/logo. Osoby bez uprawnień mogą przeglądać rangi.
 Przeciąganie ustawia kolejność; także ranga bez uprawnień może być wyżej od
@@ -125,7 +131,7 @@ Windows: gradlew.bat build
 Linux/macOS: ./gradlew build
 ```
 
-Wynik: `build/libs/crimeandlaw-0.1.12.jar`.
+Wynik: `build/libs/crimeandlaw-0.1.13.jar`.
 Gradle Wrapper 9.2.1, ModDevGradle 2.0.148, NeoForge 21.1.248.
 `./gradlew test` sprawdza model, migrację zapisów, duże listy i prywatność
 zgłoszeń, walidację/edycję logo, kolory oraz skalowanie menu.
@@ -170,3 +176,10 @@ Formularze tworzenia gangu i ustawień logo mają przycisk wyboru obrazu oraz
 obsługę przeciągania pliku. Usunięto pole ścieżki, „Wczytaj i dopasuj”, opis
 formatów i informację o opcjonalnym logo/późniejszej zmianie. Import 512×512,
 kadrowanie i wyświetlanie pozostają dostępne.
+
+
+## Porządkowanie panelu 0.1.13
+Nową rangę tworzy się w osobnym oknie. Usunięto wskazane instrukcje z rang
+oraz wyglądu; opis logo pozostaje. Przycisk zamykania jest kwadratowy,
+a X ma równe przekątne i jest wyśrodkowany. Rejestr nie dopisuje konfiguracji
+wyglądu ani definicji/kolejności rang; pełna data z rokiem jest nad opisem.

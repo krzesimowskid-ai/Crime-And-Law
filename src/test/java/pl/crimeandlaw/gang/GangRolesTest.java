@@ -22,7 +22,7 @@ class GangRolesTest {
         var restored=GangDirectory.fromJson(d.toJson());var g=restored.of(owner);
         assertEquals("Oficer",g.roles.get(rank).name);assertEquals(rank,g.members.get(member).role);
         assertEquals(Set.of(Permission.INVITE,Permission.MANAGE_THEME),g.roles.get(rank).permissions);
-        assertTrue(g.history.stream().anyMatch(e->e.text().contains("tworzy rangę Rekruter")));
+        assertTrue(g.history.stream().noneMatch(e->e.text().contains("tworzy rangę Rekruter")));
         assertTrue(g.history.stream().anyMatch(e->e.text().contains("zmienia rangę gracza Gracz")));
     }
     @Test void delegatesOnlyExplicitPermissionsAndProtectsOwnership(){

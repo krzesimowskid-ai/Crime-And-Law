@@ -27,10 +27,27 @@ class CategoryAndHistoryTest {
         UUID owner=UUID.randomUUID();var d=new GangDirectory();var g=d.create(owner,"Lider","Testowy Gang","");
         JsonObject old=JsonParser.parseString(d.toJson()).getAsJsonObject();old.getAsJsonObject("gangs").getAsJsonObject(g.id.toString()).remove("history");
         assertTrue(GangDirectory.fromJson(old.toString()).of(owner).history.isEmpty());
-        for(int i=0;i<10030;i++)d.theme(owner,new GangDirectory.Theme(i,0,200));
+        UUID member=UUID.randomUUID();
+        for(int i=0;i<5015;i++){d.request(member,"Gracz"+i,g.id);d.accept(owner,member);d.leave(member);}
         assertEquals(10000,g.history.size());JsonObject view=GangView.snapshot(g,owner,0,0,0);
         assertEquals(100,view.getAsJsonArray("history").size());assertEquals(100,view.get("historyPages").getAsInt());
         assertEquals(g.history.getLast().text(),view.getAsJsonArray("history").get(0).getAsJsonObject().get("text").getAsString());
         assertEquals(99,GangView.snapshot(g,owner,0,0,Integer.MAX_VALUE).get("historyPage").getAsInt());
+    }
+    @Test void configurationDoesNotFillTheRegisterButMemberActionsStillDo(){
+        UUID owner=UUID.randomUUID(),member=UUID.randomUUID();var d=new GangDirectory();var g=d.create(owner,"Lider","Testowy Gang","");
+        int initial=g.history.size();
+        d.theme(owner,new GangDirectory.Theme(123,456,200));d.logo(owner,"new-logo");
+        d.role(owner,"","Oficer",Set.of(GangDirectory.Permission.INVITE));
+        String role=g.roles.values().stream().filter(r->r.name.equals("Oficer")).findFirst().orElseThrow().id;
+        d.role(owner,role,"Rekruter",Set.of(GangDirectory.Permission.INVITE));
+        d.reorderRoles(owner,List.of(role,"member","leader"));
+        assertEquals(initial,g.history.size());
+        d.request(member,"Gracz",g.id);d.accept(owner,member);d.assign(owner,member,role);d.kick(owner,member);
+        assertEquals(initial+3,g.history.size());
+        assertTrue(g.history.get(initial).text().contains("dołącza"));
+        assertTrue(g.history.get(initial+1).text().contains("zmienia rangę gracza"));
+        assertTrue(g.history.getLast().text().contains("usuwa gracza"));
+        assertEquals(g.history,GangDirectory.fromJson(d.toJson()).of(owner).history);
     }
 }

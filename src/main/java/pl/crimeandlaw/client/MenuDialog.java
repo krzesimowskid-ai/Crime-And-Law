@@ -16,7 +16,7 @@ abstract class MenuDialog extends Screen {
     @Override protected void init(){
         layout=GangLayout.of(width,height);left=(layout.canvasWidth()-panelWidth)/2;top=(layout.canvasHeight()-panelHeight)/2;
         parent.resize(minecraft,width,height);build();
-        button(left+panelWidth-28,top+8,18,"×",b->onClose());
+        addRenderableWidget(new CloseButton(left+panelWidth-28,top+8,b->onClose(),this::theme));
     }
     protected abstract void build();
     protected abstract void paint(GuiGraphics g,int x,int y,float delta);
