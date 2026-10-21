@@ -1,14 +1,14 @@
 # Crime And Law
 
 Autorski mod gangsterski: panel gangów, członkostwo i własny wygląd menu.
-Wersja **0.1.11**.
+Wersja **0.1.12**.
 
 ## Uruchomienie
 
 - Minecraft **1.21.1**, Java **21**, NeoForge **21.1.248**.
-- Włóż `crimeandlaw-0.1.11.jar` do `mods`, zastępując poprzedni JAR tego moda.
+- Włóż `crimeandlaw-0.1.12.jar` do `mods`, zastępując poprzedni JAR tego moda.
 - W rozgrywce sieciowej mod musi być **u graczy i na serwerze**.
-  Zaktualizuj serwer i wszystkich klientów do 0.1.11: większe logo używa protokołu 4.
+  Zaktualizuj serwer i wszystkich klientów do 0.1.12: rangi i uprawnienia używają protokołu 5.
 - W świecie jednoosobowym część serwerowa działa razem ze światem.
 - **G** otwiera panel; skrót można zmienić w sterowaniu. Esc lub X zamyka okno.
 
@@ -16,9 +16,9 @@ Wersja **0.1.11**.
 
 Bez gangu: dwie równe zakładki u góry — „Stwórz gang” i „Znajdź gang”.
 Możesz ustawić nazwę i opcjonalne logo albo wysłać zgłoszenie do istniejącego gangu.
-Zgłoszenie przyjmuje jego lider.
+Zgłoszenie przyjmuje lider lub osoba z uprawnieniem do zgłoszeń.
 
-Po dołączeniu: kompaktowy nagłówek, zakładki „Gang”, „Członkowie”, „Rejestr” i „Mapa”.
+Po dołączeniu: kompaktowy nagłówek, zakładki „Gang”, „Członkowie”, „Rangi”, „Rejestr” i „Mapa”.
 Główna zakładka ma wyśrodkowane logo i nazwę nad linią obejmującą całą szerokość
 obszaru treści. Poniżej „Informacje o gangu” i trzy równomierne kolumny:
 liczba członków, lider oraz miejsce na poziom gangu. Członkowie nie mają limitu.
@@ -26,7 +26,8 @@ Pole poziomu pokazuje „— / Wkrótce”; system zdobywania poziomów jest do 
 „Ustawienia” znajdują się na dole nawigacji, nad „Opuść gang”.
 Mapa pozostaje podstawą przyszłej kontroli terytorialnej.
 Rejestr pokazuje rzeczywiste wydarzenia: utworzenie gangu, dołączenia, odejścia,
-usunięcia członków, przekazanie przywództwa oraz zmiany wspólnego motywu/logo.
+usunięcia członków, przekazanie przywództwa, tworzenie/edycję i kolejność rang,
+przypisywanie rang członkom oraz zmiany wspólnego motywu/logo.
 Wpisy powstają na serwerze i zapisują się ze światem; ostatnie 10 000 wydarzeń,
 po 100 na stronę, od najnowszego. Wpisy na bieżącej stronie przewija się
 pionowo kółkiem lub paskiem po prawej; nagłówek i numer/przyciski stron pozostają
@@ -37,22 +38,28 @@ Starsze zapisy zaczynają z pustym rejestrem; wydarzenia nie są odtwarzane wste
 
 Transport ma wyłącznie ukrytą definicję kategorii w kodzie. Nie ma przycisku,
 widoku, zadań działających w tle ani mechanik transportu. Próba wybrania jego
-nieaktywnego identyfikatora wraca do głównej zakładki. Pozostałych kategorii
-ze zdjęcia (saldo, premie, czarna lista i cele) nie dodano.
+nieaktywnego identyfikatora wraca do głównej zakładki. Saldo, premie, czarna lista i cele są widocznymi panelami informacyjnymi;
+ich mechaniki pozostają dalszym etapem.
 
-System własnych rang został usunięty na życzenie użytkownika. Pozostają lider
-oraz członkowie. Lista członków służy przeglądaniu; czynności administracyjne
-znajdują się w Ustawienia → Zarządzanie, widocznym wyłącznie dla lidera:
-zgłoszenia, przyjmowanie/odrzucanie, usuwanie członków, przekazanie przywództwa
-oraz odświeżanie danych. Serwer sprawdza uprawnienia niezależnie od przycisków.
-Zgłoszenia nie są wysyłane do zwykłych członków.
+Własne rangi tworzy się w **Rangi → + Nowa ranga → Zapisz rangę**. Można
+ustawić nazwę i uprawnienia: zgłoszenia, usuwanie członków, zarządzanie rangami
+oraz wspólny wygląd/logo. Osoby bez uprawnień mogą przeglądać rangi.
+Przeciąganie ustawia kolejność; także ranga bez uprawnień może być wyżej od
+Lidera. Pozycja na liście nie daje uprawnień ani własności gangu. Uprawnienia
+Lidera są stałe. Zachowano roboczy limit dawnego systemu: 12 rang łącznie.
+
+Lista członków służy przeglądaniu. Czynności dostępne dla danej osoby znajdują
+się w **Ustawienia → Zarządzanie**. „Zmień rangę” przełącza wybranego członka
+na kolejną dostępną rangę. Przekazanie przywództwa wymaga obecnego lidera.
+Serwer sprawdza każde uprawnienie niezależnie od stanu przycisków. Prywatne
+zgłoszenia otrzymują tylko lider i osoby z uprawnieniem do zgłoszeń.
 
 Lider przed odejściem przekazuje przywództwo, jeśli ma innych członków.
 Odejście ostatniego członka usuwa pusty gang po potwierdzeniu.
 
 ## Kolory i wygląd
 
-Ustawienia mają kategorie „Wygląd”, „Logo” oraz, dla lidera, „Zarządzanie”.
+Ustawienia mają kategorie „Wygląd”, „Logo” oraz, dla uprawnionych osób, „Zarządzanie”.
 „Zmień kolor…” otwiera koło barw, pola HEX/RGB i pionowe suwaki z gradientami:
 
 - **Jasność:** wybrany kolor u góry, czerń na dole.
@@ -61,7 +68,7 @@ Ustawienia mają kategorie „Wygląd”, „Logo” oraz, dla lidera, „Zarzą
 
 Suwaki obsługują kliknięcie, przeciąganie i klawisze strzałek; Home ustawia 100%,
 End 0%. Po „Zastosuj” widzisz podgląd menu. Każdy członek może zapisać wygląd
-osobisty albo używać wyglądu gangu. Wspólny motyw i logo zapisuje lider.
+osobisty albo używać wyglądu gangu. Wspólny motyw i logo zapisuje lider lub osoba z uprawnieniem do wyglądu.
 Osobisty wygląd nie zmienia ustawień u pozostałych graczy.
 
 ## Własne logo
@@ -70,8 +77,9 @@ Importer nie analizuje symboliki, treści ani nazw obrazów i nie ma listy
 zakazanych flag. Własne grafiki i flagi przechodzą tę samą ścieżkę odczytu,
 kadrowania oraz zapisu. Sprawdzane są poprawność pliku i limity zasobów.
 
-Wybierz obraz z systemowego okna, wklej lokalną ścieżkę albo przeciągnij jeden
-plik z folderu na otwarty panel gry. PNG/JPG/JPEG/GIF/BMP oraz WebP, SVG, TIFF, ICO, ICNS, PSD, TGA, PCX i PNM. Plik rastrowy do 64 MB; SVG do 8 MB. W razie potrzeby użyj F11,
+Wybierz obraz z systemowego okna albo przeciągnij jeden plik z folderu
+na otwarty panel gry. Pole ścieżki i przycisk ręcznego wczytywania usunięto.
+ PNG/JPG/JPEG/GIF/BMP oraz WebP, SVG, TIFF, ICO, ICNS, PSD, TGA, PCX i PNM. Plik rastrowy do 64 MB; SVG do 8 MB. W razie potrzeby użyj F11,
 aby widzieć grę i folder jednocześnie.
 
 Obrazy 256×256, poziome, pionowe i inne proporcje są przyjmowane. GIF używa
@@ -100,7 +108,8 @@ obsługiwany.
 Gangi: `data/crimeandlaw_gangs.dat` w danych świata Overworld.
 Osobisty motyw: `config/crimeandlaw-appearance.json`.
 Starsze zapisy 0.1.0–0.1.2 zachowują gangi, właściciela, członków, zgłoszenia,
-logo i wspólny motyw. Dawne rangi oraz przypisane im uprawnienia są pomijane.
+logo i wspólny motyw. Zapisane rangi i uprawnienia są odczytywane. W zapisach
+bez rang powstają domyślne „Lider” i „Członek”, z odpowiednimi przypisaniami.
 
 Nie ma limitu członków ani zgłoszeń na gang. Listy są wysyłane i wyświetlane
 stronami po sześć pozycji; licznik pokazuje pełną liczbę członków. Duży gang
@@ -116,7 +125,7 @@ Windows: gradlew.bat build
 Linux/macOS: ./gradlew build
 ```
 
-Wynik: `build/libs/crimeandlaw-0.1.11.jar`.
+Wynik: `build/libs/crimeandlaw-0.1.12.jar`.
 Gradle Wrapper 9.2.1, ModDevGradle 2.0.148, NeoForge 21.1.248.
 `./gradlew test` sprawdza model, migrację zapisów, duże listy i prywatność
 zgłoszeń, walidację/edycję logo, kolory oraz skalowanie menu.
@@ -153,3 +162,11 @@ i obu kierunków przesyłania; protokół sieciowy 4 wymaga aktualizacji klienta
 i serwera. Tekstura jest odczytywana ze strumienia i ładowana tylko po zmianie
 logo. Każde miejsce wyświetlania używa pełnego zakresu obrazu oraz filtra liniowego.
 Wygładzany jest również podgląd kadrowania. Zachowana obsługa dawnych logo 64×64.
+
+## Rangi i uproszczony formularz logo 0.1.12
+Przywrócono własne rangi, edytor uprawnień, przypisywanie i przeciąganie
+kolejności. Zdarzenia rang trafiają do Rejestru. Transport nadal jest ukryty.
+Formularze tworzenia gangu i ustawień logo mają przycisk wyboru obrazu oraz
+obsługę przeciągania pliku. Usunięto pole ścieżki, „Wczytaj i dopasuj”, opis
+formatów i informację o opcjonalnym logo/późniejszej zmianie. Import 512×512,
+kadrowanie i wyświetlanie pozostają dostępne.

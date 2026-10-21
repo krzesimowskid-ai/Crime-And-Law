@@ -4,7 +4,7 @@ Stan projektu: 21 października 2026.
 
 ## Status i sposób dalszej pracy
 
-To zapis pomysłów i decyzji użytkownika, a nie opis gotowego moda. Powstaje prototyp panelu gangów, obecnie wersja 0.1.11. 19 października użytkownik odłożył DarkPerazera i wrócił do Crime And Law. Zaakceptował rozpoczęcie od podstaw panelu gangów; obecnie doprecyzowuje jego wygląd. Dla pierwszego prototypu przyjęto Minecraft 1.21.1 i NeoForge 21.1.248: użytkownik polecił rozpoczęcie bez wskazania innej platformy. Jest to jawne założenie wykonawcze, nie wcześniejsza deklaracja użytkownika.
+To zapis pomysłów i decyzji użytkownika, a nie opis gotowego moda. Powstaje prototyp panelu gangów, obecnie wersja 0.1.12. 19 października użytkownik odłożył DarkPerazera i wrócił do Crime And Law. Zaakceptował rozpoczęcie od podstaw panelu gangów; obecnie doprecyzowuje jego wygląd. Dla pierwszego prototypu przyjęto Minecraft 1.21.1 i NeoForge 21.1.248: użytkownik polecił rozpoczęcie bez wskazania innej platformy. Jest to jawne założenie wykonawcze, nie wcześniejsza deklaracja użytkownika.
 
 Crime And Law jest nowym, osobnym modem. McArk pozostaje odłożony, zachowując cel odwzorowania ASA 1:1. Nie zmieniać projektu McArk w Crime And Law ani nie usuwać jego materiałów w ramach tej pracy.
 
@@ -240,3 +240,22 @@ filtrem liniowym w podglądzie i całym menu oraz zgodnością zapisu ze starymi
 logo. Poprzednich detali usuniętych podczas importu 64×64 nie da się odzyskać
 bez ponownego wczytania oryginału. Protokół 4; ten sam nowy mod na kliencie
 i serwerze. Nie zmieniać rozmiaru okien ani układu zaakceptowanego menu.
+
+## Przywrócenie rang i uproszczenie logo — 21 października, wersja 0.1.12
+Użytkownik wyjaśnił, że rangi mają być dostępne. Przywrócono tworzenie, nazwy,
+uprawnienia, przypisywanie członkom oraz przeciąganie kolejności, także nad
+Lidera. Pozycja nadal jest niezależna od uprawnień i faktycznego właściciela.
+To aktualna decyzja zastępująca wcześniejsze usunięcie systemu rang.
+Przywrócony zakres uprawnień i roboczy limit 12 rang pochodzą z poprzedniej
+wersji tego systemu. Nie przywracać dawnych limitów liczby członków/zgłoszeń.
+
+Na podstawie zrzutu image(20261021-152133).png usunięto pole ścieżki do obrazu,
+„Wczytaj i dopasuj”, tekst z formatami/przeciąganiem oraz informację o
+opcjonalnym logo i późniejszej zmianie. Pozostają wybór z plików i sam
+mechanizm przeciągania obrazu. To założenie zostało podane użytkownikowi
+przed wykonaniem. Wczytanie pliku nadal otwiera kadrowanie.
+
+Zapisy bez rang otrzymują domyślne rangi i przypisania. Jeśli stare dane rang
+są obecne w pliku świata, są zachowywane. Zdarzenia tworzenia/zmiany rangi,
+przypisania i kolejności są rejestrowane. Protokół 5; nowy JAR na kliencie
+i serwerze. Logo nadal 512×512 z wygładzaniem.

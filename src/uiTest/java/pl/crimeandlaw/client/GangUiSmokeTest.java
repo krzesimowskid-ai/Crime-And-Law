@@ -62,7 +62,7 @@ public final class GangUiSmokeTest {
                 case 2 -> {capture(mc,"03-find");fixture(true);screen.updated();}
                 case 3 -> {
                     capture(mc,"04-gang");checkOverview(mc);
-                    require(screen.children().stream().noneMatch(c->c instanceof AbstractWidget w&&w.getMessage().getString().equals("Rangi")),"Ranks removed");
+                    require(widget(screen,"Rangi").visible,"Ranks navigation restored");
                     require(widget(screen,"Ustawienia").getY()<widget(screen,"Opuść gang").getY(),"Settings above leave");
                     require(widget(screen,"Ustawienia").getY()>widget(screen,"Mapa").getY()+100,"Settings in footer");
                     selectTab(1);click(mc,"Gracz2");
@@ -206,8 +206,58 @@ public final class GangUiSmokeTest {
                     for(String name:new String[]{"Premie","Saldo gangu","Czarna lista","Cele"}){
                         var entry=widget(screen,name);require(entry.visible&&entry.active,"Visible category "+name);click(mc,name);
                     }
-                    selectTab(0);
-                    REPORT.append("PASS: actual Minecraft renderer, 20 captures, register wheel/drag/keyboard scrolling, fixed header and pagination, page reset and GUI resize, visible register, hidden transport gate, GUI scales 2/4, typing, wide identity header with divider and three information columns, long gang name and uploaded logo, paged members, leader management, ordinary member restrictions, vertical gradient pixels, keyboard/drag color input, opacity, file-drop handler and cropping.\n");
+                    selectTab(pl.crimeandlaw.gang.GangCategory.ROLES.tabId());
+                }
+                case 21 -> {
+                    capture(mc,"21-ranks");require(widget(screen,"+ Nowa ranga").active,"Owner can create a rank");
+                    click(mc,"+ Nowa ranga");
+                    var edit=screen.children().stream().filter(c->c instanceof EditBox).map(c->(EditBox)c).findFirst().orElseThrow();
+                    edit.setValue("Rekruter");click(mc,"[ ] Zapraszanie / zgłoszenia");click(mc,"[ ] Wygląd i logo gangu");
+                    require(widget(screen,"Zapisz rangę").active,"Rank form can be saved");
+                }
+                case 22 -> {
+                    capture(mc,"22-create-rank");
+                    var name=GangScreen.class.getDeclaredField("roleName");name.setAccessible(true);
+                    var rights=GangScreen.class.getDeclaredField("rolePermissions");rights.setAccessible(true);
+                    @SuppressWarnings("unchecked") var selected=(java.util.Set<GangDirectory.Permission>)rights.get(screen);
+                    require(name.get(screen).equals("Rekruter")&&selected.equals(java.util.Set.of(GangDirectory.Permission.INVITE,GangDirectory.Permission.MANAGE_THEME)),"Rank form retains typed name and selected permissions");
+                    click(mc,"Zapisz rangę");
+                    // Fixture acknowledgements use the same domain operations as
+                    // the server; this graphical run has no network connection.
+                    directory.role(PLAYER,"",(String)name.get(screen),selected);
+                    fixturePage(PLAYER,0);screen.updated();selectTab(pl.crimeandlaw.gang.GangCategory.ROLES.tabId());
+                    click(mc,"≡  Rekruter");
+                }
+                case 23 -> {
+                    capture(mc,"23-custom-rank");
+                    var row=widget(screen,"≡  Rekruter");var leader=widget(screen,"≡  Lider");var l=GangLayout.of(screen.width,screen.height);
+                    double x=(row.getX()+20)*l.scale(),from=(row.getY()+8)*l.scale(),to=(leader.getY()+1)*l.scale();
+                    require(screen.mouseClicked(x,from,0),"Rank drag starts");screen.mouseDragged(x,to,0,0,to-from);
+                    var moved=GangScreen.class.getDeclaredField("roleMoved");moved.setAccessible(true);require(moved.getBoolean(screen),"Rank drag threshold exceeded");
+                    screen.mouseReleased(x,to,0);
+                    var g=directory.of(PLAYER);String rank=g.roles.values().stream().filter(r->r.name.equals("Rekruter")).findFirst().orElseThrow().id;
+                    directory.reorderRoles(PLAYER,java.util.List.of(rank,"leader","member"));
+                    fixturePage(PLAYER,0);screen.updated();selectTab(pl.crimeandlaw.gang.GangCategory.ROLES.tabId());
+                }
+                case 24 -> {
+                    capture(mc,"24-rank-order");require(widget(screen,"≡  Rekruter").getY()<widget(screen,"≡  Lider").getY(),"Custom rank is displayed above leader");
+                    fixturePage(FRIEND,0);screen.updated();selectTab(pl.crimeandlaw.gang.GangCategory.ROLES.tabId());
+                    require(!widget(screen,"+ Nowa ranga").active&&!widget(screen,"Zapisz rangę").active,"Ordinary member cannot edit ranks");
+                    String rank=directory.of(PLAYER).roles.values().stream().filter(r->r.name.equals("Rekruter")).findFirst().orElseThrow().id;
+                    directory.assign(PLAYER,FRIEND,rank);fixturePage(FRIEND,0);screen.updated();selectTab(3);click(mc,"Wygląd");
+                    require(widget(screen,"Zapisz dla gangu").active,"Delegated appearance permission enables shared appearance");
+                    require(ClientState.state.has("requestCount"),"Recruiter receives applications");
+                    click(mc,"Zarządzanie");click(mc,"Zgłoszenia:");click(mc,"Kandydat14");
+                    require(widget(screen,"Przyjmij").active,"Recruiter can accept applications");
+                }
+                case 25 -> {
+                    capture(mc,"25-delegated-management");click(mc,"Logo");checkCleanLogoForm();
+                    require(screen.children().stream().noneMatch(c->c instanceof EditBox),"Logo settings have no path input");
+                    require(widget(screen,"Wybierz obraz…").active,"Delegated logo picker remains available");
+                }
+                case 26 -> {
+                    capture(mc,"26-clean-logo");
+                    REPORT.append("PASS: actual Minecraft renderer, 26 captures, restored rank creation/permissions/drag controls with fixture acknowledgements, rank ordering above leader, ordinary member restrictions, delegated recruitment and appearance, simplified logo form, register wheel/drag/keyboard scrolling, fixed header and pagination, hidden transport gate, GUI scales 2/4, typing, wide identity header, uploaded logo, paged members, color gradients, opacity, file-drop handler and cropping.\n");
                     Files.writeString(OUT.resolve("result.txt"),REPORT.toString());System.out.println("CRIME_UI_SMOKE_PASS");mc.stop();
                 }
             }
@@ -238,10 +288,10 @@ public final class GangUiSmokeTest {
         REPORT.append(name).append(" — ").append(mc.getWindow().getWidth()).append('x').append(mc.getWindow().getHeight())
                 .append(", GUI ").append(mc.getWindow().getGuiScale()).append('\n');
     }
-    private static void checkCreation(Minecraft mc) {
+    private static void checkCreation(Minecraft mc)throws ReflectiveOperationException {
         var l=GangLayout.of(screen.width,screen.height);
         var boxes=screen.children().stream().filter(c->c instanceof EditBox).map(c->(EditBox)c).toList();
-        require(boxes.size()==2,"Name/logo fields");EditBox name=boxes.getFirst();
+        require(boxes.size()==1,"Only the name field remains; no logo path field");checkCleanLogoForm();EditBox name=boxes.getFirst();
         require(screen.mouseClicked((name.getX()+10)*l.scale(),(name.getY()+8)*l.scale(),0),"Scaled text field click");
         name.setValue("");screen.charTyped('T',0);screen.charTyped('e',0);screen.charTyped('s',0);screen.charTyped('t',0);
         require(name.getValue().equals("Test"),"Typing after scaled click");
@@ -272,6 +322,11 @@ public final class GangUiSmokeTest {
                 require(bright>40,"Information column "+column+" contains visible text");
             }
         }
+    }
+    private static void checkCleanLogoForm()throws ReflectiveOperationException {
+        var field=GangScreen.class.getDeclaredField("labels");field.setAccessible(true);String labels=field.get(screen).toString();
+        require(!labels.contains("ścieżk")&&!labels.contains("PNG /")&&!labels.contains("opcjonalne")&&!labels.contains("później"),"Removed path, format and optional-logo notices");
+        require(screen.children().stream().noneMatch(c->c instanceof AbstractWidget w&&w.getMessage().getString().equals("Wczytaj i dopasuj")),"Manual path loading button removed");
     }
     private static void checkLogoTexture(Minecraft mc,net.minecraft.resources.ResourceLocation id,int width,int height){
         require(id!=null,"Logo texture registered");

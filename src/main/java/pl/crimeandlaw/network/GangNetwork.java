@@ -40,7 +40,7 @@ public final class GangNetwork {
         @Override public Type<? extends CustomPacketPayload> type(){return TYPE;}
     }
     public static void register(RegisterPayloadHandlersEvent event){
-        var registrar=event.registrar("4");
+        var registrar=event.registrar("5");
         registrar.playToServer(Action.TYPE,Action.CODEC,GangNetwork::handle);
         registrar.playToClient(State.TYPE,State.CODEC,(p,c)->clientReceiver.accept(p.json));
     }
@@ -72,6 +72,15 @@ public final class GangNetwork {
                 case "leave" -> d.leave(actor);
                 case "kick" -> d.kick(actor,uuid(a,"target"));
                 case "transfer" -> d.transfer(actor,uuid(a,"target"));
+                case "role" -> {
+                    Set<Permission> permissions=EnumSet.noneOf(Permission.class);
+                    for(Permission p:Permission.values())if(a.has(p.name())&&a.get(p.name()).getAsBoolean())permissions.add(p);
+                    d.role(actor,text(a,"role"),text(a,"name"),permissions);
+                }
+                case "assign" -> d.assign(actor,uuid(a,"target"),text(a,"role"));
+                case "reorder_roles" -> {
+                    List<String> order=new ArrayList<>();for(JsonElement id:a.getAsJsonArray("order"))order.add(id.getAsString());d.reorderRoles(actor,order);
+                }
                 case "theme" -> d.theme(actor,new Theme(integer(a,"background",Theme.DEFAULT.background()),integer(a,"border",Theme.DEFAULT.border()),integer(a,"opacity",235)));
                 case "logo" -> d.logo(actor,GangLogo.validate(text(a,"logo")));
                 default -> throw new IllegalArgumentException("Nieznana czynność.");

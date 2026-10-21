@@ -1,59 +1,57 @@
-# Sprawdzenie 0.1.11
+# Sprawdzenie 0.1.12
 
 21 października 2026. Minecraft 1.21.1, NeoForge 21.1.248, JDK 21.
 
 ## Zmiana
 
-Nowe logo kończy import jako bezstratny PNG 512×512 zamiast 64×64. Limit 1,1 MB
-obejmuje również szczegółowy obraz RGBA o słabej kompresji. Wspólna stała określa
-maksymalny wymiar, rozmiar binarny i długość Base64. Zapisy świata akceptują
-większe logo oraz dotychczasowe 64×64. Zapisany wcześniej obraz nie odzyskuje
-sam utraconych szczegółów; trzeba ponownie wczytać plik źródłowy.
+Przywrócono własne rangi: tworzenie i edycja, cztery uprawnienia, przypisywanie
+członkom, kolejność zmieniana przeciąganiem. Pozycja na liście nie zmienia
+uprawnień ani własności. Serwer sprawdza uprawnienia dla każdej operacji.
+Tylko lider przekazuje przywództwo; jego rola jest chroniona. Zachowano
+roboczy limit dawnego edytora: 12 rang, bez limitu członków i zgłoszeń.
 
-Protokół 4: limity akcji i stanu zawierają pełne logo oraz zapas na metadane,
-strony członkostwa i rejestru. Wersje protokołu 3 wymagają aktualizacji
-klienta i serwera. Odczyt NativeImage korzysta ze strumienia, aby szczegółowy
-PNG nie był kopiowany na mały stos LWJGL.
+Zapis bez rang dostaje „Lider”/„Członek” oraz przypisania według właściciela.
+Zapis zawierający dawne własne rangi zachowuje je. Prywatne zgłoszenia trafiają
+tylko do osób z INVITE lub lidera; odebranie uprawnienia wycofuje je z kolejnego
+snapshotu. Zdarzenia rang trafiają do wspólnego rejestru. Protokół sieciowy 5
+wymaga aktualizacji moda na kliencie i serwerze.
 
-LogoTexture przechowuje rzeczywiste wymiary tekstury. Nagłówek, podgląd i główna
-zakładka używają pełnego zakresu UV oraz liniowego filtra powiększania i
-pomniejszania. Podgląd kadrowania również używa filtra liniowego. Tekstura
-jest ładowana po zmianie danych, a nie przy każdej klatce. Układ i rozmiary
-okien pozostają zachowane; nie dodano trybów przerysowywania grafiki.
+Z obu formularzy logo usunięto pole ścieżki i „Wczytaj i dopasuj”. Pozostają
+systemowy wybór pliku i przeciąganie. Usunięto formaty oraz tekst o opcjonalnym
+logo i późniejszej zmianie. Kadrowanie, bezstratny PNG 512×512, limit 1,1 MB,
+liniowe skalowanie, duże obrazy źródłowe i kodeki pozostają dostępne.
 
 ## Testy automatyczne
 
-47 testów JUnit, zero błędów i pominiętych testów. Włączono obsługę testów
-Minecrafta przez ModDevGradle, dzięki czemu test kodeków używa prawdziwych
-RegistryFriendlyByteBuf oraz kodeków moda.
+54 testy JUnit, zero błędów i pominiętych testów. Nowe sprawdzenia obejmują:
 
-Nowe i zaktualizowane sprawdzenia:
+- Tworzenie, edycję, przypisywanie i zapis własnej rangi wraz z uprawnieniami
+  oraz zdarzeniami rejestru.
+- Delegowane zgłoszenia i wygląd działają, a pozostałe operacje są odrzucane.
+- Umieszczenie rangi nad Liderem nie daje jej uprawnień ani własności.
+- Nieprawidłowe aktualizacje i kolejność nie modyfikują danych częściowo.
+- Chroniona ranga Lidera, przekazanie jej wraz z własnością, brak możliwości
+  przypisania jej przez zwykłe zarządzanie rangami.
+- Migracja zapisów bez rang zachowuje członkostwo, logo i rejestr.
+- Prywatne zgłoszenia są widoczne dla rekrutera i znikają po odebraniu INVITE.
+- Wcześniejsze dane własnych rang i uprawnień są odczytywane.
 
-- Drobna czarno-biała szachownica 512×512 zachowuje każdy piksel po zapisie.
-- Import PNG/JPEG/GIF/BMP przy różnych proporcjach kończy się 512×512;
-  kadrowanie i przezroczyste marginesy pozostają poprawne.
-- Losowe RGBA 512×512 mieszczą się w limicie binarnym i limicie akcji.
-- Szczegółowe logo przekracza dawny limit akcji, przechodzi rzeczywiste kodeki
-  Action i State, walidację oraz zapis/odtworzenie danych gangu. Sprawdzane są
-  rozdzielczość i niezmieniony kolor po tej ścieżce.
-- Kodeki nadal odrzucają ciągi ponad nowy limit. Maksymalne logo razem ze
-  stroną członków i 100 wpisami rejestru mieści się w limicie stanu.
-- Walidator akceptuje 64×64, 256×256 i 512×512; odrzuca przekroczenie boku
-  oraz rozmiaru danych. Zapis dotychczasowych gangów nadal jest odczytywany.
-
-Zachowane testy wieloformatowego importu, alternatywnych czytników po błędzie,
-modeli kolorów PNG, SVG, nazw Unicode, limitów źródła, kolorów, rejestru,
-paginacji, uprawnień i członkostwa.
+Zachowano testy importu i detali 512×512, obu kodeków sieciowych, limitów,
+członkostwa bez limitu, rejestru, paginacji, kolorów i układu.
 
 ## Klient graficzny
 
-CRIME_UI_SMOKE_PASS: prawdziwy renderer Minecrafta, 20 zrzutów 1920×1080,
-GUI 2 i 4, Mesa llvmpipe. Asynchroniczny import dziewięciu formatów i SVG
-przechodzi do kadrowania, zatwierdzenia i podglądu. Sprawdzono rzeczywiste
-tekstury 512×512, szczegółowy PNG większy od dawnego limitu oraz dawną
-teksturę 64×64. Parametry OpenGL MIN_FILTER i MAG_FILTER mają GL_LINEAR,
-także w podglądzie kadrowania. Logo zapisano w danych przykładowego gangu
-i wyświetlono również na jego głównej zakładce.
+CRIME_UI_SMOKE_PASS: rzeczywisty renderer Minecrafta, 26 zrzutów 1920×1080,
+GUI 2 i 4, Mesa llvmpipe. Formularz tworzenia ma tylko jedno pole (nazwę),
+ustawienia logo nie mają pól ścieżki. Test sprawdza brak usuniętych napisów.
+Przeciągnięcie pliku nadal otwiera kadrowanie i daje teksturę 512×512.
+
+Sprawdzono widoczną zakładkę Rangi, formularz z nazwą i uprawnieniami,
+przeciąganie wiersza, wyświetlanie rangi nad Liderem, blokadę edycji dla
+zwykłego członka oraz ustawienia rekrutera z delegowanymi uprawnieniami.
+Potwierdzenia operacji rang w tym teście pochodzą z danych przykładowych
+przez rzeczywiste metody modelu; nie jest to połączenie z drugim graczem.
+Testy poprzednich kategorii, kolorów, rejestru i logo także przeszły.
 
 ## Budowanie i ograniczenia
 

@@ -6,6 +6,7 @@ import java.util.*;
 public enum GangCategory {
     GANG(0,"Gang",Placement.NAVIGATION),
     MEMBERS(1,"Członkowie",Placement.NAVIGATION),
+    ROLES(10,"Rangi",Placement.NAVIGATION),
     REGISTER(4,"Rejestr",Placement.NAVIGATION),
     TERRITORY(2,"Mapa",Placement.NAVIGATION),
     BONUSES(6,"Premie",Placement.NAVIGATION),

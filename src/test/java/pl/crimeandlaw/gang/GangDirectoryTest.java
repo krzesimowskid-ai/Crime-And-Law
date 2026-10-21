@@ -48,7 +48,7 @@ class GangDirectoryTest {
         restored.accept(leader,stranger);assertTrue(restored.isLeader(restored.of(leader),leader));
         assertEquals(105,restored.of(leader).theme.opacity());assertEquals("retained-logo",restored.of(leader).logo);
     }
-    @Test void migratesLegacyRankDataWithoutLosingMembershipOrDelegatingAdministration(){
+    @Test void restoresLegacyRanksAndTheirExplicitPermissions(){
         var d=setup();join(d,member,"Gracz");d.request(stranger,"Nowy",d.of(leader).id);
         d.theme(leader,new Theme(0x123456,0xABCDEF,105));d.logo(leader,"old-logo");
         JsonObject old=JsonParser.parseString(d.toJson()).getAsJsonObject();
@@ -57,9 +57,10 @@ class GangDirectoryTest {
         JsonArray rights=new JsonArray();rights.add("INVITE");rights.add("MANAGE_THEME");recruiter.add("permissions",rights);roles.add("recruiter",recruiter);gang.add("roles",roles);
         gang.getAsJsonObject("members").getAsJsonObject(member.toString()).addProperty("role","recruiter");
         var restored=GangDirectory.fromJson(old.toString());
-        assertEquals(d.toJson(),restored.toJson());assertFalse(restored.toJson().contains("\"roles\""));
-        assertThrows(IllegalArgumentException.class,()->restored.accept(member,stranger));
-        restored.accept(leader,stranger);assertSame(restored.of(leader),restored.of(stranger));
+        assertEquals("recruiter",restored.of(member).members.get(member).role);
+        assertEquals(Set.of(Permission.INVITE,Permission.MANAGE_THEME),restored.of(member).roles.get("recruiter").permissions);
+        assertEquals(leader,restored.of(member).owner);assertEquals("old-logo",restored.of(member).logo);
+        restored.accept(member,stranger);assertSame(restored.of(leader),restored.of(stranger));
     }
     @Test void gangSizeAndApplicationCountHaveNoGameplayCapAndSurviveSave(){
         var d=setup();UUID id=d.of(leader).id;

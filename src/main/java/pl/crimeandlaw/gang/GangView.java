@@ -18,13 +18,14 @@ public final class GangView {
         JsonObject result=new JsonObject(),gang=new JsonObject();
         gang.addProperty("id",source.id.toString());gang.addProperty("owner",source.owner.toString());
         gang.addProperty("name",source.name);gang.addProperty("logo",source.logo);gang.add("theme",JSON.toJsonTree(source.theme));
+        gang.add("roles",JSON.toJsonTree(source.roles));
         int mp=page(memberPage,source.members.size());Map<UUID,Member> members=new LinkedHashMap<>();JsonArray ids=new JsonArray();
         source.members.entrySet().stream().skip((long)mp*PAGE_SIZE).limit(PAGE_SIZE).forEach(e->{members.put(e.getKey(),e.getValue());ids.add(e.getKey().toString());});
         members.put(source.owner,source.members.get(source.owner));members.put(viewer,source.members.get(viewer));
         gang.add("members",JSON.toJsonTree(members));result.add("memberIds",ids);
         result.addProperty("memberCount",source.members.size());result.addProperty("memberPage",mp);
         result.addProperty("memberPages",Math.max(1,(source.members.size()+PAGE_SIZE-1)/PAGE_SIZE));
-        if(source.owner.equals(viewer)){
+        if(GangDirectory.allowed(source,viewer,Permission.INVITE)){
             int rp=page(requestPage,source.requests.size());Map<UUID,String> requests=new LinkedHashMap<>();
             source.requests.entrySet().stream().skip((long)rp*PAGE_SIZE).limit(PAGE_SIZE).forEach(e->requests.put(e.getKey(),e.getValue()));
             gang.add("requests",JSON.toJsonTree(requests));result.addProperty("requestCount",source.requests.size());
