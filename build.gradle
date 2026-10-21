@@ -2,7 +2,7 @@ plugins {
     id 'java-library'
     id 'net.neoforged.moddev' version '2.0.148'
 }
-version = '0.1.8'
+version = '0.1.9'
 group = 'pl.crimeandlaw'
 base { archivesName = 'crimeandlaw' }
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
@@ -17,6 +17,7 @@ neoForge {
             client()
             if (uiSmoke) {
                 systemProperty 'crimeandlaw.uiSmoke', 'true'
+                systemProperty 'crimeandlaw.logoFixtures', file('src/test/resources/logo-formats.json').absolutePath
                 programArguments.addAll '--width', '1920', '--height', '1080'
             }
         }
@@ -25,11 +26,29 @@ neoForge {
     mods { crimeandlaw { sourceSet sourceSets.main } }
 }
 dependencies {
+    // Ship the readers inside the mod; players need no separate codec installation.
+    ['imageio-core', 'imageio-metadata', 'imageio-webp', 'imageio-bmp',
+     'imageio-tiff', 'imageio-jpeg', 'imageio-psd', 'imageio-tga',
+     'imageio-pcx', 'imageio-pnm', 'imageio-icns'].each { artifact ->
+        jarJar(implementation("com.twelvemonkeys.imageio:${artifact}")) {
+            version { strictly '[3.15.3,3.16)'; prefer '3.15.3' }
+        }
+    }
+    ['common-lang', 'common-io', 'common-image'].each { artifact ->
+        jarJar(implementation("com.twelvemonkeys.common:${artifact}")) {
+            version { strictly '[3.15.3,3.16)'; prefer '3.15.3' }
+        }
+    }
+    jarJar(implementation('com.github.weisj:jsvg')) {
+        version { strictly '[2.0.0,3.0)'; prefer '2.0.0' }
+    }
     testImplementation platform('org.junit:junit-bom:5.11.4')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testImplementation 'com.google.code.gson:gson:2.10.1'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
+// NeoForge 1.21.1 needs library dependencies on the development launcher classpath.
+configurations.additionalRuntimeClasspath.extendsFrom(configurations.jarJar)
 tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
 tasks.named('test') { useJUnitPlatform() }
 // Keep fixture automation out of releases even after a prior smoke-test compile.

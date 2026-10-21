@@ -5,32 +5,86 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.file.*;
 import java.util.Base64;
-import java.util.Set;
-import java.util.Locale;
+import java.util.*;
+import java.nio.charset.StandardCharsets;
 import javax.imageio.ImageIO;
+import javax.imageio.spi.IIORegistry;
+import javax.imageio.spi.ImageReaderSpi;
 import javax.imageio.stream.MemoryCacheImageInputStream;
 import javax.imageio.stream.MemoryCacheImageOutputStream;
+import javax.xml.stream.XMLInputFactory;
+import com.github.weisj.jsvg.parser.SVGLoader;
+import com.github.weisj.jsvg.parser.LoaderContext;
+import com.github.weisj.jsvg.parser.resources.ResourcePolicy;
+import com.github.weisj.jsvg.view.ViewBox;
 import pl.crimeandlaw.gang.GangLogo;
 
 /** Decoding, preview downsampling and final encoding run outside rendering. */
 public final class LogoImages {
+    public static final String FORMATS="PNG / JPG / GIF / BMP / WebP / SVG / TIFF / ICO / ICNS / PSD / TGA / PCX / PNM";
+    public static final int MAX_FILE_BYTES=64_000_000,PREVIEW_SIDE=1024;
+    private static final Set<IIORegistry> REGISTRIES=Collections.newSetFromMap(new WeakHashMap<>());
     private LogoImages(){}
+    private static synchronized void registerReaders(){
+        IIORegistry registry=IIORegistry.getDefaultInstance();
+        if(!REGISTRIES.add(registry))return;
+        // Explicit providers also work when NeoForge's module loader cannot discover
+        // ImageIO service descriptors from the worker thread's context loader.
+        for(ImageReaderSpi spi:List.of(
+            new com.twelvemonkeys.imageio.plugins.webp.WebPImageReaderSpi(),
+            new com.twelvemonkeys.imageio.plugins.bmp.BMPImageReaderSpi(),
+            new com.twelvemonkeys.imageio.plugins.bmp.ICOImageReaderSpi(),
+            new com.twelvemonkeys.imageio.plugins.tiff.TIFFImageReaderSpi(),
+            new com.twelvemonkeys.imageio.plugins.jpeg.JPEGImageReaderSpi(),
+            new com.twelvemonkeys.imageio.plugins.psd.PSDImageReaderSpi(),
+            new com.twelvemonkeys.imageio.plugins.tga.TGAImageReaderSpi(),
+            new com.twelvemonkeys.imageio.plugins.pcx.PCXImageReaderSpi(),
+            new com.twelvemonkeys.imageio.plugins.pnm.PNMImageReaderSpi(),
+            new com.twelvemonkeys.imageio.plugins.icns.ICNSImageReaderSpi()))registry.registerServiceProvider(spi,ImageReaderSpi.class);
+    }
     public static BufferedImage read(Path path)throws IOException {
         if(!Files.isRegularFile(path))throw new IOException("Nie znaleziono pliku. Sprawdź ścieżkę i nazwę obrazu.");
-        if(Files.size(path)>20_000_000)throw new IOException("Obraz przekracza 20 MB. Zapisz mniejszy plik PNG, JPG, GIF lub BMP.");
-        try(var raw=Files.newInputStream(path);var in=new MemoryCacheImageInputStream(raw)){
+        if(Files.size(path)>MAX_FILE_BYTES)throw new IOException("Obraz przekracza limit 64 MB.");
+        byte[] bytes;
+        try(var raw=Files.newInputStream(path)){bytes=raw.readNBytes(MAX_FILE_BYTES+1);}
+        if(bytes.length>MAX_FILE_BYTES)throw new IOException("Obraz przekracza limit 64 MB.");
+        if(looksLikeSvg(bytes))return readSvg(bytes);
+        registerReaders();
+        try(var in=new MemoryCacheImageInputStream(new ByteArrayInputStream(bytes))){
             var readers=ImageIO.getImageReaders(in);
-            if(!readers.hasNext())throw new IOException("Nie można odczytać obrazu. Wybierz prawdziwy plik PNG, JPG, GIF lub BMP, a nie sam zmieniony format nazwy.");
+            if(!readers.hasNext())throw new IOException("Nie można odczytać obrazu: nieznany format lub uszkodzony plik. Obsługiwane: "+FORMATS+".");
             var reader=readers.next();
             try {
-                reader.setInput(in);String format=reader.getFormatName();
-                if(!Set.of("png","jpeg","gif","bmp").contains(format.toLowerCase(Locale.ROOT)))throw new IOException("Ten format nie jest obsługiwany. Wybierz PNG, JPG, GIF lub BMP.");
+                reader.setInput(in);
                 int width=reader.getWidth(0),height=reader.getHeight(0);
-                if(width<1||height<1||width>16384||height>16384||(long)width*height>64_000_000)throw new IOException("Obraz ma zbyt duże wymiary. Zmniejsz go do maksymalnie 64 milionów pikseli.");
-                var param=reader.getDefaultReadParam();int step=Math.max(1,(Math.max(width,height)+1023)/1024);
-                param.setSourceSubsampling(step,step,0,0);return reader.read(0,param);
+                if(width<1||height<1||width>100_000||height>100_000||(long)width*height>1_000_000_000L)throw new IOException("Obraz przekracza limit wymiarów: bok 100 000 px lub miliard pikseli.");
+                var param=reader.getDefaultReadParam();int step=Math.max(1,(Math.max(width,height)+PREVIEW_SIDE-1)/PREVIEW_SIDE);
+                param.setSourceSubsampling(step,step,0,0);
+                BufferedImage image=reader.read(0,param);
+                if(image==null)throw new IOException("Nie można odczytać danych obrazu.");
+                return image;
             }finally{reader.dispose();}
         }
+    }
+    private static boolean looksLikeSvg(byte[] bytes){
+        String prefix=new String(bytes,0,Math.min(bytes.length,65536),StandardCharsets.UTF_8).replace("\u0000","").replace("\uFEFF","").stripLeading();
+        return prefix.startsWith("<")&&java.util.regex.Pattern.compile("<(?:(?:[A-Za-z_][\\w.-]*):)?svg(?:\\s|>)",java.util.regex.Pattern.CASE_INSENSITIVE).matcher(prefix).find();
+    }
+    private static BufferedImage readSvg(byte[] bytes)throws IOException {
+        if(bytes.length>8_000_000)throw new IOException("Obraz SVG przekracza limit 8 MB.");
+        XMLInputFactory xml=XMLInputFactory.newDefaultFactory();
+        xml.setProperty(XMLInputFactory.SUPPORT_DTD,false);
+        xml.setProperty("javax.xml.stream.isSupportingExternalEntities",false);
+        var document=new SVGLoader().load(()->xml.createXMLEventReader(new ByteArrayInputStream(bytes)),null,
+            LoaderContext.builder().externalResourcePolicy(ResourcePolicy.DENY_ALL).build());
+        if(document==null)throw new IOException("Nie można odczytać obrazu SVG: niepoprawny dokument.");
+        double w=document.size().width,h=document.size().height;
+        if(!Double.isFinite(w)||!Double.isFinite(h)||w<=0||h<=0)throw new IOException("Obraz SVG nie ma poprawnych wymiarów lub viewBox.");
+        double scale=Math.min(1,PREVIEW_SIDE/Math.max(w,h));
+        int width=Math.max(1,(int)Math.round(w*scale)),height=Math.max(1,(int)Math.round(h*scale));
+        BufferedImage image=new BufferedImage(width,height,BufferedImage.TYPE_INT_ARGB);var g=image.createGraphics();
+        try{document.render(null,g,new ViewBox(0,0,width,height));}finally{g.dispose();}
+        return image;
     }
     public static byte[] png(BufferedImage image)throws IOException {
         ByteArrayOutputStream out=new ByteArrayOutputStream();

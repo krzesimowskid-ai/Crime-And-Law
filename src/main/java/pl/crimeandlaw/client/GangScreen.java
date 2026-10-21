@@ -107,7 +107,7 @@ public final class GangScreen extends Screen {
         label(x,y+48,"lub wklej ścieżkę do obrazu:",0xFFAAAAB7);
         field(x,y+62,width,1024,file,v->file=v);
         button(x,y+88,Math.min(140,width),"Wczytaj i dopasuj",b->loadLogo()).active=creating||isLeader();
-        label(x,y+115,"PNG / JPG / GIF / BMP • możesz też przeciągnąć plik na okno gry.",0xFFAAAAB7);
+        label(x,y+115,"PNG / JPG / WebP / SVG i inne • przeciągnij plik na okno gry.",0xFFAAAAB7);
     }
     private void buildFind(){
         label(cx,cy,"Znajdź gang");int searchWidth=Math.max(50,cw-82);
@@ -255,8 +255,10 @@ public final class GangScreen extends Screen {
     }
     private void chooseLogoFile(){
         try(MemoryStack stack=MemoryStack.stackPush()){
-            var filters=stack.pointers(stack.UTF8("*.png"),stack.UTF8("*.jpg"),stack.UTF8("*.jpeg"),stack.UTF8("*.gif"),stack.UTF8("*.bmp"));
-            String path=TinyFileDialogs.tinyfd_openFileDialog("Wybierz logo gangu",null,filters,"Obrazy PNG / JPG / GIF / BMP",false);
+            var filters=stack.pointers(stack.UTF8("*.png"),stack.UTF8("*.jpg"),stack.UTF8("*.jpeg"),stack.UTF8("*.gif"),stack.UTF8("*.bmp"),
+                stack.UTF8("*.webp"),stack.UTF8("*.svg"),stack.UTF8("*.tif"),stack.UTF8("*.tiff"),stack.UTF8("*.ico"),stack.UTF8("*.icns"),
+                stack.UTF8("*.psd"),stack.UTF8("*.tga"),stack.UTF8("*.pcx"),stack.UTF8("*.pnm"),stack.UTF8("*.ppm"),stack.UTF8("*.pgm"),stack.UTF8("*.pbm"),stack.UTF8("*"));
+            String path=TinyFileDialogs.tinyfd_openFileDialog("Wybierz logo gangu",null,filters,"Obrazy (format rozpoznawany z pliku)",false);
             if(path!=null){file=path;loadLogo();}
         }catch(Exception e){ClientState.message="Nie można otworzyć okna wyboru. Przeciągnij obraz albo wklej jego ścieżkę.";}
     }

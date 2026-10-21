@@ -108,10 +108,19 @@ public final class GangUiSmokeTest {
                 }
                 case 11 -> {
                     capture(mc,"11-appearance-preview");click(mc,"Logo");
-                    var image=new java.awt.image.BufferedImage(512,256,java.awt.image.BufferedImage.TYPE_INT_ARGB);
-                    for(int y=0;y<256;y++)for(int x=0;x<512;x++)image.setRGB(x,y,0xFF000000|(x/2)<<16|(y<<8)|150);
-                    Path png=OUT.resolve("logo-fixture.png").toAbsolutePath();Files.write(png,LogoImages.png(image));
-                    screen.onFilesDrop(java.util.List.of(png));
+                    var cases=com.google.gson.JsonParser.parseString(Files.readString(Path.of(System.getProperty("crimeandlaw.logoFixtures")))).getAsJsonObject();
+                    for(var entry:cases.entrySet()){
+                        Path raster=OUT.resolve("fixture-"+entry.getKey()+".png").toAbsolutePath();
+                        Files.write(raster,java.util.Base64.getDecoder().decode(entry.getValue().getAsString()));
+                        var decoded=java.util.concurrent.CompletableFuture.supplyAsync(()->{
+                            try{return LogoImages.read(raster);}catch(java.io.IOException e){throw new RuntimeException(e);}
+                        }).join();
+                        require(decoded.getWidth()==16,"Bundled reader in mod class loader: "+entry.getKey());
+                        require(!LogoImages.encode(decoded,new LogoCrop(decoded.getWidth(),decoded.getHeight())).isBlank(),"Normalize "+entry.getKey());
+                    }
+                    Path svg=OUT.resolve("logo-vector-fixture.png").toAbsolutePath();
+                    Files.writeString(svg,"<svg xmlns='http://www.w3.org/2000/svg' width='512' height='256'><defs><linearGradient id='g'><stop stop-color='#b82355'/><stop offset='1' stop-color='#568ac8'/></linearGradient></defs><rect width='512' height='256' fill='url(#g)'/></svg>");
+                    screen.onFilesDrop(java.util.List.of(svg));
                 }
                 case 12 -> {
                     capture(mc,"12-logo-crop");LogoCropScreen dialog=(LogoCropScreen)mc.screen;double scale=dialog.layout.scale();
