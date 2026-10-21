@@ -9,24 +9,23 @@ public record TerrainProfile(TerrainKey key,int schema,int sampleCount,int minHe
     public enum Source { GENERATED_SNAPSHOT, GENERATOR_RECONSTRUCTION }
     public enum Surface { SOIL, ROCK, SAND, WATER, SNOW, OTHER }
     public enum Trait {
-        CULTIVABLE("Teren sprzyjający uprawom","Potencjał upraw"),
-        WOODED("Teren leśny","Potencjał gospodarki leśnej"),
-        ROCKY("Odsłonięta skała","Potencjał wydobycia"),
-        SANDY("Podłoże piaszczyste","Potencjał surowców piaszczystych"),
-        WATER("Woda w obrębie chunka","Dostęp do wody"),
-        HILLY("Duże różnice wysokości","Ukształtowanie terenu"),
-        SNOWY("Podłoże śnieżne","Warunki chłodnego terenu"),
-        VILLAGE("Obszar wygenerowanej wioski","Obiekty wioski"),
-        FARM("Wygenerowana farma","Potencjał produkcji roślinnej"),
-        WORKSHOP("Wygenerowany warsztat","Potencjał wytwarzania wyposażenia"),
-        ANIMAL_PEN("Wygenerowana zagroda","Potencjał hodowli"),
-        FISHERY("Wygenerowany dom rybaka","Potencjał rybołówstwa"),
-        LIBRARY("Wygenerowana biblioteka","Potencjał wiedzy i badań"),
-        TANNERY("Wygenerowana garbarnia","Potencjał obróbki materiałów");
-        private final String label,potential;
-        Trait(String label,String potential){this.label=label;this.potential=potential;}
+        CULTIVABLE("Przewaga płaskiego podłoża ziemnego"),
+        WOODED("Teren leśny"),
+        ROCKY("Odsłonięta skała"),
+        SANDY("Podłoże piaszczyste"),
+        WATER("Woda w obrębie chunka"),
+        HILLY("Duże różnice wysokości"),
+        SNOWY("Podłoże śnieżne"),
+        VILLAGE("Obszar wygenerowanej wioski"),
+        FARM("Wygenerowana farma"),
+        WORKSHOP("Wygenerowany warsztat"),
+        ANIMAL_PEN("Wygenerowana zagroda"),
+        FISHERY("Wygenerowany dom rybaka"),
+        LIBRARY("Wygenerowana biblioteka"),
+        TANNERY("Wygenerowana garbarnia");
+        private final String label;
+        Trait(String label){this.label=label;}
         public String label(){return label;}
-        public String potential(){return potential;}
     }
     public record Sample(int height,Surface surface,boolean wooded,String biome){}
     public TerrainProfile {
@@ -59,7 +58,7 @@ public record TerrainProfile(TerrainKey key,int schema,int sampleCount,int minHe
             if(s.wooded())wooded++;biomes.add(s.biome());
         }
         Set<Trait> traits=EnumSet.noneOf(Trait.class);int n=samples.size();
-        // Recognition rules describe landscape suitability, not bonus percentages.
+        // Coarse descriptive recognition only. These thresholds do not qualify a bonus.
         if(counts.getOrDefault(Surface.SOIL,0)*2>=n&&max-min<=12)traits.add(Trait.CULTIVABLE);
         if(wooded*4>=n)traits.add(Trait.WOODED);
         if(counts.getOrDefault(Surface.ROCK,0)*4>=n)traits.add(Trait.ROCKY);
@@ -77,8 +76,4 @@ public record TerrainProfile(TerrainKey key,int schema,int sampleCount,int minHe
         return new TerrainProfile(key,schema,sampleCount,minHeight,maxHeight,surfaces,woodedSamples,biomes,new ArrayList<>(templates),combined,source,analysedAt);
     }
     public TerrainProfile reconstructed(){return new TerrainProfile(key,schema,sampleCount,minHeight,maxHeight,surfaces,woodedSamples,biomes,villagePieces,traits,Source.GENERATOR_RECONSTRUCTION,analysedAt);}
-    public int mapColor(){
-        Surface dominant=surfaces.entrySet().stream().max(Map.Entry.comparingByValue()).orElseThrow().getKey();
-        return switch(dominant){case WATER->0x315B86;case SAND->0xA69864;case ROCK->0x737579;case SNOW->0xB7C3CC;case SOIL->traits.contains(Trait.WOODED)?0x315C45:0x66804D;default->0x675A63;};
-    }
 }

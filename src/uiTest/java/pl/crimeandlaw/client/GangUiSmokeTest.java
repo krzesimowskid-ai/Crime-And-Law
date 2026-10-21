@@ -287,7 +287,7 @@ public final class GangUiSmokeTest {
                     capture(mc,"28-terrain-map-scale2");
                     var panel=widget(screen,"Mapa terenu");var l=GangLayout.of(screen.width,screen.height);
                     require(panel.visible,"Terrain panel is visible without body scrolling");
-                    screen.mouseClicked((panel.getX()+4*28+14)*l.scale(),(panel.getY()+2*28+14)*l.scale(),0);
+                    screen.mouseClicked((panel.getX()+6.5*196/11)*l.scale(),(panel.getY()+4.5*196/11)*l.scale(),0);
                     var sx=GangScreen.class.getDeclaredField("terrainX");sx.setAccessible(true);var sz=GangScreen.class.getDeclaredField("terrainZ");sz.setAccessible(true);
                     require(sx.getInt(screen)==1&&sz.getInt(screen)==-1,"Scaled click selects the correct chunk");
                     screen.mouseScrolled((panel.getX()+250)*l.scale(),(panel.getY()+80)*l.scale(),0,-100);
@@ -299,12 +299,28 @@ public final class GangUiSmokeTest {
                     capture(mc,"29-terrain-map-scale4");
                     var sx=GangScreen.class.getDeclaredField("terrainX");sx.setAccessible(true);require(sx.getInt(screen)==1,"GUI scale preserves selected chunk");
                     var panel=widget(screen,"Mapa terenu");var l=GangLayout.of(screen.width,screen.height);
-                    screen.mouseClicked((panel.getX()+14)*l.scale(),(panel.getY()+14)*l.scale(),0);
+                    screen.mouseClicked((panel.getX()+0.5*196/11)*l.scale(),(panel.getY()+0.5*196/11)*l.scale(),0);
                 }
                 case 30 -> {
                     capture(mc,"30-terrain-unavailable");
-                    var sx=GangScreen.class.getDeclaredField("terrainX");sx.setAccessible(true);require(sx.getInt(screen)==-3,"Unavailable cell remains inspectable");
-                    REPORT.append("PASS: actual Minecraft renderer, 30 captures, real terrain-summary grid with fixture data, scaled chunk selection, scrolling terrain inspector, map selection across GUI resize and unavailable cells; new-rank dialog, save and cancellation, role dragging, register, full Polish dates, colors and logo import.\n");
+                    var sx=GangScreen.class.getDeclaredField("terrainX");sx.setAccessible(true);require(sx.getInt(screen)==-5,"Unavailable cell remains inspectable");
+                    click(mc,"Siatka");click(mc,"+");click(mc,"+");
+                }
+                case 31 -> {
+                    capture(mc,"31-terrain-zoom-and-grid");
+                    var radius=GangScreen.class.getDeclaredField("terrainRadius");radius.setAccessible(true);require(radius.getInt(screen)==3,"Zoom changes the visible geographical area");
+                    click(mc,"−");click(mc,"−");click(mc,"Siatka");
+                    var actual=Path.of("../build/server-smoke-terrain15a/view.json");
+                    require(Files.exists(actual),"Actual world surface from the dedicated-server test is available");
+                    TerrainClient.receive(Files.readString(actual));
+                }
+                case 32 -> {
+                    capture(mc,"32-actual-village-map-scale4");checkMapTexture(mc);
+                    mc.options.guiScale().set(2);mc.resizeDisplay();
+                }
+                case 33 -> {
+                    capture(mc,"33-actual-village-map-scale2");checkMapTexture(mc);
+                    REPORT.append("PASS: actual Minecraft renderer, 33 captures, continuous surface map with 49 tiles read from a real dedicated-server village; scaled selection, independent inspector scroll, GUI resize, missing areas, zoom and optional grid; ranks, register, dates, colors and logo import.\n");
                     Files.writeString(OUT.resolve("result.txt"),REPORT.toString());System.out.println("CRIME_UI_SMOKE_PASS");mc.stop();
                 }
             }
@@ -460,7 +476,33 @@ public final class GangUiSmokeTest {
             var templates=(x==0&&z==0||x==1&&z==-1)?java.util.List.of("minecraft:village/plains/houses/plains_weaponsmith_1","minecraft:village/plains/houses/plains_small_farm_1","minecraft:village/plains/houses/plains_library_1"):java.util.List.<String>of();
             atlas.remember(pl.crimeandlaw.territory.TerrainProfile.analyse(key,java.util.Collections.nCopies(16,sample),!templates.isEmpty(),templates,10));
         }
-        TerrainClient.view=pl.crimeandlaw.territory.TerrainView.snapshot(atlas,"minecraft:overworld",0,0,key->key.z()!=-3,id->"Czarne Wilki");
+        byte[] pixels=new byte[256];
+        java.util.Map<pl.crimeandlaw.territory.TerrainKey,pl.crimeandlaw.territory.TerrainMapTile> tiles=new java.util.HashMap<>();
+        for(int z=-3;z<=3;z++)for(int x=-3;x<=3;x++){
+            for(int dz=0;dz<16;dz++)for(int dx=0;dx<16;dx++){
+                int wx=x*16+dx,wz=z*16+dz;
+                var color=Math.abs(wx-14*Math.sin(wz/18.0))<5?net.minecraft.world.level.material.MapColor.WATER:wx>22?net.minecraft.world.level.material.MapColor.STONE:net.minecraft.world.level.material.MapColor.GRASS;
+                pixels[dz*16+dx]=color.getPackedId(net.minecraft.world.level.material.MapColor.Brightness.NORMAL);
+            }
+            tiles.put(new pl.crimeandlaw.territory.TerrainKey("minecraft:overworld",x,z),pl.crimeandlaw.territory.TerrainMapTile.of(pixels));
+        }
+        TerrainClient.view=pl.crimeandlaw.territory.TerrainView.snapshot(atlas,"minecraft:overworld",0,0,key->key.z()!=-3,id->"Czarne Wilki",tiles::get);
+    }
+    private static void checkMapTexture(Minecraft mc){
+        var id=net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("crimeandlaw","terrain_map");
+        var texture=(net.minecraft.client.renderer.texture.DynamicTexture)mc.getTextureManager().getTexture(id);
+        var image=texture.getPixels();require(image.getWidth()==176&&image.getHeight()==176,"Map texture retains one pixel per world block");
+        var view=TerrainClient.view;int count=0;
+        for(var cell:view.cells()){
+            if(cell.mapPixels().isEmpty())continue;
+            int dx=(cell.x()-view.centerX()+5)*16,dz=(cell.z()-view.centerZ()+5)*16;
+            byte[] colors=new pl.crimeandlaw.territory.TerrainMapTile(cell.mapPixels()).colors();
+            for(int z=0;z<16;z++)for(int x=0;x<16;x++){
+                int expected=net.minecraft.world.level.material.MapColor.getColorFromPackedId(colors[z*16+x]);
+                if((expected>>>24)!=0)require(image.getPixelRGBA(dx+x,dz+z)==expected,"Texture position, channels and real map color preserved");
+            }count++;
+        }
+        require(count>=49,"Real world map has at least 49 captured chunks");
     }
     private static void checkGradients(Minecraft mc){
         ColorPickerScreen d=(ColorPickerScreen)mc.screen;double scale=d.layout.scale()*mc.getWindow().getGuiScale();

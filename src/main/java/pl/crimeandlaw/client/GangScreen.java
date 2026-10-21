@@ -40,6 +40,8 @@ public final class GangScreen extends Screen {
     private final ScrollPosition terrainScroll=new ScrollPosition();
     private String terrainCenter="";
     private int terrainX,terrainZ,terrainTicks;
+    private int terrainRadius=pl.crimeandlaw.territory.TerrainView.RADIUS;
+    private boolean terrainGrid;
 
     public GangScreen(){super(Component.literal("Crime And Law"));}
     public void terrainUpdated(){if(tab==2)rebuildWidgets();}
@@ -243,12 +245,15 @@ public final class GangScreen extends Screen {
         label(cx,cy+30,"Ta część gangu będzie rozwijana w kolejnych wersjach.");
     }
     private void buildMap(){
-        label(cx,cy,"Mapa terenu");TerrainClient.request();var view=TerrainClient.view;
+        label(cx,cy,"Mapa świata");TerrainClient.request();var view=TerrainClient.view;
         if(view!=null){String center=view.dimension()+"|"+view.centerX()+","+view.centerZ();
             if(!center.equals(terrainCenter)){terrainCenter=center;terrainX=view.centerX();terrainZ=view.centerZ();terrainScroll.reset();}
         }
         button(cx+cw-96,cy-5,96,"Odśwież",b->TerrainClient.request());
-        addRenderableWidget(new TerrainPanel(cx,cy+25,cw,top+h-26-(cy+25),view,terrainX,terrainZ,this::theme,terrainScroll,cell->{terrainX=cell.x();terrainZ=cell.z();terrainScroll.reset();rebuildWidgets();}));
+        button(cx+94,cy-5,68,"Siatka",b->{terrainGrid=!terrainGrid;rebuildWidgets();},terrainGrid);
+        button(cx+168,cy-5,22,"−",b->{terrainRadius=Math.min(pl.crimeandlaw.territory.TerrainView.RADIUS,terrainRadius+1);rebuildWidgets();}).active=terrainRadius<pl.crimeandlaw.territory.TerrainView.RADIUS;
+        button(cx+194,cy-5,22,"+",b->{terrainRadius=Math.max(2,terrainRadius-1);rebuildWidgets();}).active=terrainRadius>2;
+        addRenderableWidget(new TerrainPanel(cx,cy+25,cw,top+h-26-(cy+25),view,terrainX,terrainZ,terrainRadius,terrainGrid,this::theme,terrainScroll,cell->{terrainX=cell.x();terrainZ=cell.z();terrainScroll.reset();rebuildWidgets();}));
     }
     private Theme draftTheme(){return new Theme(Integer.parseInt(background.replace("#",""),16),Integer.parseInt(border.replace("#",""),16),opacity);}
     private void buildSettings(){

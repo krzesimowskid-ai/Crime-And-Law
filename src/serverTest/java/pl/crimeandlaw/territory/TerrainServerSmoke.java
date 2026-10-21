@@ -26,6 +26,7 @@ public final class TerrainServerSmoke {
     private static TerrainProfile.Trait expected;
     private static boolean done,restart;
     private static int waited;
+    private static boolean changedMap;
     private static String findTemplate(Tag value){
         if(value instanceof CompoundTag tag){
             String location=tag.getString("location");if(!location.isBlank())return location;
@@ -45,6 +46,8 @@ public final class TerrainServerSmoke {
                 expected=TerrainProfile.Trait.valueOf(meta.get("trait").getAsString());
                 var chunk=level.getChunk(target.x(),target.z());
                 require(original.equals(TerrainOrigins.read(chunk)),"Generation snapshot survives a real server restart");
+                require(TerrainSavedData.get(level).map(target)!=null,"Surface raster survives an actual server restart");
+                require((TerrainSavedData.get(level).map(target).colors()[17]&255)>>2==net.minecraft.world.level.material.MapColor.GOLD.id,"Updated map pixel is persisted before any rescan");
             }else{
                 var structures=level.registryAccess().registryOrThrow(Registries.STRUCTURE).getTag(StructureTags.VILLAGE).orElseThrow();
                 var found=level.getChunkSource().getGenerator().findNearestMapStructure(level,structures,BlockPos.ZERO,32,false);
@@ -67,7 +70,7 @@ public final class TerrainServerSmoke {
                 // and generated structure templates must remain authoritative.
                 for(int dz=2;dz<16;dz+=4)for(int dx=2;dx<16;dx+=4){
                     int x=target.x()*16+dx,z=target.z()*16+dz;
-                    level.setBlock(new BlockPos(x,original.maxHeight()+4,z),Blocks.DIAMOND_BLOCK.defaultBlockState(),3);
+                    level.setBlock(new BlockPos(x,level.getMaxBuildHeight()-6,z),Blocks.DIAMOND_BLOCK.defaultBlockState(),3);
                 }
             }
             // A headless server has no player to keep the test village loaded.
@@ -82,6 +85,12 @@ public final class TerrainServerSmoke {
                 // Simulate a chunk saved before this mod captured origins.
                 oldChunk.removeData(TerrainOrigins.ORIGINAL);oldChunk.setUnsaved(true);
                 for(int dz=2;dz<16;dz+=4)for(int dx=2;dx<16;dx+=4)level.setBlock(new BlockPos(legacy.x()*16+dx,level.getMaxBuildHeight()-10,legacy.z()*16+dz),Blocks.DIAMOND_BLOCK.defaultBlockState(),3);
+                // Non-4x4-sample columns and both sides of a chunk seam must be drawn.
+                for(int x:new int[]{target.x()*16+1,target.x()*16+15,legacy.x()*16})level.setBlock(new BlockPos(x,level.getMaxBuildHeight()-4,target.z()*16+1),Blocks.RED_CONCRETE.defaultBlockState(),3);
+            }
+            // Force-loading is limited to this disposable fixture, never the map implementation.
+            for(int dz=-3;dz<=3;dz++)for(int dx=-3;dx<=3;dx++){
+                level.setChunkForced(target.x()+dx,target.z()+dz,true);level.getChunk(target.x()+dx,target.z()+dz);
             }
             System.out.println("TERRAIN_SMOKE_QUEUED "+target);
             TerrainAnalysis.enqueue(level,target.x(),target.z());
@@ -92,20 +101,32 @@ public final class TerrainServerSmoke {
         var server=event.getServer();var level=server.overworld();
         try{
             TerrainAnalysis.enqueue(level,target.x(),target.z());var saved=TerrainSavedData.get(level);var profile=saved.atlas.get(target);
+            TerrainCartography.enqueue(level,target.x(),target.z());
             var reconstructed=saved.atlas.get(legacy);
-            if(profile==null||reconstructed==null){if(++waited>1200)throw new AssertionError("Terrain job did not complete");return;}
+            boolean mapped=true;for(int dz=-3;dz<=3;dz++)for(int dx=-3;dx<=3;dx++)if(saved.map(new TerrainKey(target.dimension(),target.x()+dx,target.z()+dz))==null)mapped=false;
+            if(profile==null||reconstructed==null||!mapped){if(++waited>1200)throw new AssertionError("Terrain/map job did not complete");return;}
             require(reconstructed.source()==TerrainProfile.Source.GENERATOR_RECONSTRUCTION,"Old chunk uses explicitly marked generator reconstruction");
             require(reconstructed.maxHeight()<level.getMaxBuildHeight()-10,"Player towers are excluded from old-chunk reconstruction");
             require(profile.traits().contains(TerrainProfile.Trait.VILLAGE)&&profile.traits().contains(expected),"Real generated village building was recognised");
             require(profile.surfaces().equals(original.surfaces())&&profile.minHeight()==original.minHeight()&&profile.maxHeight()==original.maxHeight(),"Player block edits cannot change original terrain measurements");
             require(!profile.villagePieces().isEmpty(),"Generated template evidence retained");
+            byte[] colors=saved.map(target).colors(),next=saved.map(legacy).colors();
+            require((colors[2+2*16]&255)>>2==net.minecraft.world.level.material.MapColor.DIAMOND.id,"Actual roof block color is drawn, not a chunk-wide biome color");
+            require((colors[15+16]&255)>>2==net.minecraft.world.level.material.MapColor.COLOR_RED.id&&(next[16]&255)>>2==net.minecraft.world.level.material.MapColor.COLOR_RED.id,"Both sides of a chunk border retain their actual pixels");
+            if(!restart&&!changedMap){
+                require((colors[17]&255)>>2==net.minecraft.world.level.material.MapColor.COLOR_RED.id,"Columns outside the old 16-sample grid are sampled too");
+                level.setBlock(new BlockPos(target.x()*16+1,level.getMaxBuildHeight()-4,target.z()*16+1),Blocks.GOLD_BLOCK.defaultBlockState(),3);changedMap=true;return;
+            }
+            if((colors[17]&255)>>2!=net.minecraft.world.level.material.MapColor.GOLD.id){if(++waited>1600)throw new AssertionError("Live map did not refresh after editing a block");return;}
             var owner=new java.util.UUID(21,14);saved.atlas.setOwner(target,owner);saved.setDirty();
-            require(saved.atlas.capabilitiesAt(target,owner).contains(expected),"Owning gang receives local capabilities");
-            require(saved.atlas.capabilitiesAt(new TerrainKey(target.dimension(),target.x()+1,target.z()),owner).isEmpty(),"No spillover to the adjacent chunk");
+            require(saved.atlas.traitsAt(target,owner).contains(expected),"Owned land exposes descriptive traits without awarding bonuses");
+            require(saved.atlas.traitsAt(new TerrainKey(target.dimension(),target.x()+1,target.z()),owner).isEmpty(),"No spillover to the adjacent chunk");
             CompoundTag tag=saved.save(new CompoundTag(),level.registryAccess());
             var restored=TerrainAtlas.fromJson(new String(tag.getByteArray("atlas"),java.nio.charset.StandardCharsets.UTF_8));
             require(profile.equals(restored.get(target)),"Actual SavedData NBT roundtrip preserves the profile");
-            String result=(restart?"RESTART":"FIRST_RUN")+" PASS: dedicated server, real village "+target+", generated "+expected+", origin attachment, edits ignored, marked old-chunk reconstruction ignoring player towers, local ownership and SavedData NBT.\n";
+            var view=TerrainView.snapshot(saved.atlas,target.dimension(),target.x(),target.z(),key->level.getChunkSource().getChunkNow(key.x(),key.z())!=null,id->"Gang testowy",saved::map);
+            Files.writeString(OUT.resolve("view.json"),JSON.toJson(view));
+            String result=(restart?"RESTART":"FIRST_RUN")+" PASS: dedicated server, real village "+target+", generated "+expected+", original profile, old-chunk reconstruction, local descriptive traits, 49 real surface tiles, all-column colors, cross-chunk seam, live map update without changing original features, saved map after restart.\n";
             Files.writeString(OUT.resolve("result.txt"),result,StandardOpenOption.CREATE,StandardOpenOption.APPEND);
             System.out.println("CRIME_TERRAIN_SERVER_PASS "+result);done=true;server.halt(false);
         }catch(Throwable error){fail(server,error);}

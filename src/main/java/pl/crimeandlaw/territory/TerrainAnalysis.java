@@ -35,9 +35,11 @@ public final class TerrainAnalysis {
     private TerrainAnalysis(){}
     public static TerrainView view(ServerPlayer player){
         ServerLevel level=player.serverLevel();enqueue(level,player.chunkPosition().x,player.chunkPosition().z);
+        TerrainCartography.enqueue(level,player.chunkPosition().x,player.chunkPosition().z);
         var gangs=GangSavedData.get(player.server).directory;
         return TerrainView.snapshot(TerrainSavedData.get(level).atlas,level.dimension().location().toString(),player.chunkPosition().x,player.chunkPosition().z,
-            key->level.getChunkSource().getChunkNow(key.x(),key.z())!=null,id->{var gang=gangs.get(id);return gang==null?null:gang.name;});
+            key->level.getChunkSource().getChunkNow(key.x(),key.z())!=null,id->{var gang=gangs.get(id);return gang==null?null:gang.name;},TerrainSavedData.get(level)::map)
+            .withPosition(player.getX(),player.getZ(),player.getYRot());
     }
     public static void enqueue(ServerLevel level,int x,int z){
         Queue queue=QUEUES.computeIfAbsent(level.getServer(),s->new Queue());var atlas=TerrainSavedData.get(level).atlas;long tick=level.getServer().getTickCount();

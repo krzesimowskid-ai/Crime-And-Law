@@ -11,7 +11,7 @@ class TerrainAtlasTest {
         List<Sample> samples=new ArrayList<>();for(int i=0;i<16;i++)samples.add(new Sample(64,surface,forest,"minecraft:plains"));
         return TerrainProfile.analyse(key,samples,!templates.isEmpty(),templates,100);
     }
-    @Test void physicalLandscapeAndGeneratedBuildingsAddIndependentCapabilities(){
+    @Test void physicalLandscapeAndGeneratedBuildingsHaveIndependentTraits(){
         var p=profile(new TerrainKey("minecraft:overworld",0,0),Surface.SOIL,true,List.of("minecraft:village/plains/houses/plains_weaponsmith_1"));
         assertEquals(Set.of(Trait.CULTIVABLE,Trait.WOODED,Trait.VILLAGE,Trait.WORKSHOP),p.traits());
         var farm=profile(p.key(),Surface.SOIL,false,List.of("minecraft:village/taiga/houses/taiga_large_farm_1"));
@@ -20,7 +20,7 @@ class TerrainAtlasTest {
         // An inventory/workstation item name is not a generated village template.
         assertTrue(TerrainTemplates.traits("minecraft:smithing_table").isEmpty());
     }
-    @Test void suitabilityUsesReliefAndWaterInsteadOfAssigningEveryChunkTheSameBonus(){
+    @Test void descriptionDistinguishesReliefAndWaterWithoutAwardingBonuses(){
         List<Sample> s=new ArrayList<>();for(int i=0;i<16;i++)s.add(new Sample(50+i*2,i==0?Surface.WATER:Surface.SOIL,false,"minecraft:meadow"));
         var p=TerrainProfile.analyse(new TerrainKey("minecraft:overworld",1,1),s,false,List.of(),100);
         assertTrue(p.traits().containsAll(Set.of(Trait.WATER,Trait.HILLY)));assertFalse(p.traits().contains(Trait.CULTIVABLE));
@@ -34,15 +34,15 @@ class TerrainAtlasTest {
         restored.setOwner(key,other);assertEquals(original,restored.get(key));assertEquals(other,restored.owner(key));
         assertFalse(restored.remember(profile(key,Surface.WATER,false,List.of())));assertEquals(original,restored.get(key));
     }
-    @Test void benefitsRequireExactOwnerChunkAndDimensionForTheEntireColumn(){
+    @Test void ownedTraitsRequireExactOwnerChunkAndDimensionForTheEntireColumn(){
         var atlas=new TerrainAtlas();UUID gang=UUID.randomUUID();var key=TerrainKey.at("minecraft:overworld",-1,-17);
         assertEquals(new TerrainKey("minecraft:overworld",-1,-2),key);
         atlas.remember(profile(key,Surface.SOIL,false,List.of()));atlas.setOwner(key,gang);
-        assertTrue(atlas.capabilitiesAt(key,gang).contains(Trait.CULTIVABLE));
-        assertTrue(atlas.capabilitiesAt(key,UUID.randomUUID()).isEmpty());assertTrue(atlas.capabilitiesAt(key,null).isEmpty());
-        assertTrue(atlas.capabilitiesAt(new TerrainKey("minecraft:the_nether",-1,-2),gang).isEmpty());
-        assertTrue(atlas.capabilitiesAt(new TerrainKey("minecraft:overworld",0,-2),gang).isEmpty());
-        atlas.setOwner(key,null);assertTrue(atlas.capabilitiesAt(key,gang).isEmpty());
+        assertTrue(atlas.traitsAt(key,gang).contains(Trait.CULTIVABLE));
+        assertTrue(atlas.traitsAt(key,UUID.randomUUID()).isEmpty());assertTrue(atlas.traitsAt(key,null).isEmpty());
+        assertTrue(atlas.traitsAt(new TerrainKey("minecraft:the_nether",-1,-2),gang).isEmpty());
+        assertTrue(atlas.traitsAt(new TerrainKey("minecraft:overworld",0,-2),gang).isEmpty());
+        atlas.setOwner(key,null);assertTrue(atlas.traitsAt(key,gang).isEmpty());
     }
     @Test void evenAFragmentOfAVillageBuildingCountsInEachIntersectedChunk(){
         assertTrue(TerrainTemplates.intersectsChunk(15,-2,18,5,0,0));
@@ -54,7 +54,7 @@ class TerrainAtlasTest {
     @Test void summaryIsBoundedAndDistinguishesWaitingFromUnloaded(){
         var atlas=new TerrainAtlas();var key=new TerrainKey("minecraft:overworld",0,0);atlas.remember(profile(key,Surface.SOIL,false,List.of()));
         var view=TerrainView.snapshot(atlas,key.dimension(),0,0,k->k.x()==1,id->"Gang");
-        assertEquals(49,view.cells().size());
+        assertEquals(121,view.cells().size());
         assertEquals(TerrainView.Status.READY,view.cells().stream().filter(c->c.x()==0&&c.z()==0).findFirst().orElseThrow().status());
         assertEquals(TerrainView.Status.PENDING,view.cells().stream().filter(c->c.x()==1&&c.z()==0).findFirst().orElseThrow().status());
         assertEquals(TerrainView.Status.UNAVAILABLE,view.cells().stream().filter(c->c.x()==2&&c.z()==0).findFirst().orElseThrow().status());
@@ -71,7 +71,7 @@ class TerrainAtlasTest {
     }
     @Test void mapAtTheWorldBorderKeepsItsBoundedShapeWithoutInvalidChunkKeys(){
         var view=TerrainView.snapshot(new TerrainAtlas(),"minecraft:overworld",1_875_000,-1_875_000,k->true,id->"Gang");
-        assertEquals(49,view.cells().size());
+        assertEquals(121,view.cells().size());
         assertTrue(view.cells().stream().filter(c->c.x()>1_875_000||c.z()< -1_875_000).allMatch(c->c.status()==TerrainView.Status.UNAVAILABLE));
     }
 }

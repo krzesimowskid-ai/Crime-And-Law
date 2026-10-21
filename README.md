@@ -1,14 +1,14 @@
 # Crime And Law
 
 Autorski mod gangsterski: panel gangów, członkostwo i własny wygląd menu.
-Wersja **0.1.14**.
+Wersja **0.1.15**.
 
 ## Uruchomienie
 
 - Minecraft **1.21.1**, Java **21**, NeoForge **21.1.248**.
-- Włóż `crimeandlaw-0.1.14.jar` do `mods`, zastępując poprzedni JAR tego moda.
+- Włóż `crimeandlaw-0.1.15.jar` do `mods`, zastępując poprzedni JAR tego moda.
 - W rozgrywce sieciowej mod musi być **u graczy i na serwerze**.
-  Zaktualizuj serwer i wszystkich klientów do 0.1.14. Dane terenu używają protokołu 6.
+  Zaktualizuj serwer i wszystkich klientów do 0.1.15. Dane terenu używają protokołu 7.
 - W świecie jednoosobowym część serwerowa działa razem ze światem.
 - **G** otwiera panel; skrót można zmienić w sterowaniu. Esc lub X zamyka okno.
 
@@ -131,7 +131,7 @@ Windows: gradlew.bat build
 Linux/macOS: ./gradlew build
 ```
 
-Wynik: `build/libs/crimeandlaw-0.1.14.jar`.
+Wynik: `build/libs/crimeandlaw-0.1.15.jar`.
 Gradle Wrapper 9.2.1, ModDevGradle 2.0.148, NeoForge 21.1.248.
 `./gradlew test` sprawdza model, migrację zapisów, duże listy i prywatność
 zgłoszeń, walidację/edycję logo, kolory oraz skalowanie menu.
@@ -185,13 +185,32 @@ a X ma równe przekątne i jest wyśrodkowany. Rejestr nie dopisuje konfiguracji
 wyglądu ani definicji/kolejności rang; pełna data z rokiem jest nad opisem.
 
 
-## Stałe cechy terenu — 0.1.14
-W **Mapa** dostępna jest siatka 7×7 chunków wokół gracza. Kolor komórki
-opisuje charakter terenu; mała ikona oznacza wygenerowaną wioskę, krzyżyk
-pozycję gracza. Kliknij chunk, aby obejrzeć cechy i potencjał zastosowań.
-Dłuższy opis przewija się kółkiem po prawej. Zmiana skali GUI zachowuje wybór.
-Odczyt aktualizuje się podczas otwarcia mapy, bez ponownego przesyłania logo.
-To mapa rozpoznania terenu, a nie pełny obraz wszystkich bloków świata.
+## Mapa świata i stałe cechy terenu — 0.1.15
+Mapa pokazuje ciągły obraz prawdziwej powierzchni: woda zachowuje przebieg
+rzek i brzegów, widoczne są lasy, piasek, skały, śnieg oraz dachy i drogi
+wiosek. Każdy piksel danych odpowiada jednej kolumnie bloków; kolory pochodzą
+z palety map Minecrafta, a nachylenie i głębokość wody wpływają na cieniowanie.
+To mapa barwna z cieniowaniem rzeźby, nie zdjęcie tekstur z góry.
+
+Domyślnie widoczny jest obszar 11×11 chunków (176×176 bloków) wokół gracza.
+Przyciski +/− zmieniają przybliżenie; przycisk „Siatka” włącza granice chunków.
+Siatka domyślnie jest wyłączona. Rzeczywista pozycja i kierunek gracza,
+północ, podziałka i zaznaczenie chunka są nakładką na krajobraz.
+Kliknięcie wybiera chunk; opis po prawej przewija się niezależnie.
+Zmiana skali GUI zachowuje wybór i przybliżenie.
+
+Rysunek mapy powstaje z wczytanych bloków, bez generowania odległego świata.
+Brakujące fragmenty pozostają zasłonięte, także jeśli mają już profil cech
+z wcześniejszej wersji. Odczytany obraz zapisuje się ze światem osobno dla
+każdego wymiaru i chunka, przeżywa restart i odświeża się po przebudowie
+wczytanego terenu. Dane są wspólne dla serwera; nie dodano jeszcze osobistej
+mgły odkrycia, przesuwania mapy ani przeglądu całego świata naraz.
+Mapa jest odświeżana tylko podczas jej przeglądania, a nie w tle dla wszystkich
+chunków. Dane powierzchni przychodzą stopniowo, niezależnie od analizy cech.
+
+Obraz jest osobny od **stałych cech naturalnego terenu**. Zmiana budynku
+zmienia rysunek, ale nie pierwotne cechy. Własny budynek widoczny na mapie
+nie przyznaje cechy wygenerowanego budynku ani premii.
 
 Rozpoznawane są cechy podłoża, obecność wody, leśny charakter i różnice
 wysokości. Mogą występować razem z obiektami wygenerowanej wioski: farmą,
@@ -225,15 +244,30 @@ Praca jest porcjowana: maksymalnie dwa kroki na tick serwera i miękki budżet
 ma najwyżej 128 zadań; nieodświeżane zadania wygasają po 200 tickach.
 
 Trwałe profile i przygotowana własność: `data/crimeandlaw_terrain.dat` w
-Overworld. API własności i lokalnych możliwości działa po stronie serwera;
+Overworld. API własności i opisu posiadanego terenu działa po stronie serwera;
 klient nie może przesłać właściciela ani cech. Przyszły kontroler zakupu/walki
 będzie z niego korzystał. Sam interfejs jeszcze nie pozwala zajmować ziemi.
 Nie ma aktywnych mnożników wzrostu, nowych receptur ani kamizelek.
-„Potencjał” w podglądzie opisuje kierunek rozwoju, nie przyznany już bonus.
-Korzyści mają być lokalne dla gangu kontrolującego dokładnie ten chunk.
+Zwykły teren bez premii jest normalnym przypadkiem. Cechy nie są automatycznymi
+bonusami: sekcja „Potencjał do rozwinięcia” została usunięta. Konkretne rzadkie
+premie będą wymagały własnych, łącznych kryteriów krytycznych oraz wystarczających
+danych. Ich lista, progi i wartości nie zostały jeszcze ustalone. Próbkowanie
+16 punktów nie jest pełną oceną kwalifikacji. Nie przyznano mnożników za same
+biomy, wodę, fragment wioski ani samą liczbę posiadanych chunków.
 
 Dodatkowy test integracyjny: `./gradlew -PserverSmoke runServer` uruchamia
 jednorazowy serwer testowy w `run-server-smoke-current` (wymaga zaakceptowania EULA
 w tym katalogu). Drugi start tego samego świata sprawdza ponowny odczyt danych.
 Kod testów serwera i klienta jest wyłączony z JAR-a wydania.
 Opcja `-PserverSmokeId=nazwa` wybiera osobny świat i katalog raportu dla danego testu.
+
+Rysowanie powierzchni ma osobną kolejkę do 256 zadań, najwyżej 128 kolumn na
+tick i miękki limit 2 ms; pojedynczy krok może przekroczyć ten budżet. Tylko
+gotowe kafle są zapisywane. Ponowny odczyt tego samego wczytanego chunka
+następuje najwcześniej po 100 tickach. Klient utrzymuje jedną teksturę mapy,
+aktualizowaną przy zmianie pikseli, a nie przebudowywaną w każdej klatce.
+
+Test interfejsu 0.1.15 korzysta także z danych prawdziwej mapy: przed
+`./gradlew -PuiSmoke runClient` wykonaj dwa starty testu serwera z
+`-PserverSmokeId=terrain15a`. Jego raport `build/server-smoke-terrain15a/view.json`
+jest wejściem do sprawdzenia tekstury oraz ostatnich zrzutów klienta.

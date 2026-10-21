@@ -17,8 +17,8 @@ public final class TerrainAtlas {
         if(get(key)==null)throw new IllegalArgumentException("Teren nie został jeszcze rozpoznany.");
         if(gang==null)owners.remove(key.storageKey());else owners.put(key.storageKey(),gang);
     }
-    /** Local capabilities are available only to the gang owning this exact dimension/chunk. */
-    public Set<TerrainProfile.Trait> capabilitiesAt(TerrainKey key,UUID gang){
+    /** Descriptive traits of owned land. These are NOT qualified or awarded bonuses. */
+    public Set<TerrainProfile.Trait> traitsAt(TerrainKey key,UUID gang){
         TerrainProfile profile=get(key);
         return profile!=null&&gang!=null&&gang.equals(owner(key))?profile.traits():Set.of();
     }

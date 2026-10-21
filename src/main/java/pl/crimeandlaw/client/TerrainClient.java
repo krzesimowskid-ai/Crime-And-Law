@@ -20,5 +20,5 @@ final class TerrainClient {
         if(next.equals(view))return;view=next;
         if(Minecraft.getInstance().screen instanceof GangScreen screen)screen.terrainUpdated();
     }
-    static void clear(){view=null;requested=0;}
+    static void clear(){view=null;requested=0;TerrainMapTexture.clear();}
 }

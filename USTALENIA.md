@@ -4,7 +4,7 @@ Stan projektu: 21 października 2026.
 
 ## Status i sposób dalszej pracy
 
-To zapis pomysłów i decyzji użytkownika, a nie opis gotowego moda. Powstaje prototyp panelu gangów, obecnie wersja 0.1.14. 19 października użytkownik odłożył DarkPerazera i wrócił do Crime And Law. Zaakceptował rozpoczęcie od podstaw panelu gangów; obecnie doprecyzowuje jego wygląd. Dla pierwszego prototypu przyjęto Minecraft 1.21.1 i NeoForge 21.1.248: użytkownik polecił rozpoczęcie bez wskazania innej platformy. Jest to jawne założenie wykonawcze, nie wcześniejsza deklaracja użytkownika.
+To zapis pomysłów i decyzji użytkownika, a nie opis gotowego moda. Powstaje prototyp panelu gangów, obecnie wersja 0.1.15. 19 października użytkownik odłożył DarkPerazera i wrócił do Crime And Law. Zaakceptował rozpoczęcie od podstaw panelu gangów; obecnie doprecyzowuje jego wygląd. Dla pierwszego prototypu przyjęto Minecraft 1.21.1 i NeoForge 21.1.248: użytkownik polecił rozpoczęcie bez wskazania innej platformy. Jest to jawne założenie wykonawcze, nie wcześniejsza deklaracja użytkownika.
 
 Crime And Law jest nowym, osobnym modem. McArk pozostaje odłożony, zachowując cel odwzorowania ASA 1:1. Nie zmieniać projektu McArk w Crime And Law ani nie usuwać jego materiałów w ramach tej pracy.
 
@@ -322,3 +322,29 @@ Możliwości warsztatów, upraw, wydobycia itd. są obecnie opisem potencjału.
 Przejmowanie/zakup oraz aktywne mnożniki i receptury pozostają dalszym etapem.
 Nie pomijać wcześniejszych ustaleń o ukrytych gangach i ręcznych oznaczeniach,
 gdy właściwe systemy własności oraz mapy będą rozwijane.
+
+
+## Doprecyzowanie mapy i rzadkich premii — 0.1.15
+- Użytkownik skorygował interpretację: nie każdy teren ma zapewniać korzyści.
+  Nawet kilkanaście posiadanych chunków może mieć zero boosterów. Zwykłe
+  tereny są domyślne, premiowane mają wymagać mocnych argumentów i spełnienia
+  krytycznych kryteriów. Kryteria trzeba ustalać osobno dla konkretnej premii;
+  ogólny biom, woda lub kilka obiektów nie wystarczają automatycznie.
+- Opis cech jest osobny od kwalifikacji do premii. Nie wybierać samodzielnie
+  listy finalnych bonusów, progów ani mnożników. Brak danych nie oznacza
+  pozytywnej kwalifikacji. Dotychczasowe 16 próbek jest przybliżonym opisem,
+  nie pełną szczegółową oceną spełniania przyszłych wymagań.
+- Użytkownik chce rzeczywistego rysunku mapy: układu rzek, wiosek, gór itd.,
+  zamiast pojedynczych jednolitych kolorów na całych chunkach.
+- Wykonanie 0.1.15: obraz powierzchni z każdej kolumny bloków, paleta map gry,
+  cieniowanie reliefu i wody, ciągły krajobraz bez szczelin między chunkami,
+  pozycja/kierunek gracza, przybliżenie, opcjonalna siatka. Domyślny lokalny
+  obszar 11×11 chunków. Przesuwanie i mapa całego świata pozostają dalszym
+  etapem; nie twierdzić, że bieżący wycinek obejmuje cały świat.
+- Rysunek jest bieżący, zapisuje się ze światem i jest niezależny od stałego
+  profilu generowania. Nieznane fragmenty są zasłonięte. Serwer nie generuje
+  ani nie wczytuje z dysku odległych chunków dla rysowania mapy.
+- Usunięto automatyczne opisy potencjalnych korzyści przy każdej cesze.
+  Lokalne API opisuje cechy posiadanego terenu, a nie przyznane możliwości.
+  Silnik kwalifikacji do konkretnych bonusów nadal wymaga ustalenia tych
+  bonusów i ich kryteriów; nie dodano arbitralnych procentów ani nagród.
