@@ -1,74 +1,73 @@
-# Sprawdzenie 0.1.10
+# Sprawdzenie 0.1.11
 
 21 października 2026. Minecraft 1.21.1, NeoForge 21.1.248, JDK 21.
 
 ## Zmiana
 
-Importer logo rozpoznaje format po zawartości, a nie rozszerzeniu. Obsługiwane:
-PNG, JPEG, GIF, BMP, WebP, SVG, TIFF, ICO, ICNS, PSD, TGA, PCX i PNM.
-Czytniki TwelveMonkeys 3.15.3 i renderer JSVG 2.0.0 są dołączone do JAR-a
-razem z zależnościami. NeoForge 1.21.1 otrzymuje też biblioteki na classpath
-uruchomień deweloperskich. Rejestracja czytników nie polega wyłącznie na
-kontekstowym classloaderze wątku asynchronicznego.
+Nowe logo kończy import jako bezstratny PNG 512×512 zamiast 64×64. Limit 1,1 MB
+obejmuje również szczegółowy obraz RGBA o słabej kompresji. Wspólna stała określa
+maksymalny wymiar, rozmiar binarny i długość Base64. Zapisy świata akceptują
+większe logo oraz dotychczasowe 64×64. Zapisany wcześniej obraz nie odzyskuje
+sam utraconych szczegółów; trzeba ponownie wczytać plik źródłowy.
 
-Limit pliku rastrowego 64 MB, boku 100 000 px i miliarda pikseli. Podgląd jest
-odczytywany z subsamplingiem do maksymalnie 1024 px na dłuższym boku. SVG do
-8 MB jest renderowany do podglądu o tym samym limicie, z przezroczystością.
-Odwołania SVG do innych plików i obrazów są pomijane. Kadrowanie i dopasowanie
-proporcji kończą się PNG 64×64 do 20 KB. Protokół 3 pozostaje zgodny z 0.1.8.
+Protokół 4: limity akcji i stanu zawierają pełne logo oraz zapas na metadane,
+strony członkostwa i rejestru. Wersje protokołu 3 wymagają aktualizacji
+klienta i serwera. Odczyt NativeImage korzysta ze strumienia, aby szczegółowy
+PNG nie był kopiowany na mały stos LWJGL.
 
-W 0.1.10 błędy jednego czytnika nie kończą importu: kolejne rozpoznające format
-czytniki próbują odczytu, każdy z osobnego strumienia. Importer nie analizuje
-symboliki ani treści obrazu i nie ma listy zakazanych flag lub nazw plików.
+LogoTexture przechowuje rzeczywiste wymiary tekstury. Nagłówek, podgląd i główna
+zakładka używają pełnego zakresu UV oraz liniowego filtra powiększania i
+pomniejszania. Podgląd kadrowania również używa filtra liniowego. Tekstura
+jest ładowana po zmianie danych, a nie przy każdej klatce. Układ i rozmiary
+okien pozostają zachowane; nie dodano trybów przerysowywania grafiki.
 
 ## Testy automatyczne
 
-44 testy JUnit, zero błędów i pominiętych testów. Zachowano 42 testy z 0.1.9,
-dodano dwa scenariusze:
+47 testów JUnit, zero błędów i pominiętych testów. Włączono obsługę testów
+Minecrafta przez ModDevGradle, dzięki czemu test kodeków używa prawdziwych
+RegistryFriendlyByteBuf oraz kodeków moda.
 
-- Sześć modeli PNG: RGB, ARGB, 8- i 16-bitowa szarość, jednobitowy i paletowy.
-  Różne nazwy, znaki Unicode, brak rozszerzenia i niezgodne rozszerzenie nie
-  blokują odczytu; pliki przechodzą również końcowe kodowanie logo.
-- Czytnik rozpoznający PNG, ale zawodzący przy odczycie: zarówno IOException,
-  jak i RuntimeException. Następny czytnik poprawnie ładuje obraz, nawet gdy
-  poprzedni przesunął i opróżnił swój strumień. Każdy czytnik jest zwalniany.
+Nowe i zaktualizowane sprawdzenia:
 
-Zachowane sprawdzenia rozszerzonego importu z 0.1.9:
+- Drobna czarno-biała szachownica 512×512 zachowuje każdy piksel po zapisie.
+- Import PNG/JPEG/GIF/BMP przy różnych proporcjach kończy się 512×512;
+  kadrowanie i przezroczyste marginesy pozostają poprawne.
+- Losowe RGBA 512×512 mieszczą się w limicie binarnym i limicie akcji.
+- Szczegółowe logo przekracza dawny limit akcji, przechodzi rzeczywiste kodeki
+  Action i State, walidację oraz zapis/odtworzenie danych gangu. Sprawdzane są
+  rozdzielczość i niezmieniony kolor po tej ścieżce.
+- Kodeki nadal odrzucają ciągi ponad nowy limit. Maksymalne logo razem ze
+  stroną członków i 100 wpisami rejestru mieści się w limicie stanu.
+- Walidator akceptuje 64×64, 256×256 i 512×512; odrzuca przekroczenie boku
+  oraz rozmiaru danych. Zapis dotychczasowych gangów nadal jest odczytywany.
 
-- Dziewięć rzeczywistych plików: WebP lossless/lossy, TIFF, ICO (DIB), ICNS,
-  PSD, TGA, PCX i PPM. Każdy ma mylące rozszerzenie PNG; sprawdzane są wymiary,
-  kanał alfa oraz kolor z tolerancją dla stratnego WebP.
-- SVG pod nazwą PNG, tylko viewBox 6000×3000, podgląd 1024×512,
-  kolor i przezroczystość.
-- PNG zawierający tekst SVG w metadanych nadal jest poprawnie czytany jako raster.
-- SVG nie odczytuje zewnętrznego pliku.
-- WebP z kontekstowym classloaderem bez klas aplikacji.
-- Panorama PNG 20 000×4 zostaje zredukowana do podglądu bez zerowego wymiaru.
-- Pusty/uszkodzony plik i przekroczenie limitu mają czytelne błędy.
-
-Dotychczasowy test obrazu zachowuje 12 kombinacji PNG/JPEG/GIF/BMP z rozmiarami
-256×256, 640×160 i 80×320, kadrowaniem, dopasowaniem oraz poprawnym PNG 64×64.
+Zachowane testy wieloformatowego importu, alternatywnych czytników po błędzie,
+modeli kolorów PNG, SVG, nazw Unicode, limitów źródła, kolorów, rejestru,
+paginacji, uprawnień i członkostwa.
 
 ## Klient graficzny
 
 CRIME_UI_SMOKE_PASS: prawdziwy renderer Minecrafta, 20 zrzutów 1920×1080,
-GUI 2 i 4, Mesa llvmpipe. W klasach załadowanego moda sprawdzono asynchroniczny
-odczyt dziewięciu plików testowych oraz normalizację do PNG. SVG pod nazwą PNG
-przeszedł onFilesDrop, ekran kadrowania, zatwierdzenie i podgląd tekstury.
-Dotychczasowe testy kategorii, kolorów, rejestru, klawiatury i uprawnień również
-przeszły. Tylko Transport pozostaje ukryty.
+GUI 2 i 4, Mesa llvmpipe. Asynchroniczny import dziewięciu formatów i SVG
+przechodzi do kadrowania, zatwierdzenia i podglądu. Sprawdzono rzeczywiste
+tekstury 512×512, szczegółowy PNG większy od dawnego limitu oraz dawną
+teksturę 64×64. Parametry OpenGL MIN_FILTER i MAG_FILTER mają GL_LINEAR,
+także w podglądzie kadrowania. Logo zapisano w danych przykładowego gangu
+i wyświetlono również na jego głównej zakładce.
 
 ## Budowanie i ograniczenia
 
-`./gradlew clean build` oraz `./gradlew -PuiSmoke runClient`.
-Testy UI używają danych przykładowych, nie dwóch graczy na serwerze.
-Fizyczne okno wyboru pliku w Windows i przeciąganie z Eksploratora nie były
-automatyzowane. Oryginalnego problematycznego pliku logo nie otrzymano;
-konkretnej przyczyny jego odrzucenia nie potwierdzono na tych samych bajtach.
-HEIC/AVIF/PDF i animowane logo nie są obsługiwane. GIF używa pierwszej klatki.
-Nie oznacza to obsługi każdego możliwego wariantu każdego formatu.
+`./gradlew build` oraz `./gradlew -PuiSmoke runClient`.
+Test kodeków nie jest testem sieci TCP ani gry dwóch klientów na serwerze.
+Testy UI używają przykładowych danych. Fizyczne okno wyboru pliku w Windows
+i przeciąganie z Eksploratora nie były automatyzowane. Oryginalnego
+problematycznego pliku logo użytkownika nie otrzymano.
 
-W narzędziu NeoForm Runtime lokalnie użyto fallbacku java.home/bin/java,
-ponieważ środowisko nie udostępnia ProcessHandle.Info.command. Ta zmiana nie
-trafia do moda ani repozytorium. Usługi kont Minecraft są niedostępne w tym
-środowisku; testy z danymi przykładowymi nie wymagają logowania.
+Źródła: PNG, JPEG, GIF, BMP, WebP, SVG, TIFF, ICO, ICNS, PSD, TGA, PCX i PNM.
+Limit źródła rastrowego 64 MB, 100 000 px na bok i miliard pikseli. Podgląd
+do 1024 px. SVG do 8 MB, bez odczytu zewnętrznych zasobów. HEIC/AVIF/PDF
+oraz animowane logo pozostają nieobsługiwane. GIF używa pierwszej klatki.
+
+Lokalny fallback java.home/bin/java w NeoForm Runtime pozostaje wyłącznie
+narzędziem środowiska; nie trafia do JAR-a ani repozytorium. Niedostępność
+usług kont Minecraft nie blokuje testu z danymi przykładowymi.

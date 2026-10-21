@@ -123,12 +123,27 @@ public final class GangUiSmokeTest {
                     screen.onFilesDrop(java.util.List.of(svg));
                 }
                 case 12 -> {
+                    checkLogoTexture(mc,net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("crimeandlaw","logo_crop_preview"),512,256);
                     capture(mc,"12-logo-crop");LogoCropScreen dialog=(LogoCropScreen)mc.screen;double scale=dialog.layout.scale();
                     double x=(dialog.left+110)*scale,y=(dialog.top+145)*scale;
                     require(dialog.mouseClicked(x,y,0),"Crop click");dialog.mouseDragged(x+30*scale,y+10*scale,0,30*scale,10*scale);
                     dialog.mouseReleased(x+30*scale,y+10*scale,0);dialog.mouseScrolled(x,y,0,2);click(mc,"Zastosuj logo");
                     var field=GangScreen.class.getDeclaredField("draftLogo");field.setAccessible(true);String encoded=(String)field.get(screen);
                     require(!encoded.isBlank()&&!pl.crimeandlaw.gang.GangLogo.validate(encoded).isBlank(),"Dropped image cropped and encoded");
+                    var legacy=new java.awt.image.BufferedImage(64,64,java.awt.image.BufferedImage.TYPE_INT_ARGB);
+                    String old=java.util.Base64.getEncoder().encodeToString(LogoImages.png(legacy));
+                    checkLogoTexture(mc,LogoTexture.get(old),64,64);
+                    // Detailed PNGs also exercise stream decoding beyond the old
+                    // LWJGL stack allocation and the former network string limits.
+                    var noise=new java.awt.image.BufferedImage(512,512,java.awt.image.BufferedImage.TYPE_INT_ARGB);
+                    var random=new java.util.Random(21);
+                    for(int row=0;row<512;row++)for(int col=0;col<512;col++)noise.setRGB(col,row,random.nextInt()|0xFF000000);
+                    String large=LogoImages.encode(noise,new LogoCrop(512,512));
+                    require(large.length()>28000,"Detailed logo exceeds previous network cap");
+                    checkLogoTexture(mc,LogoTexture.get(large),512,512);
+                    checkLogoTexture(mc,LogoTexture.get(encoded),512,512);
+                    directory.logo(PLAYER,encoded);
+                    REPORT.append("PASS logo: 512x512 saved texture, legacy 64x64, detailed PNG stream decoding, linear min/mag filters, smooth crop preview.\n");
                 }
                 case 13 -> {
                     capture(mc,"13-logo-preview");fixturePage(FRIEND,0);screen.updated();selectTab(3);click(mc,"Wygląd");
@@ -257,6 +272,16 @@ public final class GangUiSmokeTest {
                 require(bright>40,"Information column "+column+" contains visible text");
             }
         }
+    }
+    private static void checkLogoTexture(Minecraft mc,net.minecraft.resources.ResourceLocation id,int width,int height){
+        require(id!=null,"Logo texture registered");
+        var texture=mc.getTextureManager().getTexture(id);
+        require(texture instanceof net.minecraft.client.renderer.texture.DynamicTexture,"Dynamic logo texture");
+        var pixels=((net.minecraft.client.renderer.texture.DynamicTexture)texture).getPixels();
+        require(pixels!=null&&pixels.getWidth()==width&&pixels.getHeight()==height,"Stored texture resolution "+width+"x"+height);
+        texture.bind();
+        require(org.lwjgl.opengl.GL11.glGetTexParameteri(org.lwjgl.opengl.GL11.GL_TEXTURE_2D,org.lwjgl.opengl.GL11.GL_TEXTURE_MIN_FILTER)==org.lwjgl.opengl.GL11.GL_LINEAR,"Linear logo minification");
+        require(org.lwjgl.opengl.GL11.glGetTexParameteri(org.lwjgl.opengl.GL11.GL_TEXTURE_2D,org.lwjgl.opengl.GL11.GL_TEXTURE_MAG_FILTER)==org.lwjgl.opengl.GL11.GL_LINEAR,"Linear logo magnification");
     }
     private static void selectTab(int tab)throws Exception {
         var field=GangScreen.class.getDeclaredField("tab");field.setAccessible(true);field.setInt(screen,tab);screen.updated();

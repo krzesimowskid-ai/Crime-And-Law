@@ -1,14 +1,14 @@
 # Crime And Law
 
 Autorski mod gangsterski: panel gangów, członkostwo i własny wygląd menu.
-Wersja **0.1.10**.
+Wersja **0.1.11**.
 
 ## Uruchomienie
 
 - Minecraft **1.21.1**, Java **21**, NeoForge **21.1.248**.
-- Włóż `crimeandlaw-0.1.10.jar` do `mods`, zastępując poprzedni JAR tego moda.
+- Włóż `crimeandlaw-0.1.11.jar` do `mods`, zastępując poprzedni JAR tego moda.
 - W rozgrywce sieciowej mod musi być **u graczy i na serwerze**.
-  Protokół sieciowy pozostaje zgodny. Dla 100 wpisów na stronę i limitu 10 000 wydarzeń zainstaluj 0.1.8 również na serwerze; starszy serwer nadal stosuje swój limit i rozmiar stron.
+  Zaktualizuj serwer i wszystkich klientów do 0.1.11: większe logo używa protokołu 4.
 - W świecie jednoosobowym część serwerowa działa razem ze światem.
 - **G** otwiera panel; skrót można zmienić w sterowaniu. Esc lub X zamyka okno.
 
@@ -83,8 +83,17 @@ Wybierz kwadratowy kadr albo cały obraz z zachowaniem proporcji i przezroczysty
 marginesami. „Anuluj”/X/Esc zachowuje poprzednie logo. „Zastosuj logo” przygotowuje
 podgląd; zapisz go przez „Utwórz gang” lub Ustawienia → Logo → „Zapisz logo gangu”.
 
-Serwer sprawdza miniaturę PNG 64×64 do 20 KB. Pozostali gracze nie potrzebują
-pliku źródłowego. Import z linku nie jest jeszcze obsługiwany.
+Logo jest zapisywane jako bezstratny PNG **512×512**, do 1,1 MB. Nagłówek,
+podgląd i główna zakładka wyświetlają cały obraz z wygładzaniem skalowania.
+Dla wyraźnego logo przygotuj źródło 512×512 lub większe; przy mocnym kadrowaniu
+warto mieć większy oryginał. Mniejszy obraz jest przyjmowany, ale powiększanie
+nie odzyska brakujących szczegółów. Nie ma wyboru stylu ani przerabiania rysunku
+na inny rodzaj grafiki.
+
+Dotychczasowe logo 64×64 nadal się wyświetla. Aby odzyskać detale utracone
+podczas wcześniejszego importu, wczytaj ponownie oryginalny plik i zapisz logo.
+Pozostali gracze nie potrzebują pliku źródłowego. Import z linku nie jest jeszcze
+obsługiwany.
 
 ## Zapis i aktualizacja
 
@@ -107,7 +116,7 @@ Windows: gradlew.bat build
 Linux/macOS: ./gradlew build
 ```
 
-Wynik: `build/libs/crimeandlaw-0.1.10.jar`.
+Wynik: `build/libs/crimeandlaw-0.1.11.jar`.
 Gradle Wrapper 9.2.1, ModDevGradle 2.0.148, NeoForge 21.1.248.
 `./gradlew test` sprawdza model, migrację zapisów, duże listy i prywatność
 zgłoszeń, walidację/edycję logo, kolory oraz skalowanie menu.
@@ -137,3 +146,10 @@ importer próbuje kolejnych dostępnych czytników. Każda próba zaczyna od oso
 strumienia danych, a nie od pozycji pozostawionej przez poprzedni czytnik.
 Błędy odczytu mają komunikat po polsku; szczegóły czytnika trafiają na poziom DEBUG.
 Obsługiwane formaty oraz limity plików pozostają takie jak w 0.1.9.
+
+## Szczegółowość logo 0.1.11
+Zapis zwiększono z 64×64 do 512×512. Podniesiono limity walidacji, zapisu świata
+i obu kierunków przesyłania; protokół sieciowy 4 wymaga aktualizacji klienta
+i serwera. Tekstura jest odczytywana ze strumienia i ładowana tylko po zmianie
+logo. Każde miejsce wyświetlania używa pełnego zakresu obrazu oraz filtra liniowego.
+Wygładzany jest również podgląd kadrowania. Zachowana obsługa dawnych logo 64×64.

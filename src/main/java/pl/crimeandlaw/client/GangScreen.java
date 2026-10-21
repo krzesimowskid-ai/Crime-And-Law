@@ -322,7 +322,7 @@ public final class GangScreen extends Screen {
             g.fill(left+108,top+43,left+109,top+h-22,t.borderArgb());
             g.fill(left+46,top+7,left+w-35,top+36,0x28000000);
             g.fill(left+46,top+7,left+48,top+36,t.borderArgb());
-            if(texture!=null)g.blit(texture,left+10,top+8,0,0,28,28,28,28);
+            if(texture!=null)LogoTexture.draw(g,left+10,top+8,28,28);
             else{g.renderOutline(left+10,top+8,28,28,t.borderArgb());g.drawCenteredString(font,"G",left+24,top+18,t.borderArgb());}
             g.drawString(font,font.plainSubstrByWidth(gang.name,w-106),left+54,top+10,0xFFF0EDF1,false);
             String subtitle=isLeader()?"Lider gangu":"Członek gangu";
@@ -332,7 +332,7 @@ public final class GangScreen extends Screen {
             int previewX=cx+cw-140,previewY=cy+(gang==null?24:55);
             g.fill(previewX,previewY,previewX+140,previewY+148,0x20000000);g.renderOutline(previewX,previewY,140,148,0x66000000|t.border());
             g.drawCenteredString(font,"PODGLĄD LOGO",previewX+70,previewY+12,0xFFAAA7B6);
-            if(texture!=null){g.pose().pushPose();g.pose().translate(previewX+22,previewY+32,0);g.pose().scale(1.5f,1.5f,1);g.blit(texture,0,0,0,0,64,64,64,64);g.pose().popPose();}
+            if(texture!=null)LogoTexture.draw(g,previewX+22,previewY+32,96,96);
             else{g.renderOutline(previewX+38,previewY+48,64,64,t.borderArgb());g.drawCenteredString(font,"+",previewX+70,previewY+74,t.borderArgb());}
         }
         if(gang!=null&&tab==3&&settingsSection==0){
@@ -357,7 +357,7 @@ public final class GangScreen extends Screen {
     }
     private void drawGangOverview(GuiGraphics g,Gang gang,net.minecraft.resources.ResourceLocation logo){
         int center=cx+cw/2,logoY=cy,accent=theme().borderArgb();
-        if(logo!=null)g.blit(logo,center-32,logoY,0,0,64,64,64,64);
+        if(logo!=null)LogoTexture.draw(g,center-32,logoY,64,64);
         else{
             g.fill(center-32,logoY,center+32,logoY+64,0x18000000);
             g.renderOutline(center-32,logoY,64,64,accent);

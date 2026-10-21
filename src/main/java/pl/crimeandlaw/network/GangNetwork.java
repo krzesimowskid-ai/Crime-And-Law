@@ -15,6 +15,8 @@ import pl.crimeandlaw.gang.*;
 import pl.crimeandlaw.gang.GangDirectory.*;
 
 public final class GangNetwork {
+    public static final int ACTION_MAX_JSON=GangLogo.MAX_ENCODED_LENGTH+1024;
+    public static final int STATE_MAX_JSON=GangLogo.MAX_ENCODED_LENGTH+100_000;
     private static final Gson JSON=new Gson();
     public static Consumer<String> clientReceiver=ignored->{};
     private static final Map<ServerPlayer,View> views=new WeakHashMap<>();
@@ -24,21 +26,21 @@ public final class GangNetwork {
     public record Action(String json) implements CustomPacketPayload {
         public static final Type<Action> TYPE=new Type<>(ResourceLocation.fromNamespaceAndPath("crimeandlaw","action"));
         public static final StreamCodec<RegistryFriendlyByteBuf,Action> CODEC=new StreamCodec<>(){
-            public Action decode(RegistryFriendlyByteBuf b){return new Action(b.readUtf(28000));}
-            public void encode(RegistryFriendlyByteBuf b,Action p){b.writeUtf(p.json,28000);}
+            public Action decode(RegistryFriendlyByteBuf b){return new Action(b.readUtf(ACTION_MAX_JSON));}
+            public void encode(RegistryFriendlyByteBuf b,Action p){b.writeUtf(p.json,ACTION_MAX_JSON);}
         };
         @Override public Type<? extends CustomPacketPayload> type(){return TYPE;}
     }
     public record State(String json) implements CustomPacketPayload {
         public static final Type<State> TYPE=new Type<>(ResourceLocation.fromNamespaceAndPath("crimeandlaw","state"));
         public static final StreamCodec<RegistryFriendlyByteBuf,State> CODEC=new StreamCodec<>(){
-            public State decode(RegistryFriendlyByteBuf b){return new State(b.readUtf(250000));}
-            public void encode(RegistryFriendlyByteBuf b,State p){b.writeUtf(p.json,250000);}
+            public State decode(RegistryFriendlyByteBuf b){return new State(b.readUtf(STATE_MAX_JSON));}
+            public void encode(RegistryFriendlyByteBuf b,State p){b.writeUtf(p.json,STATE_MAX_JSON);}
         };
         @Override public Type<? extends CustomPacketPayload> type(){return TYPE;}
     }
     public static void register(RegisterPayloadHandlersEvent event){
-        var registrar=event.registrar("3");
+        var registrar=event.registrar("4");
         registrar.playToServer(Action.TYPE,Action.CODEC,GangNetwork::handle);
         registrar.playToClient(State.TYPE,State.CODEC,(p,c)->clientReceiver.accept(p.json));
     }

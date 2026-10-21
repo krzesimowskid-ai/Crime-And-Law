@@ -4,7 +4,7 @@ Stan projektu: 21 października 2026.
 
 ## Status i sposób dalszej pracy
 
-To zapis pomysłów i decyzji użytkownika, a nie opis gotowego moda. Powstaje prototyp panelu gangów, obecnie wersja 0.1.10. 19 października użytkownik odłożył DarkPerazera i wrócił do Crime And Law. Zaakceptował rozpoczęcie od podstaw panelu gangów; obecnie doprecyzowuje jego wygląd. Dla pierwszego prototypu przyjęto Minecraft 1.21.1 i NeoForge 21.1.248: użytkownik polecił rozpoczęcie bez wskazania innej platformy. Jest to jawne założenie wykonawcze, nie wcześniejsza deklaracja użytkownika.
+To zapis pomysłów i decyzji użytkownika, a nie opis gotowego moda. Powstaje prototyp panelu gangów, obecnie wersja 0.1.11. 19 października użytkownik odłożył DarkPerazera i wrócił do Crime And Law. Zaakceptował rozpoczęcie od podstaw panelu gangów; obecnie doprecyzowuje jego wygląd. Dla pierwszego prototypu przyjęto Minecraft 1.21.1 i NeoForge 21.1.248: użytkownik polecił rozpoczęcie bez wskazania innej platformy. Jest to jawne założenie wykonawcze, nie wcześniejsza deklaracja użytkownika.
 
 Crime And Law jest nowym, osobnym modem. McArk pozostaje odłożony, zachowując cel odwzorowania ASA 1:1. Nie zmieniać projektu McArk w Crime And Law ani nie usuwać jego materiałów w ramach tej pracy.
 
@@ -228,3 +228,15 @@ filtrów nazw, flag ani symboliki; wszystkie obrazy mają ten sam proces importu
 Nie oznacza to obsługi uszkodzonych danych ani każdego istniejącego formatu.
 Dodano próbę kolejnych czytników, gdy jeden zawiedzie, i testy sześciu modeli
 kolorów PNG, nietypowych nazw oraz izolacji strumieni po błędzie czytnika.
+
+## Szczegółowy obraz logo — 21 października, wersja 0.1.11
+Użytkownik chce wiernego wyświetlania przesłanego rysunku z drobnymi detalami,
+bez grubej pikselizacji wprowadzanej przez miniaturę 64×64. Narysowane przez
+autora kwadratowe elementy są częścią oryginału. Nie dodawać przełącznika
+„pixel art / gładkie” ani automatycznego przerysowywania obrazu.
+
+Po doprecyzowaniu podniesiono wynik do 512×512, z bezstratnym PNG do 1,1 MB,
+filtrem liniowym w podglądzie i całym menu oraz zgodnością zapisu ze starymi
+logo. Poprzednich detali usuniętych podczas importu 64×64 nie da się odzyskać
+bez ponownego wczytania oryginału. Protokół 4; ten sam nowy mod na kliencie
+i serwerze. Nie zmieniać rozmiaru okien ani układu zaakceptowanego menu.

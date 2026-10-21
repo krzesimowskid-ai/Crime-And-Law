@@ -15,10 +15,12 @@ class GangViewTest {
         return g;
     }
     @Test void networkSnapshotIsBoundedAndShowsTrueMemberCount(){
-        JsonObject view=GangView.snapshot(largeGang(),owner,0,0);
+        Gang gang=largeGang();gang.logo="A".repeat(GangLogo.MAX_ENCODED_LENGTH);
+        for(int i=0;i<100;i++)gang.history.add(new Event(i,"W".repeat(256)));
+        JsonObject view=GangView.snapshot(gang,owner,0,0);
         assertEquals(10000,view.get("memberCount").getAsInt());assertEquals(1667,view.get("memberPages").getAsInt());
         assertEquals(6,view.getAsJsonArray("memberIds").size());assertEquals(6,view.getAsJsonObject("gang").getAsJsonObject("requests").size());
-        assertTrue(view.toString().length()<30000,"Even a large gang with a maximum logo fits the state packet");
+        assertTrue(view.toString().length()<pl.crimeandlaw.network.GangNetwork.STATE_MAX_JSON,"Maximum logo, membership and history page fit the state packet");
     }
     @Test void everyMemberAppearsOnceAcrossPagesAndOwnerAndViewerRemainAvailable(){
         Gang g=largeGang();Set<String> seen=new HashSet<>();

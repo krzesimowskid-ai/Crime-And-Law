@@ -26,7 +26,8 @@ public final class LogoCropScreen extends MenuDialog {
         if(!registered)try {
             // The byte[] overload allocates the entire PNG on a small LWJGL
             // stack. Stream decoding uses a growable buffer for larger previews.
-            minecraft.getTextureManager().register(TEXTURE,new DynamicTexture(NativeImage.read(new java.io.ByteArrayInputStream(LogoImages.png(image)))));registered=true;
+            var texture=new DynamicTexture(NativeImage.read(new java.io.ByteArrayInputStream(LogoImages.png(image))));
+            texture.setFilter(true,false);minecraft.getTextureManager().register(TEXTURE,texture);registered=true;
         }catch(Exception e){error="Nie można wyświetlić podglądu obrazu.";}
         int rx=left+258,rw=panelWidth-276;
         addRenderableWidget(new FlatButton(rx,top+92,rw,21,"Wypełnij kwadrat",b->{crop.fit(false);rebuildWidgets();},this::theme,!crop.fit()));

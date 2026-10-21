@@ -9,11 +9,12 @@ import javax.imageio.stream.MemoryCacheImageInputStream;
 import javax.imageio.stream.MemoryCacheImageOutputStream;
 
 public final class GangLogo {
-    public static final int MAX_BYTES=20000;
+    public static final int SIDE=512,MAX_BYTES=1_100_000;
+    public static final int MAX_ENCODED_LENGTH=((MAX_BYTES+2)/3)*4;
     private GangLogo(){}
     public static String validate(String encoded){
         if(encoded==null || encoded.isEmpty())return "";
-        if(encoded.length()>27000)throw new IllegalArgumentException("Logo jest zbyt duże.");
+        if(encoded.length()>MAX_ENCODED_LENGTH)throw new IllegalArgumentException("Logo jest zbyt duże.");
         try{
             byte[] bytes=Base64.getDecoder().decode(encoded);
             if(bytes.length>MAX_BYTES)throw new IOException();
@@ -22,13 +23,13 @@ public final class GangLogo {
                 var reader=readers.next();
                 try{
                     reader.setInput(in);int w=reader.getWidth(0),h=reader.getHeight(0);
-                    if(!reader.getFormatName().equalsIgnoreCase("png") || w<1 || h<1 || w>64 || h>64)throw new IOException();
+                    if(!reader.getFormatName().equalsIgnoreCase("png") || w<1 || h<1 || w>SIDE || h>SIDE)throw new IOException();
                     BufferedImage image=reader.read(0);ByteArrayOutputStream out=new ByteArrayOutputStream();
                     try(var output=new MemoryCacheImageOutputStream(out)){ImageIO.write(image,"png",output);}
                     if(out.size()>MAX_BYTES)throw new IOException();
                     return Base64.getEncoder().encodeToString(out.toByteArray());
                 }finally{reader.dispose();}
             }
-        }catch(Exception exception){throw new IllegalArgumentException("Logo musi być poprawnym PNG do 64×64 i 20 KB.");}
+        }catch(Exception exception){throw new IllegalArgumentException("Logo musi być poprawnym PNG do 512×512 i 1,1 MB.");}
     }
 }

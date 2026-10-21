@@ -108,7 +108,7 @@ public final class GangDirectory {
             for(var member:g.members.entrySet()){
                 require(member.getValue()!=null && member.getKey().equals(member.getValue().id) && seen.add(member.getKey()),"Powielone członkostwo.");
             }
-            require(g.theme!=null && g.requests!=null && g.logo!=null && g.logo.length()<=27000,"Uszkodzone ustawienia gangu.");
+            require(g.theme!=null && g.requests!=null && g.logo!=null && g.logo.length()<=GangLogo.MAX_ENCODED_LENGTH,"Uszkodzone ustawienia gangu.");
         }
         return directory;
     }
