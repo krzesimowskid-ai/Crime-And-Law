@@ -11,6 +11,7 @@ final class TerrainClient {
     private static long requested;
     private static TerrainViewport target;
     private static boolean pending;
+    private static final pl.crimeandlaw.territory.TerrainViewCache cache=new pl.crimeandlaw.territory.TerrainViewCache();
     private TerrainClient(){}
     static void request(){
         pending=true;flush();
@@ -20,7 +21,9 @@ final class TerrainClient {
     static void pan(int dx,int dz){
         if(target==null&&view==null)return;
         var base=target==null?new TerrainViewport(view.centerX(),view.centerZ()):target;
-        target=base.move(dx,dz);request();
+        target=base.move(dx,dz);
+        if(view!=null){cache.remember(view);view=cache.viewport(view,target);updated();}
+        request();
     }
     static void home(){target=null;request();}
     private static void flush(){
@@ -40,8 +43,9 @@ final class TerrainClient {
             if(!next.dimension().equals(player.level().dimension().location().toString()))return;
             if(target==null&&(next.centerX()!=player.chunkPosition().x||next.centerZ()!=player.chunkPosition().z))return;
         }
-        if(next.equals(view))return;view=next;
-        if(Minecraft.getInstance().screen instanceof GangScreen screen)screen.terrainUpdated();
+        next=cache.remember(next);
+        if(next.equals(view))return;view=next;updated();
     }
-    static void clear(){view=null;target=null;pending=false;requested=0;TerrainMapTexture.clear();}
+    private static void updated(){if(Minecraft.getInstance().screen instanceof GangScreen screen)screen.terrainUpdated();}
+    static void clear(){view=null;target=null;pending=false;requested=0;cache.clear();TerrainMapTexture.clear();}
 }

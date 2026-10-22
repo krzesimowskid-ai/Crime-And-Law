@@ -22,6 +22,10 @@ public final class GangNetwork {
     public static Consumer<String> terrainReceiver=ignored->{};
     private static final Map<ServerPlayer,View> views=new WeakHashMap<>();
     private static final Map<ServerPlayer,Rate> rates=new WeakHashMap<>();
+    public static final int ACTION_MAX_BYTES=ACTION_MAX_JSON*3,STATE_MAX_BYTES=STATE_MAX_JSON*3;
+    private static final Map<ServerPlayer,MessageChunks.Assembler> uploads=new WeakHashMap<>();
+    private static final MessageChunks.Assembler download=new MessageChunks.Assembler();
+    public static void expireUploads(){long now=System.nanoTime();uploads.entrySet().removeIf(entry->entry.getValue().expire(now));}
     private record View(String query,int page,int memberPage,int requestPage,int historyPage){}
     private static final class Rate {long second;int requests;}
     public record Action(String json) implements CustomPacketPayload {
@@ -48,18 +52,66 @@ public final class GangNetwork {
         };
         @Override public Type<? extends CustomPacketPayload> type(){return TYPE;}
     }
+    private static MessageChunks.Part readPart(RegistryFriendlyByteBuf b){return new MessageChunks.Part(b.readUUID(),b.readVarInt(),b.readVarInt(),b.readByteArray(MessageChunks.PART_BYTES));}
+    private static void writePart(RegistryFriendlyByteBuf b,MessageChunks.Part part){b.writeUUID(part.id());b.writeVarInt(part.length());b.writeVarInt(part.offset());b.writeByteArray(part.data());}
+    public record ActionChunk(MessageChunks.Part part) implements CustomPacketPayload {
+        public static final Type<ActionChunk> TYPE=new Type<>(ResourceLocation.fromNamespaceAndPath("crimeandlaw","action_chunk"));
+        public static final StreamCodec<RegistryFriendlyByteBuf,ActionChunk> CODEC=new StreamCodec<>(){
+            public ActionChunk decode(RegistryFriendlyByteBuf b){return new ActionChunk(readPart(b));}
+            public void encode(RegistryFriendlyByteBuf b,ActionChunk packet){writePart(b,packet.part());}
+        };
+        @Override public Type<? extends CustomPacketPayload> type(){return TYPE;}
+    }
+    public record StateChunk(MessageChunks.Part part) implements CustomPacketPayload {
+        public static final Type<StateChunk> TYPE=new Type<>(ResourceLocation.fromNamespaceAndPath("crimeandlaw","state_chunk"));
+        public static final StreamCodec<RegistryFriendlyByteBuf,StateChunk> CODEC=new StreamCodec<>(){
+            public StateChunk decode(RegistryFriendlyByteBuf b){return new StateChunk(readPart(b));}
+            public void encode(RegistryFriendlyByteBuf b,StateChunk packet){writePart(b,packet.part());}
+        };
+        @Override public Type<? extends CustomPacketPayload> type(){return TYPE;}
+    }
     public static void register(RegisterPayloadHandlersEvent event){
-        var registrar=event.registrar("9");
+        var registrar=event.registrar("10");
         registrar.playToServer(Action.TYPE,Action.CODEC,GangNetwork::handle);
         registrar.playToClient(State.TYPE,State.CODEC,(p,c)->clientReceiver.accept(p.json));
         registrar.playToClient(Terrain.TYPE,Terrain.CODEC,(p,c)->terrainReceiver.accept(p.json));
+        registrar.playToServer(ActionChunk.TYPE,ActionChunk.CODEC,GangNetwork::upload);
+        registrar.playToClient(StateChunk.TYPE,StateChunk.CODEC,(p,c)->{
+            String complete=download.accept(p.part(),STATE_MAX_BYTES,System.nanoTime());
+            if(complete!=null){if(complete.length()>STATE_MAX_JSON)throw new IllegalArgumentException("Wiadomość przekracza limit.");clientReceiver.accept(complete);}
+        });
     }
-    public static void send(JsonObject action){PacketDistributor.sendToServer(new Action(JSON.toJson(action)));}
-    private static void handle(Action packet,IPayloadContext context){
+    public static void clearClientTransfers(){download.clear();}
+    public static void send(JsonObject action){
+        String json=JSON.toJson(action);
+        if(json.length()>MessageChunks.PART_BYTES/3){for(var part:MessageChunks.split(json,ACTION_MAX_BYTES))PacketDistributor.sendToServer(new ActionChunk(part));}
+        else PacketDistributor.sendToServer(new Action(json));
+    }
+    private static void upload(ActionChunk packet,IPayloadContext context){
         if(!(context.player() instanceof ServerPlayer player))return;
+        MessageChunks.Assembler assembler;
+        if(packet.part().offset()==0){
+            if(!allow(player)){uploads.remove(player);return;}
+            assembler=uploads.computeIfAbsent(player,p->new MessageChunks.Assembler());
+        }else{
+            assembler=uploads.get(player);if(assembler==null)return;
+        }
+        try{
+            String complete=assembler.accept(packet.part(),ACTION_MAX_BYTES,System.nanoTime());
+            if(complete!=null){if(complete.length()>ACTION_MAX_JSON)throw new IllegalArgumentException("Wiadomość przekracza limit.");handleAction(new Action(complete),context);}
+        }catch(IllegalArgumentException error){uploads.remove(player);sendState(player,error.getMessage());}
+    }
+    private static boolean allow(ServerPlayer player){
         Rate rate=rates.computeIfAbsent(player,p->new Rate());long second=System.nanoTime()/1_000_000_000L;
         if(rate.second!=second){rate.second=second;rate.requests=0;}
-        if(++rate.requests>12)return;
+        return ++rate.requests<=12;
+    }
+    private static void handle(Action packet,IPayloadContext context){
+        if(!(context.player() instanceof ServerPlayer player))return;
+        if(allow(player))handleAction(packet,context);
+    }
+    private static void handleAction(Action packet,IPayloadContext context){
+        if(!(context.player() instanceof ServerPlayer player))return;
         GangSavedData saved=GangSavedData.get(player.server);GangDirectory d=saved.directory;UUID actor=player.getUUID();
         try{
             JsonObject a=JsonParser.parseString(packet.json).getAsJsonObject();String action=text(a,"action");
@@ -135,7 +187,9 @@ public final class GangNetwork {
             row.addProperty("members",g.members.size());row.addProperty("requested",g.requests.containsKey(player.getUUID()));rows.add(row);
         }
         result.add("gangs",rows);result.addProperty("page",page);result.addProperty("pages",Math.max(1,(matches.size()+11)/12));
-        PacketDistributor.sendToPlayer(player,new State(JSON.toJson(result)));
+        String json=JSON.toJson(result);
+        if(json.length()>MessageChunks.PART_BYTES/3){for(var part:MessageChunks.split(json,STATE_MAX_BYTES))PacketDistributor.sendToPlayer(player,new StateChunk(part));}
+        else PacketDistributor.sendToPlayer(player,new State(json));
     }
     public static void rememberProfile(ServerPlayer player){
         var property=player.getGameProfile().getProperties().get("textures").stream().findFirst().orElse(null);
@@ -143,6 +197,7 @@ public final class GangNetwork {
         if(saved.directory.rememberProfile(player.getUUID(),player.getGameProfile().getName(),property==null?"":property.value(),property==null||property.signature()==null?"":property.signature()))saved.setDirty();
     }
     public static void presenceChanged(ServerPlayer player,boolean joined){
+        if(!joined){uploads.remove(player);rates.remove(player);views.remove(player);}
         if(joined)rememberProfile(player);
         var gang=GangSavedData.get(player.server).directory.of(player.getUUID());if(gang==null)return;
         for(var viewer:player.server.getPlayerList().getPlayers())if(viewer!=player&&gang.members.containsKey(viewer.getUUID())&&views.containsKey(viewer))sendState(viewer,"",joined?null:player.getUUID());

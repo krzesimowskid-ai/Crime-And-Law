@@ -13,7 +13,9 @@ final class PlayerHomeButton extends FlatButton {
     }
     @Override protected void renderLabel(GuiGraphics g,int x,int y){
         int c=active?0xFFE9E8EC:0xFF74747F;
-        g.fill(x+9,y+3,x+13,y+7,c);g.fill(x+7,y+8,x+15,y+12,c);
-        g.fill(x+9,y+12,x+11,y+16,c);g.fill(x+12,y+12,x+14,y+16,c);
+        int center=x+width/2;
+        g.fill(center-2,y+3,center+2,y+7,c);
+        g.fill(center-4,y+8,center+4,y+10,c);g.fill(center-3,y+10,center+3,y+12,c);
+        g.fill(center-3,y+12,center-1,y+16,c);g.fill(center+1,y+12,center+3,y+16,c);
     }
 }

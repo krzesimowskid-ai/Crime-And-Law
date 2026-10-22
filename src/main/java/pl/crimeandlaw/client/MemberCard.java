@@ -28,7 +28,7 @@ final class MemberCard extends AbstractWidget {
         setX(Math.clamp(rowX+rowWidth+10+width<=maxX?rowX+rowWidth+10:rowX-width-10,minX,maxX-width));
         setY(Math.clamp(rowY,minY,maxY-height));
         this.member=member;this.role=role;this.online=online;this.theme=theme;this.close=close;
-        date=member.joinedAt==0?"Brak danych":DateTimeFormatter.ofPattern("d MMMM uuuu, HH:mm",Locale.forLanguageTag("pl-PL"))
+        date=member.joinedAt==0?"Data nie została zapisana":DateTimeFormatter.ofPattern("d MMMM uuuu, HH:mm",Locale.forLanguageTag("pl-PL"))
             .withZone(ZoneId.systemDefault()).format(Instant.ofEpochMilli(member.joinedAt));
         var mc=Minecraft.getInstance();var info=mc.getConnection()==null?null:mc.getConnection().getPlayerInfo(member.id);
         if(info!=null)skin=info::getSkin;
@@ -52,16 +52,25 @@ final class MemberCard extends AbstractWidget {
         g.drawString(font,font.plainSubstrByWidth(role,width-110),x+100,y+64,0xFFE9E8EC,false);
         g.fill(x+100,y+85,x+105,y+90,online?0xFF72BC8C:0xFF77727F);
         g.drawString(font,online?"Online":"Offline",x+111,y+84,0xFFAAA3B3,false);
-        g.drawString(font,"Dołączył do gangu",x+12,y+115,0xFFAAA3B3,false);
+        g.drawString(font,member.joinedAtFromHistory?"Dołączył — według rejestru":"Dołączył do gangu",x+12,y+115,0xFFAAA3B3,false);
         g.drawString(font,font.plainSubstrByWidth(date,width-24),x+12,y+130,0xFFE9E8EC,false);
     }
-    private static void part(GuiGraphics g,ResourceLocation texture,int x,int y,int u,int v,int w,int h){g.blit(texture,x,y,w*3,h*3,(float)u,(float)v,w,h,64,64);}
+    private static void part(GuiGraphics g,ResourceLocation texture,int x,int y,int u,int v,int w,int h){part(g,texture,x,y,u,v,w,h,false);}
+    private static void part(GuiGraphics g,ResourceLocation texture,int x,int y,int u,int v,int w,int h,boolean outer){
+        int pad=outer?1:0;g.blit(texture,x-pad,y-pad,w*3+pad*2,h*3+pad*2,(float)u,(float)v,w,h,64,64);
+    }
     private static void portrait(GuiGraphics g,PlayerSkin skin,int x,int y){
         var texture=skin.texture();boolean slim=skin.model()==PlayerSkin.Model.SLIM;int arm=slim?3:4;
-        part(g,texture,x+24,y,8,8,8,8);part(g,texture,x+24,y,40,8,8,8);
-        part(g,texture,x+24,y+24,20,20,8,12);part(g,texture,x+24,y+24,20,36,8,12);
-        part(g,texture,x+24-arm*3,y+24,44,20,arm,12);part(g,texture,x+24-arm*3,y+24,44,36,arm,12);
-        part(g,texture,x+48,y+24,36,52,arm,12);part(g,texture,x+48,y+24,52,52,arm,12);
+        part(g,texture,x+24,y,8,8,8,8);
+        part(g,texture,x+24,y+24,20,20,8,12);
+        part(g,texture,x+24-arm*3,y+24,44,20,arm,12);
+        part(g,texture,x+48,y+24,36,52,arm,12);
+        // Hat, jacket and both sleeves are distinct alpha-blended outer layers.
+        // A one-pixel rim keeps their silhouette visible at portrait scale.
+        part(g,texture,x+24,y+24,20,36,8,12,true);
+        part(g,texture,x+24-arm*3,y+24,44,36,arm,12,true);
+        part(g,texture,x+48,y+24,52,52,arm,12,true);
+        part(g,texture,x+24,y,40,8,8,8,true);
     }
     @Override public void onClick(double x,double y,int button){if(x>=getX()+width-22&&y<getY()+24)close.run();}
     @Override protected void updateWidgetNarration(NarrationElementOutput out){out.add(NarratedElementType.TITLE,Component.literal(member.name+", "+role+", "+(online?"online":"offline")));}

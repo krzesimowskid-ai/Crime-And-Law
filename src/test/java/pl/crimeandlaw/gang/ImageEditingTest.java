@@ -21,7 +21,7 @@ class ImageEditingTest {
         Path jpg=folder.resolve("photo.jpg");ImageIO.write(new BufferedImage(320,200,BufferedImage.TYPE_INT_RGB),"jpeg",jpg.toFile());
         assertEquals(320,LogoImages.read(jpg).getWidth());
         Path png=folder.resolve("large.png");ImageIO.write(new BufferedImage(4097,32,BufferedImage.TYPE_INT_ARGB),"png",png.toFile());
-        assertTrue(LogoImages.read(png).getWidth()<=1024);
+        assertTrue(LogoImages.read(png).getWidth()<=LogoImages.PREVIEW_SIDE);
     }
     @Test void accepts256SquareAndWideOrTallImagesAcrossSupportedFormats()throws Exception {
         for(String format:List.of("png","jpeg","gif","bmp"))for(int[] size:new int[][]{{256,256},{640,160},{80,320}}){
@@ -33,7 +33,7 @@ class ImageEditingTest {
             LogoCrop crop=new LogoCrop(loaded.getWidth(),loaded.getHeight());
             assertFalse(GangLogo.validate(LogoImages.encode(loaded,crop)).isBlank());
             crop.fit(true);BufferedImage fitted=ImageIO.read(new ByteArrayInputStream(Base64.getDecoder().decode(LogoImages.encode(loaded,crop))));
-            assertEquals(512,fitted.getWidth());assertEquals(512,fitted.getHeight());
+            assertEquals(GangLogo.SIDE,fitted.getWidth());assertEquals(GangLogo.SIDE,fitted.getHeight());
             if(size[0]!=size[1])assertEquals(0,fitted.getRGB(0,0)>>>24,"Fit preserves proportions with transparent margins");
         }
     }
@@ -52,7 +52,7 @@ class ImageEditingTest {
         for(int y=0;y<100;y++)for(int x=0;x<200;x++)source.setRGB(x,y,x<100?0xFFFF0000:0xFF0000FF);
         LogoCrop crop=new LogoCrop(200,100);crop.pan(-1000,0);
         BufferedImage selected=ImageIO.read(new ByteArrayInputStream(Base64.getDecoder().decode(LogoImages.encode(source,crop))));
-        assertEquals(0xFFFF0000,selected.getRGB(256,256));assertEquals(512,selected.getWidth());
+        assertEquals(0xFFFF0000,selected.getRGB(256,256));assertEquals(GangLogo.SIDE,selected.getWidth());
         crop.fit(true);BufferedImage fit=ImageIO.read(new ByteArrayInputStream(Base64.getDecoder().decode(LogoImages.encode(source,crop))));
         assertEquals(0,fit.getRGB(256,0)>>>24);assertEquals(255,fit.getRGB(256,256)>>>24);
     }
@@ -69,10 +69,10 @@ class ImageEditingTest {
         assertTrue(encoded.length()+512<pl.crimeandlaw.network.GangNetwork.ACTION_MAX_JSON,"Fits the action packet with metadata");
     }
     @Test void preservesFineDetailsThatWereLostAt64Pixels()throws Exception {
-        BufferedImage source=new BufferedImage(512,512,BufferedImage.TYPE_INT_ARGB);
-        for(int y=0;y<512;y++)for(int x=0;x<512;x++)source.setRGB(x,y,((x+y)&1)==0?0xFF000000:0xFFFFFFFF);
-        BufferedImage saved=ImageIO.read(new ByteArrayInputStream(Base64.getDecoder().decode(LogoImages.encode(source,new LogoCrop(512,512)))));
-        assertEquals(512,saved.getWidth());assertEquals(512,saved.getHeight());
-        for(int y=0;y<512;y++)for(int x=0;x<512;x++)assertEquals(source.getRGB(x,y),saved.getRGB(x,y));
+        BufferedImage source=new BufferedImage(1024,1024,BufferedImage.TYPE_INT_ARGB);
+        for(int y=0;y<1024;y++)for(int x=0;x<1024;x++)source.setRGB(x,y,((x+y)&1)==0?0xFF000000:0xFFFFFFFF);
+        BufferedImage saved=ImageIO.read(new ByteArrayInputStream(Base64.getDecoder().decode(LogoImages.encode(source,new LogoCrop(1024,1024)))));
+        assertEquals(1024,saved.getWidth());assertEquals(1024,saved.getHeight());
+        for(int y=0;y<1024;y++)for(int x=0;x<1024;x++)assertEquals(source.getRGB(x,y),saved.getRGB(x,y));
     }
 }

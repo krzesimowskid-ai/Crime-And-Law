@@ -10,25 +10,24 @@ import pl.crimeandlaw.gang.GangDirectory.Permission;
 
 /** A new rank stays a local draft until Save; closing never changes the gang. */
 final class NewRoleScreen extends MenuDialog {
-    static final String[] RIGHTS={"Zapraszanie / zgłoszenia","Usuwanie członków","Zarządzanie rangami","Wygląd i logo gangu"};
+    private final PermissionList.State catalogState=new PermissionList.State();
     private final BiConsumer<String,Set<Permission>> accepted;
     private final EnumSet<Permission> permissions=EnumSet.noneOf(Permission.class);
     private String draftName="";
     private EditBox name;
     private FlatButton save;
     NewRoleScreen(GangScreen parent,BiConsumer<String,Set<Permission>> accepted){
-        super(parent,"Nowa ranga");this.accepted=accepted;panelWidth=420;panelHeight=282;
+        super(parent,"Nowa ranga");this.accepted=accepted;panelWidth=460;panelHeight=356;
     }
     @Override protected void build(){
         name=addRenderableWidget(new EditBox(font,left+22,top+61,panelWidth-44,18,Component.literal("Nazwa rangi")));
         name.setMaxLength(24);name.setValue(draftName);name.setResponder(value->{draftName=value;updateSave();});
-        int row=0;
-        for(Permission permission:Permission.values()){
-            String text=RIGHTS[row];
-            addRenderableWidget(new PermissionToggle(left+22,top+110+row++*24,panelWidth-44,text,()->permissions.contains(permission),()->{
-                if(!permissions.remove(permission))permissions.add(permission);
-            },this::theme));
-        }
+        var catalog=new PermissionList(left+22,top+140,panelWidth-58,162,catalogState,permissions,()->true,this::theme);
+        button(left+22,top+110,150,catalogState.group.label+" ▸",b->{catalogState.nextGroup();b.setMessage(Component.literal(catalogState.group.label+" ▸"));catalog.filter();});
+        var search=addRenderableWidget(new EditBox(font,left+180,top+110,panelWidth-202,20,Component.literal("Szukaj uprawnienia")));
+        search.setMaxLength(64);search.setValue(catalogState.query);search.setHint(Component.literal("Szukaj uprawnienia…"));
+        search.setResponder(v->{catalogState.query=v;catalogState.scroll.reset();catalog.filter();});addRenderableWidget(catalog);
+        catalog.scrollbar(addRenderableWidget(new RegisterScrollBar(left+panelWidth-32,top+140,162,catalogState.scroll,this::theme,"Przewijanie uprawnień")));
         button(left+18,top+panelHeight-35,90,"Anuluj",b->onClose());
         save=button(left+panelWidth-138,top+panelHeight-35,120,"Zapisz rangę",b->{
             accepted.accept(draftName.strip(),EnumSet.copyOf(permissions));minecraft.setScreen(parent);

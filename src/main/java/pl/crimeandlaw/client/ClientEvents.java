@@ -23,12 +23,12 @@ public final class ClientEvents {
         @SubscribeEvent public static void tick(ClientTickEvent.Post event){
             Minecraft mc=Minecraft.getInstance();
             while(OPEN.consumeClick())if(mc.player!=null && mc.screen==null){
-                ClientState.state=new com.google.gson.JsonObject();ClientState.message="Pobieranie danych…";
+                if(!ClientState.ready())ClientState.message="Pobieranie danych…";
                 mc.setScreen(new GangScreen());ClientState.refresh("",0);
             }
         }
         @SubscribeEvent public static void logout(ClientPlayerNetworkEvent.LoggingOut event){
-            ClientState.state=new com.google.gson.JsonObject();ClientState.message="";LogoTexture.clear();BannerTexture.clear();TerrainClient.clear();
+            ClientState.state=new com.google.gson.JsonObject();ClientState.message="";GangNetwork.clearClientTransfers();LogoTexture.clear();BannerTexture.clear();TerrainClient.clear();
         }
     }
 }

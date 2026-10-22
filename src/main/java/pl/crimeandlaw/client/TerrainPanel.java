@@ -125,8 +125,10 @@ final class TerrainPanel extends AbstractWidget {
         if(button!=0||!dragging)return false;
         dragging=false;
         int dx=(int)Math.round(-dragX*(radius*2+1)/GRID),dz=(int)Math.round(-dragY*(radius*2+1)/GRID);
-        if(moved){if(dx!=0||dz!=0)pan.accept(dx,dz);else{dragX=0;dragY=0;}return true;}
+        // A release must end the preview even if the server returns an identical
+        // view (e.g. an immediate drag back). No subsequent packet is required.
         dragX=0;dragY=0;
+        if(moved){if(dx!=0||dz!=0)pan.accept(dx,dz);return true;}
         if(x>=getX()&&x<getX()+GRID&&y>=getY()&&y<getY()+GRID){
             int side=radius*2+1;
             var cell=cell(view.centerX()-radius+(int)((x-getX())*side/GRID),view.centerZ()-radius+(int)((y-getY())*side/GRID));

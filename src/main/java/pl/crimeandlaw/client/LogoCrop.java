@@ -14,9 +14,14 @@ public final class LogoCrop {
     public double cropHeight(){return side()/aspect;}
     public double y(){return centerY-cropHeight()/2;}
     public double zoom(){return zoom;}
+    public double aspect(){return aspect;}
+    public double minimumZoom(){return Math.min(.1,Math.min(width,height*aspect)/Math.max(width,height*aspect));}
+    public double normalizedZoom(){return Math.log(zoom/minimumZoom())/Math.log(8/minimumZoom());}
+    public void normalizedZoom(double value){zoom(minimumZoom()*Math.pow(8/minimumZoom(),Math.clamp(value,0,1)));}
     public boolean fit(){return fit;}
-    public void fit(boolean fit){this.fit=fit;}
-    public void zoom(double value){zoom=Math.clamp(value,1,8);clamp();}
+    public void fit(boolean fit){reset();this.fit=fit;if(fit)zoom=Math.min(width,height*aspect)/Math.max(width,height*aspect);clamp();}
+    public void zoom(double value){if(!Double.isFinite(value))return;zoom=Math.clamp(value,minimumZoom(),8);fit=false;clamp();}
     public void pan(double dx,double dy){centerX+=dx;centerY+=dy;clamp();}
-    private void clamp(){double half=side()/2,halfY=cropHeight()/2;centerX=Math.clamp(centerX,half,width-half);centerY=Math.clamp(centerY,halfY,height-halfY);}
+    private static double clampCenter(double center,double source,double viewport){double half=viewport/2;return Math.clamp(center,Math.min(half,source-half),Math.max(half,source-half));}
+    private void clamp(){centerX=clampCenter(centerX,width,side());centerY=clampCenter(centerY,height,cropHeight());}
 }

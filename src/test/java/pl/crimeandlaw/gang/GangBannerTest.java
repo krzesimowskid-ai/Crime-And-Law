@@ -22,12 +22,12 @@ class GangBannerTest {
         var image=new BufferedImage(64,64,BufferedImage.TYPE_INT_ARGB);var g=image.createGraphics();g.setColor(java.awt.Color.GREEN);g.fillRect(0,0,64,64);g.dispose();
         var crop=new LogoCrop(64,64,4);crop.fit(true);
         var result=ImageIO.read(new ByteArrayInputStream(Base64.getDecoder().decode(LogoImages.encode(image,crop,true))));
-        assertEquals(1024,result.getWidth());assertEquals(256,result.getHeight());assertEquals(0,result.getRGB(0,128)>>>24);assertEquals(0xFF00FF00,result.getRGB(512,128));
+        assertEquals(2048,result.getWidth());assertEquals(512,result.getHeight());assertEquals(0,result.getRGB(0,256)>>>24);assertEquals(0xFF00FF00,result.getRGB(1024,256));
     }
     @Test void bannerAndLogoHaveIndependentDimensionValidation()throws Exception{
-        String wide=Base64.getEncoder().encodeToString(LogoImages.png(new BufferedImage(1024,256,BufferedImage.TYPE_INT_ARGB)));
+        String wide=Base64.getEncoder().encodeToString(LogoImages.png(new BufferedImage(2048,512,BufferedImage.TYPE_INT_ARGB)));
         assertFalse(GangBanner.validateImage(wide).isEmpty());assertThrows(IllegalArgumentException.class,()->GangLogo.validate(wide));
-        String tall=Base64.getEncoder().encodeToString(LogoImages.png(new BufferedImage(512,512,BufferedImage.TYPE_INT_ARGB)));
+        String tall=Base64.getEncoder().encodeToString(LogoImages.png(new BufferedImage(512,513,BufferedImage.TYPE_INT_ARGB)));
         assertThrows(IllegalArgumentException.class,()->GangBanner.validateImage(tall));
         assertThrows(IllegalArgumentException.class,()->GangBanner.validateImage("not base64"));
     }
@@ -39,7 +39,7 @@ class GangBannerTest {
     }
     @Test void oldSaveMigratesWithoutInventingJoinDatesOrChangingLogo(){
         var d=new GangDirectory();var owner=new UUID(17,1);var gang=d.create(owner,"Owner","Old Save","");
-        var json=JsonParser.parseString(d.toJson()).getAsJsonObject();var saved=json.getAsJsonObject("gangs").getAsJsonObject(gang.id.toString());saved.remove("banner");
+        var json=JsonParser.parseString(d.toJson()).getAsJsonObject();var saved=json.getAsJsonObject("gangs").getAsJsonObject(gang.id.toString());saved.remove("banner");saved.remove("history");
         var member=saved.getAsJsonObject("members").getAsJsonObject(owner.toString());member.remove("joinedAt");member.remove("textures");member.remove("textureSignature");
         var restored=GangDirectory.fromJson(json.toString()).of(owner);assertEquals(GangBanner.DEFAULT,restored.banner);assertEquals(0,restored.members.get(owner).joinedAt);assertEquals("",restored.members.get(owner).textures);assertEquals("",restored.logo);
     }

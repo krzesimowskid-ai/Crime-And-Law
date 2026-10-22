@@ -36,6 +36,7 @@ public final class GangScreen extends Screen {
     private final List<DirectoryRow> directoryRows=new ArrayList<>();
     private record DirectoryRow(String name,int y){}
     private final ScrollPosition directoryScroll=new ScrollPosition(),roleScroll=new ScrollPosition();
+    private final PermissionList.State permissionState=new PermissionList.State();
     private ScrollPosition activeList;
     private int listTop,listBottom,lastDirectoryPage=-1;
     private String roleDraftFor="";
@@ -69,7 +70,9 @@ public final class GangScreen extends Screen {
     private Gang gang(){return ClientState.gang();}
     private boolean isLeader(){Gang g=gang();return g!=null&&g.owner.equals(ClientState.player());}
     private boolean can(Permission permission){return GangDirectory.allowed(gang(),ClientState.player(),permission);}
-    private boolean canManage(){return can(Permission.INVITE)||can(Permission.MANAGE_MEMBERS)||can(Permission.MANAGE_ROLES);}
+    private boolean canManage(){return can(Permission.INVITE)||can(Permission.MANAGE_MEMBERS)||can(Permission.ASSIGN_ROLES);}
+    double bannerAspect(){return (w-110)/123.0;}
+    int bannerColor(){return banner().color();}
     private Theme theme(){if(previewTheme)return draftTheme();Gang g=gang();if(g==null)return Theme.DEFAULT;Theme local=PersonalTheme.get(g.id.toString());return local==null?g.theme:local;}
     Theme currentTheme(){return theme();}
     public void updated(){
@@ -90,6 +93,7 @@ public final class GangScreen extends Screen {
         labels.clear();historyRows.clear();roleButtons.clear();listRows.clear();directoryRows.clear();activeList=null;
         createGangButton=null;saveRoleButton=null;memberCard=null;
         Gang g=gang();
+        if(!ClientState.ready()){addRenderableWidget(new CloseButton(left+w-30,top+11,b->onClose(),this::theme));return;}
         if(g!=null)tab=GangCategory.visibleOrOverview(tab).tabId();
         if(g==null){
             cx=left+20;cy=top+62;cw=w-40;
@@ -206,16 +210,19 @@ public final class GangScreen extends Screen {
         Role current=g.roles.get(selectedRole);
         if(!selectedRole.equals(roleDraftFor)&&current!=null){roleDraftFor=selectedRole;roleName=current.name;rolePermissions=current.permissions.isEmpty()?EnumSet.noneOf(Permission.class):EnumSet.copyOf(current.permissions);}
         field(rx,cy+26,cw-listWidth-12,24,roleName,v->{roleName=v;if(saveRoleButton!=null)saveRoleButton.active=can(Permission.MANAGE_ROLES)&&!selectedRole.equals("leader")&&validName(v,2);}).active=can(Permission.MANAGE_ROLES)&&!selectedRole.equals("leader");
-        int row=0;for(Permission permission:Permission.values()){
-            int position=row;
-            var toggle=addRenderableWidget(new PermissionToggle(rx,cy+54+row++*25,cw-listWidth-12,NewRoleScreen.RIGHTS[position],
-                ()->rolePermissions.contains(permission),()->{if(!rolePermissions.remove(permission))rolePermissions.add(permission);},this::theme));
-            toggle.active=can(Permission.MANAGE_ROLES)&&!selectedRole.equals("leader");
-        }
-        saveRoleButton=button(rx,cy+154,cw-listWidth-12,"Zapisz rangę",b->{JsonObject a=new JsonObject();a.addProperty("role",selectedRole);a.addProperty("name",roleName);
-            for(Permission p:Permission.values())a.addProperty(p.name(),rolePermissions.contains(p));send("role",a);
+        int filterY=cy+52,editorWidth=cw-listWidth-12,groupWidth=Math.min(112,editorWidth/2);
+        var catalog=new PermissionList(rx,cy+78,editorWidth-14,top+h-78-(cy+78),permissionState,rolePermissions,
+            ()->can(Permission.MANAGE_ROLES)&&!selectedRole.equals("leader"),this::theme);
+        var group=button(rx,filterY,groupWidth,permissionState.group.label+" ▸",b->{permissionState.nextGroup();b.setMessage(Component.literal(permissionState.group.label+" ▸"));catalog.filter();});
+        group.setTooltip(Tooltip.create(Component.literal("Zmień grupę uprawnień")));
+        field(rx+groupWidth+6,filterY,editorWidth-groupWidth-6,64,permissionState.query,v->{permissionState.query=v;permissionState.scroll.reset();catalog.filter();}).setHint(Component.literal("Szukaj…"));
+        addRenderableWidget(catalog);
+        catalog.scrollbar(addRenderableWidget(new RegisterScrollBar(rx+editorWidth-10,cy+78,catalog.getHeight(),permissionState.scroll,this::theme,"Przewijanie uprawnień")));
+        saveRoleButton=button(rx,top+h-48,editorWidth,"Zapisz rangę",b->{JsonObject a=new JsonObject();a.addProperty("role",selectedRole);a.addProperty("name",roleName);
+            for(Permission p:Permission.values())a.addProperty(p.name(),p.available()&&rolePermissions.contains(p));send("role",a);
         });saveRoleButton.active=can(Permission.MANAGE_ROLES)&&!selectedRole.equals("leader")&&validName(roleName,2);
     }
+
     private void buildMembers(){
         label(cx,cy,"Członkowie: "+ClientState.number("onlineCount",0)+" online / "+ClientState.memberCount());
         buildPeople(false,false,cy+28);
@@ -255,7 +262,7 @@ public final class GangScreen extends Screen {
                         List<Role> roles=g.roles.values().stream().filter(r->!r.id.equals("leader")).toList();
                         int index=0;for(int i=0;i<roles.size();i++)if(roles.get(i).id.equals(member.role))index=i;
                         JsonObject a=new JsonObject();a.addProperty("target",selectedMember);a.addProperty("role",roles.get((index+1)%roles.size()).id);send("assign",a);
-                    }).active=can(Permission.MANAGE_ROLES)&&!g.owner.equals(selected);
+                    }).active=can(Permission.ASSIGN_ROLES)&&!g.owner.equals(selected);
                     button(rx,y+73,cw-listWidth-16,"Usuń z gangu",b->confirm("Usunąć członka?",member.name,()->target("kick",selectedMember))).active=can(Permission.MANAGE_MEMBERS)&&!g.owner.equals(selected)&&!selected.equals(ClientState.player());
                     button(rx,y+97,cw-listWidth-16,"Przekaż przywództwo",b->confirm("Przekazać przywództwo?","Nowy lider: "+member.name,()->target("transfer",selectedMember))).active=isLeader()&&!g.owner.equals(selected);
                 }
@@ -330,11 +337,14 @@ public final class GangScreen extends Screen {
     private Theme draftTheme(){return new Theme(Integer.parseInt(background.replace("#",""),16),Integer.parseInt(border.replace("#",""),16),opacity);}
     private void buildSettings(){
         if(!canManage()&&settingsSection==2)settingsSection=0;
-        button(cx,cy,110,"Wygląd",b->{settingsSection=0;bodyScroll=0;rebuildWidgets();},settingsSection==0);
-        button(cx+116,cy,76,"Logo",b->{settingsSection=1;bodyScroll=0;rebuildWidgets();},settingsSection==1);
-        button(cx+198,cy,76,"Baner",b->{settingsSection=3;bodyScroll=0;rebuildWidgets();},settingsSection==3);
-        if(canManage())button(cx+280,cy,122,"Zarządzanie",b->{settingsSection=2;bodyScroll=0;selectedMember="";rebuildWidgets();},settingsSection==2);
-        int y=cy+42,half=(cw-12)/2;
+        button(cx,cy,110,"Wygląd",b->{settingsSection=0;bodyScroll=0;rebuildWidgets();},settingsSection!=2);
+        if(canManage())button(cx+116,cy,122,"Zarządzanie",b->{settingsSection=2;bodyScroll=0;selectedMember="";rebuildWidgets();},settingsSection==2);
+        if(settingsSection!=2){
+            button(cx,cy+27,110,"Kolory menu",b->{settingsSection=0;bodyScroll=0;rebuildWidgets();},settingsSection==0);
+            button(cx+116,cy+27,94,"Logo",b->{settingsSection=1;bodyScroll=0;rebuildWidgets();},settingsSection==1);
+            button(cx+216,cy+27,94,"Baner",b->{settingsSection=3;bodyScroll=0;rebuildWidgets();},settingsSection==3);
+        }
+        int y=cy+68,half=(cw-12)/2;
         if(settingsSection==0){
             label(cx,y,"Kolory i przezroczystość");
             button(cx,y+28,half,"Zmień kolor tła…",b->openColor(true));
@@ -359,7 +369,7 @@ public final class GangScreen extends Screen {
             label(cx,y,"Baner gangu");
             button(cx,y+24,half,"Jednolity kolor",b->{var current=banner();draftBanner=new GangBanner("",current.color(),current.opacity()==0?255:current.opacity());rebuildWidgets();},banner().image().isEmpty()).active=can(Permission.MANAGE_THEME);
             button(cx+half+12,y+24,half,"Wybierz obraz baneru…",b->chooseImageFile(true)).centered().active=can(Permission.MANAGE_THEME);
-            button(cx,y+51,half,banner().image().isEmpty()?"Zmień kolor baneru…":"Zmień krycie obrazu…",b->openBannerColor()).centered().active=can(Permission.MANAGE_THEME);
+            button(cx,y+51,half,"Zmień kolor baneru…",b->openBannerColor()).centered().active=can(Permission.MANAGE_THEME);
             button(cx+half+12,y+51,half,"Usuń baner",b->{draftBanner=GangBanner.DEFAULT;rebuildWidgets();}).centered().active=can(Permission.MANAGE_THEME);
             button(cx,y+184,cw,"Zapisz baner gangu",b->{var value=banner();JsonObject args=new JsonObject();args.addProperty("image",value.image());args.addProperty("color",value.color());args.addProperty("opacity",value.opacity());send("banner",args);}).centered().active=can(Permission.MANAGE_THEME)&&draftBanner!=null;
         }else{
@@ -447,6 +457,12 @@ public final class GangScreen extends Screen {
             g.fill(left+offset,top,left+offset+14,top+2,t.borderArgb());
             g.fill(left+offset,top+h-2,left+offset+14,top+h,t.borderArgb());
         }
+        if(!ClientState.ready()){
+            g.drawCenteredString(font,"Crime And Law",left+w/2,top+16,0xFFF0EDF1);
+            String status=ClientState.message.isBlank()?"Pobieranie danych gangu…":ClientState.message;
+            g.drawCenteredString(font,font.plainSubstrByWidth(status,w-40),left+w/2,top+h/2,0xFFAAAAB7);
+            super.render(g,mouseX,mouseY,delta);return;
+        }
         Gang gang=gang();String logo=!draftLogo.isBlank()?draftLogo:gang==null?"":gang.logo;
         var texture=LogoTexture.get(logo);
         if(gang!=null){
@@ -466,20 +482,21 @@ public final class GangScreen extends Screen {
             g.fill(cx+22,cy+33,cx+cw-22,cy+34,0x44000000|t.border());
         }
         if(gang==null&&!find || gang!=null&&tab==3&&settingsSection==1){
-            int previewX=cx+cw-(gang==null?172:140),previewY=cy+(gang==null?44:55);
+            int previewX=cx+cw-(gang==null?172:140),previewY=cy+(gang==null?44:81);
             g.fill(previewX,previewY,previewX+140,previewY+148,0x20000000);g.renderOutline(previewX,previewY,140,148,0x66000000|t.border());
             g.drawCenteredString(font,"PODGLĄD LOGO",previewX+70,previewY+12,0xFFAAA7B6);
             if(texture!=null)LogoTexture.draw(g,previewX+22,previewY+32,96,96);
             else{g.renderOutline(previewX+38,previewY+48,64,64,t.borderArgb());g.drawCenteredString(font,"+",previewX+70,previewY+74,t.borderArgb());}
         }
         if(gang!=null&&tab==3&&settingsSection==0){
-            int half=(cw-12)/2,y=cy+42;
+            int half=(cw-12)/2,y=cy+68;
             g.fill(cx,y+50,cx+half,y+55,(opacity<<24)|Integer.parseInt(background,16));
             g.fill(cx+half+12,y+50,cx+cw,y+55,0xFF000000|Integer.parseInt(border,16));
             g.fill(cx,y+84,cx+cw,y+85,0x44000000|t.border());
         }
         if(gang!=null&&tab==3&&settingsSection==3){
-            drawBanner(g,banner(),cx,cy+128,cw,84);g.renderOutline(cx,cy+128,cw,84,0x66000000|t.border());
+            int bw=Math.min(cw,420),bh=(int)Math.round(bw/bannerAspect()),bx=cx+(cw-bw)/2;
+            drawBanner(g,banner(),bx,cy+144,bw,bh);g.renderOutline(bx,cy+144,bw,bh,0x66000000|t.border());
         }
         if(gang!=null&&tab==0)drawGangOverview(g,gang,texture);
         if(gang!=null&&tab==4)drawRegister(g);
@@ -512,7 +529,7 @@ public final class GangScreen extends Screen {
     }
     private void drawGangOverview(GuiGraphics g,Gang gang,net.minecraft.resources.ResourceLocation logo){
         int center=cx+cw/2,logoY=cy,accent=theme().borderArgb();
-        drawBanner(g,banner(),cx-6,cy-6,cw+12,112);
+        drawBanner(g,banner(),left+109,top+43,w-110,123);
         if(logo!=null)LogoTexture.draw(g,center-32,logoY,64,64);
         else{
             g.fill(center-32,logoY,center+32,logoY+64,0x18000000);
@@ -535,8 +552,8 @@ public final class GangScreen extends Screen {
     }
     private void drawBanner(GuiGraphics g,GangBanner banner,int x,int y,int width,int height){
         g.fill(x,y,x+width,y+height,0x22000000);
-        if(banner.image().isEmpty())g.fill(x,y,x+width,y+height,(banner.opacity()<<24)|banner.color());
-        else if(BannerTexture.get(banner.image())!=null)BannerTexture.draw(g,x,y,width,height,banner.opacity());
+        g.fill(x,y,x+width,y+height,(banner.opacity()<<24)|banner.color());
+        if(!banner.image().isEmpty()&&BannerTexture.get(banner.image())!=null)BannerTexture.draw(g,x,y,width,height,banner.opacity());
         g.fillGradient(x,y,x+width,y+height,0x00000000,0x44000000);g.flush();
     }
     private void informationTile(GuiGraphics g,int x,int y,int width,String label,String value,String detail){
@@ -615,7 +632,7 @@ public final class GangScreen extends Screen {
             }
             return true;
         }
-        if(gang()==null&&getFocused() instanceof EditBox&&(key==org.lwjgl.glfw.GLFW.GLFW_KEY_ENTER||key==org.lwjgl.glfw.GLFW.GLFW_KEY_KP_ENTER)){
+        if(ClientState.ready()&&gang()==null&&getFocused() instanceof EditBox&&(key==org.lwjgl.glfw.GLFW.GLFW_KEY_ENTER||key==org.lwjgl.glfw.GLFW.GLFW_KEY_KP_ENTER)){
             if(find){search();return true;}
             if(createGangButton!=null&&createGangButton.active){createGangButton.onPress();return true;}
         }

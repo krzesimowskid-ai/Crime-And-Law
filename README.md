@@ -1,19 +1,19 @@
 # Crime And Law
 
 Autorski mod gangsterski: panel gangów, członkostwo i własny wygląd menu.
-Wersja **0.1.17**.
+Wersja **0.1.18**.
 
 Pierwsza propozycja własnej ekonomii w dolarach i rozwoju terenów:
 [Balans terytoriów](docs/BALANS_TERYTORIOW.md) oraz
 [symulacja](docs/SYMULACJA_BALANSU.md). To projekt do dalszej implementacji;
-JAR 0.1.17 nie odczytuje tych reguł i nie wypłaca jeszcze pieniędzy.
+JAR 0.1.18 nie odczytuje tych reguł i nie wypłaca jeszcze pieniędzy.
 
 ## Uruchomienie
 
 - Minecraft **1.21.1**, Java **21**, NeoForge **21.1.248**.
-- Włóż `crimeandlaw-0.1.17.jar` do `mods`, zastępując poprzedni JAR tego moda.
+- Włóż `crimeandlaw-0.1.18.jar` do `mods`, zastępując poprzedni JAR tego moda.
 - W rozgrywce sieciowej mod musi być **u graczy i na serwerze**.
-  Zaktualizuj serwer i wszystkich klientów do 0.1.17. Sieć moda używa protokołu 9.
+  Zaktualizuj serwer i wszystkich klientów do 0.1.18. Sieć moda używa protokołu 10.
 - W świecie jednoosobowym część serwerowa działa razem ze światem.
 - **G** otwiera panel; skrót można zmienić w sterowaniu. Esc lub X zamyka okno.
 
@@ -56,7 +56,9 @@ Własne rangi tworzy się w **Rangi → + Nowa ranga**. Osobne okno „Nowa rang
 ma nazwę, uprawnienia i „Zapisz rangę”. Anuluj, X i Esc odrzucają nowy szkic.
 Zmiana skali GUI zachowuje wpisaną nazwę i wybrane uprawnienia. Można
 ustawić nazwę i uprawnienia: zgłoszenia, usuwanie członków, zarządzanie rangami
-oraz wspólny wygląd/logo. Osoby bez uprawnień mogą przeglądać rangi.
+oraz wspólny wygląd/logo/baner. Dostępna jest osobna zmiana rang członków.
+Pełny [katalog uprawnień](docs/UPRAWNIENIA.md) ma wyszukiwanie, grupy i przewijanie.
+Prawa przyszłych systemów są widoczne jako nieaktywne. Osoby bez uprawnień mogą przeglądać rangi.
 Lista rang przewija się niezależnie od formularza. Nową rangę można zapisać
 Enterem z pola nazwy. Przeciąganie przy krawędzi przewija listę.
 Przewijanie trwa także po zatrzymaniu przeciąganego wiersza przy krawędzi.
@@ -69,7 +71,8 @@ Kliknięcie otwiera kartę obok wiersza: portret górnej części skina, nazwa,
 ranga, status i data dołączenia. Kliknięcie poza kartą, jej X lub pierwszy Esc
 zamyka kartę. Skórka pochodzi z bieżących danych Minecrafta albo zapisanego
 profilu; w czasie ładowania/braku danych używana jest domyślna skórka gry.
-Starszym członkom bez zapisanej daty nie przypisuje się wymyślonej daty.
+Brakujące starsze daty są odzyskiwane z pasujących wpisów rejestru, z oznaczeniem
+„według rejestru”. Jeśli nie ma takiego zapisu, data pozostaje nieznana.
 Lista członków służy przeglądaniu. Czynności dostępne dla danej osoby znajdują
 się w **Ustawienia → Zarządzanie**. „Zmień rangę” przełącza wybranego członka
 na kolejną dostępną rangę. Przekazanie przywództwa wymaga obecnego lidera.
@@ -81,7 +84,8 @@ Odejście ostatniego członka usuwa pusty gang po potwierdzeniu.
 
 ## Kolory i wygląd
 
-Ustawienia mają kategorie „Wygląd”, „Logo”, „Baner” oraz, dla uprawnionych osób, „Zarządzanie”.
+Ustawienia mają sekcję „Wygląd” z podsekcjami „Kolory menu”, „Logo”, „Baner”
+oraz, dla uprawnionych osób, osobne „Zarządzanie”.
 „Zmień kolor…” otwiera koło barw, pola HEX/RGB i pionowe suwaki z gradientami:
 
 - **Jasność:** wybrany kolor u góry, czerń na dole.
@@ -106,31 +110,31 @@ aby widzieć grę i folder jednocześnie.
 
 Obrazy 256×256, poziome, pionowe i inne proporcje są przyjmowane. GIF używa
 pierwszej klatki. Limit wymiarów rastra: 100 000 px na bok i miliard pikseli;
-podgląd jest pomniejszany do maksymalnie 1024 px na dłuższym boku.
+podgląd jest pomniejszany do maksymalnie 2048 px na dłuższym boku.
 
 W oknie „Dopasuj logo” przesuwaj obraz, przybliżaj kółkiem lub suwakiem.
 Wybierz kwadratowy kadr albo cały obraz z zachowaniem proporcji i przezroczystymi
 marginesami. „Anuluj”/X/Esc zachowuje poprzednie logo. „Zastosuj logo” przygotowuje
-podgląd; zapisz go przez „Utwórz gang” lub Ustawienia → Logo → „Zapisz logo gangu”.
+podgląd; zapisz go przez „Utwórz gang” lub Ustawienia → Wygląd → Logo → „Zapisz logo gangu”.
 
-Logo jest zapisywane jako bezstratny PNG **512×512**, do 1,1 MB. Nagłówek,
+Logo jest zapisywane jako bezstratny PNG **1024×1024**, do 4,3 MB. Nagłówek,
 podgląd i główna zakładka wyświetlają cały obraz z wygładzaniem skalowania.
-Dla wyraźnego logo przygotuj źródło 512×512 lub większe; przy mocnym kadrowaniu
+Dla wyraźnego logo przygotuj źródło 1024×1024 lub większe; przy mocnym kadrowaniu
 warto mieć większy oryginał. Mniejszy obraz jest przyjmowany, ale powiększanie
 nie odzyska brakujących szczegółów. Nie ma wyboru stylu ani przerabiania rysunku
 na inny rodzaj grafiki.
 
-Dotychczasowe logo 64×64 nadal się wyświetla. Aby odzyskać detale utracone
+Dotychczasowe logo 64×64 i 512×512 nadal się wyświetla. Aby odzyskać detale utracone
 podczas wcześniejszego importu, wczytaj ponownie oryginalny plik i zapisz logo.
 Pozostali gracze nie potrzebują pliku źródłowego. Import z linku nie jest jeszcze
 obsługiwany.
 
 
-## Baner gangu — 0.1.17
+## Baner gangu
 
 Opcjonalny baner jest tłem szerokiego obszaru z logo i nazwą w zakładce Gang.
 Nazwa ma osobną ramkę zapewniającą czytelność. Baner ustawia się po utworzeniu
-gangu w **Ustawienia → Baner**. Formularz tworzenia nadal dotyczy nazwy i logo.
+gangu w **Ustawienia → Wygląd → Baner**. Formularz tworzenia nadal dotyczy nazwy i logo.
 
 Wybierz jednolity kolor albo obraz. Edytor koloru ma koło barw, jasność,
 nasycenie, krycie i pola HEX/RGB. Przy obrazie można zmienić krycie.
@@ -139,10 +143,12 @@ na serwerze. Zamknięcie panelu bez zapisania odrzuca szkic.
 
 Obraz można wybrać z plików lub przeciągnąć, mając otwartą zakładkę Baner.
 Importer korzysta z tych samych formatów i limitów źródła co logo.
-Osobne kadrowanie 4:1 pozwala przesuwać obraz, przybliżać albo zmieścić całość
-z przezroczystymi marginesami. Wynik to PNG **1024×256**, do 1,1 MB;
+Osobne kadrowanie odpowiada proporcjom pasa. Można przesuwać obraz, przybliżać,
+oddalać poniżej 1× albo zmieścić całość z przezroczystymi marginesami.
+Kolor baneru wypełnia marginesy także przy wybranym obrazie. Wynik ma do
+**2048×512**, obecny pas daje PNG **2048×475**, do 4,3 MB;
 wyświetlanie zachowuje proporcje i dopasowuje kadr do szerokości pasa.
-Logo pozostaje osobnym PNG 512×512.
+Logo pozostaje osobnym PNG 1024×1024.
 
 Baner zapisuje lider lub osoba z dotychczasowym uprawnieniem do wyglądu/logo.
 Serwer ponownie sprawdza uprawnienia, obraz i limity. Baner jest wspólny
@@ -170,7 +176,7 @@ Windows: gradlew.bat build
 Linux/macOS: ./gradlew build
 ```
 
-Wynik: `build/libs/crimeandlaw-0.1.17.jar`.
+Wynik: `build/libs/crimeandlaw-0.1.18.jar`.
 Gradle Wrapper 9.2.1, ModDevGradle 2.0.148, NeoForge 21.1.248.
 `./gradlew test` sprawdza model, migrację zapisów, duże listy i prywatność
 zgłoszeń, walidację/edycję logo, kolory oraz skalowanie menu.
@@ -348,3 +354,25 @@ Uprawnienia mają przełączniki z opisem stanu dla czytnika ekranu.
 Enter zatwierdza formularz z pola tekstowego i zachowuje działanie zaznaczonego
 przycisku. Tworzenie gangu ma uporządkowaną kartę i wyróżniony przycisk główny.
 Nie dodano magazynów, pojazdów, finansów ani innych przyszłych systemów.
+
+
+## Korekty po 0.1.17 — 0.1.18
+
+Baner wypełnia całą strefę tożsamości gangu. Większe logo i baner wymagają
+ponownego importu oryginału, aby odzyskać szczegóły utracone w starszym zapisie.
+Kadrowanie pozwala pokazać cały obraz, oddalać i ustawić położenie na kolorowym tle.
+Logo i baner znajdują się wewnątrz Wyglądu.
+
+Pierwsze otwarcie czeka na dane serwera; kolejne zachowuje znany stan gangu.
+Mapa kończy przeciąganie przy puszczeniu myszy i używa ograniczonej pamięci
+1024 kafli, aby szybki powrót nie usuwał rozpoznanego obrazu. Nie wczytuje
+ani nie generuje odległego świata. Ikona gracza jest symetryczna.
+Portret obsługuje widoczne warstwy głowy, tułowia i obu rąk.
+
+Dawne zarządzanie rangami migruje do edycji rang i osobnej zmiany rangi członka.
+Nowy katalog liczy 25 praw: pięć działających i 20 zablokowanych definicji
+przyszłych systemów. Blokada jest sprawdzana także na serwerze.
+
+Duże obrazy są przesyłane w małych częściach i składane w całość przed użyciem,
+aby nie przekraczać granic pojedynczej wiadomości Minecrafta. Serwer sprawdza
+kompletność, kolejność, rozmiar oraz czas oczekiwania. Zapisane PNG pozostają całe.

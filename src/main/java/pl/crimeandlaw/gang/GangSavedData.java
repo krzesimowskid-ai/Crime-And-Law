@@ -9,7 +9,7 @@ import net.minecraft.world.level.saveddata.SavedData;
 public final class GangSavedData extends SavedData {
     public final GangDirectory directory;
     private GangSavedData(){directory=new GangDirectory();}
-    private GangSavedData(GangDirectory directory){this.directory=directory;}
+    private GangSavedData(GangDirectory directory){this.directory=directory;if(directory.needsMigration())setDirty();}
     public static GangSavedData get(MinecraftServer server){
         return server.overworld().getDataStorage().computeIfAbsent(
                 new Factory<>(GangSavedData::new,GangSavedData::load),"crimeandlaw_gangs");

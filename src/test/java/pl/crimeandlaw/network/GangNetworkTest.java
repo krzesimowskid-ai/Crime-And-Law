@@ -15,9 +15,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class GangNetworkTest {
     @Test void detailedLogoSurvivesActionStorageAndStateCodecs()throws Exception {
-        BufferedImage image=new BufferedImage(512,512,BufferedImage.TYPE_INT_ARGB);Random random=new Random(22);
-        for(int y=0;y<512;y++)for(int x=0;x<512;x++)image.setRGB(x,y,random.nextInt()|0xFF000000);
-        String logo=LogoImages.encode(image,new LogoCrop(512,512));
+        BufferedImage image=new BufferedImage(1024,1024,BufferedImage.TYPE_INT_ARGB);Random random=new Random(22);
+        for(int y=0;y<1024;y++)for(int x=0;x<1024;x++)image.setRGB(x,y,random.nextInt()|0xFF000000);
+        String logo=LogoImages.encode(image,new LogoCrop(1024,1024));
         assertTrue(logo.length()>28000,"Exercises a payload exceeding the previous action limit");
         JsonObject action=new JsonObject();action.addProperty("action","create");action.addProperty("name","Żółty Gang");action.addProperty("logo",logo);
         var upload=new RegistryFriendlyByteBuf(Unpooled.buffer(),RegistryAccess.EMPTY);
@@ -28,9 +28,9 @@ class GangNetworkTest {
         }finally{upload.release();}
         JsonObject parsed=JsonParser.parseString(received).getAsJsonObject();UUID owner=new UUID(19,11);
         GangDirectory directory=new GangDirectory();directory.create(owner,"Lider",parsed.get("name").getAsString(),GangLogo.validate(parsed.get("logo").getAsString()));
-        var wide=new BufferedImage(1024,256,BufferedImage.TYPE_INT_ARGB);
-        for(int y=0;y<256;y++)for(int x=0;x<1024;x++)wide.setRGB(x,y,random.nextInt()|0xFF000000);
-        String banner=LogoImages.encode(wide,new LogoCrop(1024,256,4),true);
+        var wide=new BufferedImage(2048,512,BufferedImage.TYPE_INT_ARGB);
+        for(int y=0;y<512;y++)for(int x=0;x<2048;x++)wide.setRGB(x,y,random.nextInt()|0xFF000000);
+        String banner=LogoImages.encode(wide,new LogoCrop(2048,512,4),true);
         directory.banner(owner,new GangBanner(banner,0x334455,180));
         GangDirectory restored=GangDirectory.fromJson(directory.toJson());
         assertEquals(logo,restored.of(owner).logo);
@@ -41,11 +41,11 @@ class GangNetworkTest {
             JsonObject state=JsonParser.parseString(GangNetwork.State.CODEC.decode(download).json()).getAsJsonObject();
             assertFalse(download.isReadable());assertEquals("Żółty Gang",state.getAsJsonObject("gang").get("name").getAsString());
             BufferedImage displayed=ImageIO.read(new ByteArrayInputStream(Base64.getDecoder().decode(state.getAsJsonObject("gang").get("logo").getAsString())));
-            assertEquals(512,displayed.getWidth());assertEquals(512,displayed.getHeight());
+            assertEquals(1024,displayed.getWidth());assertEquals(1024,displayed.getHeight());
             assertEquals(image.getRGB(128,128),displayed.getRGB(128,128));
             var receivedBanner=state.getAsJsonObject("gang").getAsJsonObject("banner");
             assertEquals(banner,receivedBanner.get("image").getAsString());assertEquals(180,receivedBanner.get("opacity").getAsInt());
-            assertTrue(snapshot.length()>2_000_000,"Both detailed assets share the same bounded state packet");
+            assertTrue(snapshot.length()>7_000_000,"Both detailed assets share the same bounded state packet");
         }finally{download.release();}
     }
     @Test void packetCodecsStillRejectOverBudgetStrings(){

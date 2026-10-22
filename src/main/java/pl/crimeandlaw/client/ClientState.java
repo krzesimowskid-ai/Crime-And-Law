@@ -12,6 +12,7 @@ public final class ClientState {
     public static String message="";
     private static JsonObject cachedState;
     private static GangDirectory.Gang cachedGang;
+    public static boolean ready(){return state.has("player");}
     public static GangDirectory.Gang gang(){
         if(cachedState!=state){cachedState=state;cachedGang=state.has("gang")?JSON.fromJson(state.get("gang"),GangDirectory.Gang.class):null;}
         return cachedGang;

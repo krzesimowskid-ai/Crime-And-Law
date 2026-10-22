@@ -2,7 +2,7 @@ package pl.crimeandlaw.gang;
 
 /** Shared optional identity banner. Opacity applies to either the image or solid color. */
 public record GangBanner(String image,int color,int opacity) {
-    public static final int WIDTH=1024,HEIGHT=256;
+    public static final int WIDTH=2048,HEIGHT=512;
     public static final GangBanner DEFAULT=new GangBanner("",0x15161C,0);
     public GangBanner {
         if(image==null||image.length()>GangLogo.MAX_ENCODED_LENGTH)throw new IllegalArgumentException("Nieprawidłowy baner.");

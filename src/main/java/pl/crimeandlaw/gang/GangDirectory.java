@@ -1,6 +1,7 @@
 package pl.crimeandlaw.gang;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonParser;
 import java.util.*;
 
 /** Server-owned domain model, independent of Minecraft rendering and networking. */
@@ -9,7 +10,41 @@ public final class GangDirectory {
     public static final int MAX_GANGS = 512;
     public static final int MAX_ROLES=12;
     public static final int HISTORY_LIMIT=10000;
-    public enum Permission { INVITE, MANAGE_MEMBERS, MANAGE_ROLES, MANAGE_THEME }
+    public enum PermissionGroup {
+        ALL("Wszystkie"), PERSONNEL("Personel"), PROPERTY("Mienie i zaopatrzenie"), ACTIVITIES("Aktywności"), FINANCES("Finanse"), TRANSPORT("Transport");
+        public final String label;PermissionGroup(String label){this.label=label;}
+    }
+    public enum Permission {
+        INVITE("Zapraszanie / zgłoszenia",PermissionGroup.PERSONNEL,true),
+        MANAGE_MEMBERS("Usuwanie członków",PermissionGroup.PERSONNEL,true),
+        MANAGE_ROLES("Zarządzanie rangami",PermissionGroup.PERSONNEL,true),
+        MANAGE_THEME("Wygląd i logo gangu",PermissionGroup.PROPERTY,true),
+        ASSIGN_ROLES("Zmiana rang członków",PermissionGroup.PERSONNEL,true),
+        WARN_MEMBERS("Wydawanie ostrzeżeń",PermissionGroup.PERSONNEL,false),
+        ACCESS_STORAGE("Dostęp do magazynu",PermissionGroup.PROPERTY,false),
+        CRAFT_EQUIPMENT("Tworzenie przedmiotów z materiałów",PermissionGroup.PROPERTY,false),
+        DEPOSIT_FUNDS("Wpłata środków na saldo",PermissionGroup.FINANCES,false),
+        WITHDRAW_FUNDS("Wypłata środków z salda",PermissionGroup.FINANCES,false),
+        PAY_BONUSES("Wypłacanie premii",PermissionGroup.FINANCES,false),
+        RESET_VEHICLES("Resetowanie pojazdów gangowych",PermissionGroup.TRANSPORT,false),
+        START_TERRITORY_ATTACK("Rozpoczynanie ataku na terytorium",PermissionGroup.ACTIVITIES,false),
+        BANK_ROBBERY("Dostęp do napadu na bank",PermissionGroup.ACTIVITIES,false),
+        JOIN_TERRITORY_ATTACK("Udział w ataku na terytorium",PermissionGroup.ACTIVITIES,false),
+        MANAGE_BLACKLIST("Zarządzanie czarną listą",PermissionGroup.PERSONNEL,false),
+        EDIT_OUTFITS("Edytowanie zestawów ubrań",PermissionGroup.PROPERTY,false),
+        CREATE_OUTFITS("Tworzenie zestawów ubrań",PermissionGroup.PROPERTY,false),
+        OPEN_AIRDROP("Otwarcie AirDrop",PermissionGroup.ACTIVITIES,false),
+        MANAGE_QUICK_SETS("Zarządzanie szybkimi zestawami",PermissionGroup.PROPERTY,false),
+        OPEN_CLOSE_QUICK_SETS("Otwieranie / zamykanie szybkich zestawów",PermissionGroup.PROPERTY,false),
+        MANAGE_DEPARTMENTS("Tworzenie i usuwanie działów",PermissionGroup.PERSONNEL,false),
+        ASSIGN_DEPARTMENTS("Przydzielanie działów",PermissionGroup.PERSONNEL,false),
+        COLLECT_RAID_EVIDENCE("Zbieranie dowodów podczas rajdu",PermissionGroup.ACTIVITIES,false),
+        PREPARE_CANCEL_RAID("Przygotowania do rajdu / anulowanie",PermissionGroup.ACTIVITIES,false);
+        public final String label;public final PermissionGroup group;private final boolean available;
+        Permission(String label,PermissionGroup group,boolean available){this.label=label;this.group=group;this.available=available;}
+        public boolean available(){return available;}
+        public static EnumSet<Permission> activePermissions(){var set=EnumSet.allOf(Permission.class);set.removeIf(p->!p.available);return set;}
+    }
     public record Event(long timestamp,String text) {}
     public record Theme(int background, int border, int opacity) {
         public static final Theme DEFAULT = new Theme(0x15161C, 0xA3425D, 235);
@@ -26,6 +61,7 @@ public final class GangDirectory {
         public UUID id;
         public String name,role;
         public long joinedAt;
+        public boolean joinedAtFromHistory;
         public String textures="",textureSignature="";
         public Member(UUID id,String name){this(id,name,"member");}
         public Member(UUID id,String name,String role){this.id=id;this.name=name;this.role=role;}
@@ -41,19 +77,22 @@ public final class GangDirectory {
         public List<Event> history=new ArrayList<>();
     }
     private final Map<UUID,Gang> gangs=new LinkedHashMap<>();
+    private int schemaVersion=2;
+    private transient boolean migrated;
+    public boolean needsMigration(){return migrated;}
     public Collection<Gang> gangs(){return Collections.unmodifiableCollection(gangs.values());}
     public Gang get(UUID id){return gangs.get(id);}
     public Gang of(UUID player){return gangs.values().stream().filter(g->g.members.containsKey(player)).findFirst().orElse(null);}
     public boolean isLeader(Gang g,UUID actor){return g!=null&&g.owner.equals(actor)&&g.members.containsKey(actor);}
     public static boolean allowed(Gang g,UUID actor,Permission permission){
-        if(g==null||!g.members.containsKey(actor))return false;
+        if(!permission.available()||g==null||!g.members.containsKey(actor))return false;
         if(g.owner.equals(actor))return true;
         Role role=g.roles.get(g.members.get(actor).role);
         return role!=null&&role.permissions.contains(permission);
     }
     private static void defaultRoles(Gang g){
         if(g.roles==null)g.roles=new LinkedHashMap<>();
-        g.roles.putIfAbsent("leader",new Role("leader","Lider",EnumSet.allOf(Permission.class)));
+        g.roles.putIfAbsent("leader",new Role("leader","Lider",Permission.activePermissions()));
         g.roles.putIfAbsent("member",new Role("member","Członek",Set.of()));
     }
     public Gang create(UUID actor,String playerName,String name,String logo){
@@ -99,14 +138,14 @@ public final class GangDirectory {
     public void role(UUID actor,String roleId,String name,Set<Permission> permissions){
         Gang g=own(actor,Permission.MANAGE_ROLES);name=validName(name,2,24);
         require(!"leader".equals(roleId),"Uprawnienia lidera są stałe.");
-        require(permissions!=null&&permissions.stream().allMatch(Objects::nonNull),"Nieprawidłowe uprawnienia.");
+        require(permissions!=null&&permissions.stream().allMatch(p->p!=null&&p.available()),"To uprawnienie jest jeszcze w przygotowaniu.");
         boolean creating=roleId==null||roleId.isBlank();
         if(creating){require(g.roles.size()<MAX_ROLES,"Maksymalnie 12 rang.");roleId=UUID.randomUUID().toString();}
         else require(g.roles.containsKey(roleId),"Nie ma takiej rangi.");
         g.roles.put(roleId,new Role(roleId,name,permissions));
     }
     public void assign(UUID actor,UUID target,String role){
-        Gang g=own(actor,Permission.MANAGE_ROLES);
+        Gang g=own(actor,Permission.ASSIGN_ROLES);
         require(g.members.containsKey(target),"Nie ma takiego członka.");
         require(!g.owner.equals(target)&&!"leader".equals(role),"Lidera zmienia się przez przekazanie przywództwa.");
         require(g.roles.containsKey(role),"Nie ma takiej rangi.");
@@ -154,8 +193,11 @@ public final class GangDirectory {
     private static void require(boolean ok,String message){if(!ok)throw new IllegalArgumentException(message);}
     public String toJson(){return JSON.toJson(this);}
     public static GangDirectory fromJson(String text){
-        GangDirectory directory=JSON.fromJson(text,GangDirectory.class);
+        var document=JsonParser.parseString(text);require(document.isJsonObject(),"Nieprawidłowy zapis gangów.");
+        boolean legacy=!document.getAsJsonObject().has("schemaVersion");
+        GangDirectory directory=JSON.fromJson(document,GangDirectory.class);
         if(directory==null || directory.gangs==null || directory.gangs.size()>MAX_GANGS)throw new IllegalArgumentException("Nieprawidłowy zapis gangów.");
+        directory.schemaVersion=2;directory.migrated=legacy;
         Set<UUID> seen=new HashSet<>();
         for(var entry:directory.gangs.entrySet()){
             Gang g=entry.getValue();
@@ -173,11 +215,20 @@ public final class GangDirectory {
                 require(value!=null&&role.getKey().equals(value.id)&&value.permissions!=null&&!value.permissions.contains(null),"Uszkodzone uprawnienia rangi.");
                 validName(value.name,2,24);
                 value.permissions=value.permissions.isEmpty()?EnumSet.noneOf(Permission.class):EnumSet.copyOf(value.permissions);
+                if(legacy&&value.permissions.contains(Permission.MANAGE_ROLES))value.permissions.add(Permission.ASSIGN_ROLES);
+                value.permissions.removeIf(p->!p.available());
             }
-            g.roles.get("leader").permissions=EnumSet.allOf(Permission.class);
+            g.roles.get("leader").permissions=Permission.activePermissions();
             for(var member:g.members.entrySet()){
                 require(member.getValue()!=null && member.getKey().equals(member.getValue().id) && seen.add(member.getKey()),"Powielone członkostwo.");
                 Member m=member.getValue();
+                if(m.joinedAt==0)for(int i=g.history.size()-1;i>=0;i--){
+                    Event event=g.history.get(i);String eventText=event.text();
+                    if(eventText.equals(m.name+" opuszcza gang.")||eventText.endsWith(" usuwa gracza "+m.name+" z gangu."))break;
+                    if(event.timestamp()>0&&(eventText.equals(m.name+" tworzy gang.")||eventText.equals(m.name+" dołącza do gangu."))){
+                        m.joinedAt=event.timestamp();m.joinedAtFromHistory=true;directory.migrated=true;break;
+                    }
+                }
                 if(m.textures==null)m.textures="";if(m.textureSignature==null)m.textureSignature="";
                 require(m.joinedAt>=0&&m.textures.length()<=8192&&m.textureSignature.length()<=2048,"Uszkodzony profil członka.");
                 if(member.getValue().role==null)member.getValue().role=member.getKey().equals(g.owner)?"leader":"member";

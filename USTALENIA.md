@@ -452,3 +452,44 @@ gdy właściwe systemy własności oraz mapy będą rozwijane.
   przy przytrzymaniu przeciąganej rangi na krawędzi.
 - Protokół 9: wspólna aktualizacja klienta i serwera, ze zgodnym odczytem starszych
   światów. Nowych dat dołączenia/profili nie odtwarzać fikcyjnie wstecz.
+
+
+## Uwagi po sprawdzeniu 0.1.17 — wersja 0.1.18
+
+- Baner ma dochodzić do wszystkich krawędzi pasa z dużym logo i nazwą,
+  bez odstępów od nagłówka, bocznej nawigacji i prawej ramki.
+- Większa szczegółowość: logo PNG 1024×1024; baner do 2048×512,
+  z kadrem odpowiadającym faktycznemu pasowi (obecnie 2048×475).
+  Limit zapisu jednego obrazu 4,3 MB, protokół 10 po obu stronach.
+  Starsze mniejsze grafiki są odczytywane; odzyskanie szczegółów wymaga
+  ponownego importu oryginału. Podgląd źródła ma teraz maksymalnie 2048 px.
+- Kadrowanie pozwala oddalać poniżej 1× i przesuwać obraz także wewnątrz
+  większego kadru. Pokaż cały obraz zachowuje wszystkie brzegi i proporcje.
+  Kolor baneru pozostaje widoczny pod przezroczystymi marginesami obrazu.
+- Logo i baner są podsekcjami Ustawienia → Wygląd, obok Kolorów menu.
+  Zarządzanie pozostaje oddzielną główną sekcją dla uprawnionych.
+- Portret obejmuje czapkę/nakładkę głowy, kurtkę i obie nakładki rękawów,
+  z przezroczystością i delikatnie poszerzoną sylwetką drugiej warstwy.
+- Przy braku starej daty dołączenia szukać pasującego ostatniego wpisu
+  utworzenia/dołączenia w rejestrze; oznaczyć pochodzenie z rejestru.
+  Nie zastępować brakującej daty chwilą aktualizacji lub wejścia na świat.
+- Katalog uprawnień obejmuje opcje z otrzymanych ekranów ustawień Majestic:
+  grupy Personel, Mienie i zaopatrzenie, Aktywności, Finanse i Transport,
+  wyszukiwanie i przewijanie. Nieistniejące mechaniki pozostają wyłączone
+  w interfejsie i odrzucone przez serwer, także dla lidera.
+- Rozdzielono zmianę rang członków od tworzenia/edycji rang. Migracja starszych
+  zapisów zachowuje oba dotychczasowe uprawnienia zarządzających rangami.
+- Po puszczeniu myszy mapa natychmiast kończy przesunięcie podglądu.
+  Zapamiętane kafle serwera są lokalnie używane przy przesuwaniu i powrocie;
+  limit 1024 kafli, rozdzielenie wymiarów, bez tworzenia nowego terenu.
+- Ikona powrotu do gracza ma symetryczne ramiona i nogi.
+- Nie zerować stanu gangu przy każdym otwarciu. Pierwsze oczekiwanie na dane
+  pokazuje ekran ładowania, bez chwilowego formularza tworzenia gangu.
+- Aktualne zadanie nie wprowadza mechanik magazynów, transportu, finansów,
+  rajdów, roślin ani multibloków. Widoczne przyszłe prawa są tylko definicjami.
+
+- Duże wiadomości akcji i stanu są przesyłane w częściach do 24 KiB, poniżej
+  granicy fizycznego pakietu Minecrafta. Odbiorca sprawdza rozmiar, identyfikator,
+  kolejność i kompletność. Limit dotyczy całej wiadomości; jeden nieukończony
+  transfer na połączenie, wygaszany po 60 sekundach bez danych (maks. 5 minut).
+  Zapis obrazu pozostaje jednym kompletnym PNG; podział dotyczy wyłącznie sieci.

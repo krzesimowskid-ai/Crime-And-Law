@@ -15,11 +15,11 @@ class GangLogoTest {
     @Test void acceptsLegacyAndDetailedPngAndEmptyDefault()throws Exception{
         assertFalse(GangLogo.validate(png(64,64)).isBlank());
         assertFalse(GangLogo.validate(png(256,256)).isBlank());
-        assertFalse(GangLogo.validate(png(512,512)).isBlank());assertEquals("",GangLogo.validate(""));
+        assertFalse(GangLogo.validate(png(512,512)).isBlank());assertFalse(GangLogo.validate(png(1024,1024)).isBlank());assertEquals("",GangLogo.validate(""));
     }
     @Test void rejectsMalformedAndOversizedImages()throws Exception{
         assertThrows(IllegalArgumentException.class,()->GangLogo.validate("not an image"));
-        String wide=png(513,512),tall=png(512,513);
+        String wide=png(1025,1024),tall=png(1024,1025);
         assertThrows(IllegalArgumentException.class,()->GangLogo.validate(wide));
         assertThrows(IllegalArgumentException.class,()->GangLogo.validate(tall));
         assertThrows(IllegalArgumentException.class,()->GangLogo.validate("a".repeat(GangLogo.MAX_ENCODED_LENGTH+1)));
