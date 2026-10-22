@@ -3,6 +3,11 @@
 Autorski mod gangsterski: panel gangów, członkostwo i własny wygląd menu.
 Wersja **0.1.15**.
 
+Pierwsza propozycja własnej ekonomii w dolarach i rozwoju terenów:
+[Balans terytoriów](docs/BALANS_TERYTORIOW.md) oraz
+[symulacja](docs/SYMULACJA_BALANSU.md). To projekt do dalszej implementacji;
+JAR 0.1.15 nie odczytuje tych reguł i nie wypłaca jeszcze pieniędzy.
+
 ## Uruchomienie
 
 - Minecraft **1.21.1**, Java **21**, NeoForge **21.1.248**.

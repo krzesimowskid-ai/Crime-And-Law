@@ -1,6 +1,6 @@
 # Crime And Law — ustalenia projektu
 
-Stan projektu: 21 października 2026.
+Stan projektu: 22 października 2026.
 
 ## Status i sposób dalszej pracy
 
@@ -39,7 +39,9 @@ Nowsze podsumowanie przekazane przez użytkownika zastępuje wcześniejsze rozwa
 - Użytkownik rozważa sprzedaż we wioskach: wieśniakom albo specjalnym handlarzom/dilerom NPC.
 - Nie zapadła ostateczna decyzja, komu dokładnie i w jaki sposób się sprzedaje.
 - Osobni handlarze z budżetem, popytem, reputacją, pamięcią transakcji i oceną jakości to propozycja asystenta.
-- Waluta, ceny i wartości ekonomiczne pozostają do ustalenia.
+- Walutą mają być pieniądze w grze, np. dolary ($), z saldem gracza i gangu.
+  Użytkownik pozwolił opracować własny roboczy balans. Konkretne ceny i wartości
+  pozostają propozycją do sprawdzenia w rozgrywce.
 
 ## Panel gangów
 
@@ -90,7 +92,8 @@ nie zmianę motywu na biały. Dla członka/lidera pozostaje zaakceptowany panel 
 - Podstawową jednostką jest chunk o powierzchni 16 × 16 bloków.
 - Własność obejmuje całą wysokość chunka: od najniższego do najwyższego poziomu świata. Użytkownik nie chce osobnej własności powierzchni i podziemia w tej samej kolumnie.
 - Jeżeli choć fragment wioski leży w chunku, cały chunk zalicza się do jej obszaru. Sposób technicznego rozpoznawania granic wioski nie został wybrany.
-- Neutralny, niezajęty teren można przejąć za opłatą. Wartość i waluta nie są ustalone.
+- Neutralny, niezajęty teren można przejąć za opłatą w walucie pieniężnej gry.
+  Kwota zakupu nie jest ustalona.
 - Wioski i zajęte tereny wymagają innego sposobu przejęcia niż zakup neutralnej ziemi.
 - Walka z mieszkańcami wioski jest luźnym pomysłem użytkownika; nie zatwierdzono jeszcze warunków przejmowania.
 - Nie ustalono odległości między działkami, wymogu sąsiedztwa, limitu terytorium, utrzymania ani zasad ochrony przed utratą terenu.
@@ -348,3 +351,29 @@ gdy właściwe systemy własności oraz mapy będą rozwijane.
   Lokalne API opisuje cechy posiadanego terenu, a nie przyznane możliwości.
   Silnik kwalifikacji do konkretnych bonusów nadal wymaga ustalenia tych
   bonusów i ich kryteriów; nie dodano arbitralnych procentów ani nagród.
+
+## Własny balans i inspiracja Majestic — 22 października
+
+- Użytkownik pozwolił samodzielnie opracować rozsądne wartości balansu,
+  aby gra nie była ani za łatwa, ani za trudna. Zastępuje to wcześniejsze
+  wstrzymanie samodzielnego dobierania roboczych wartości, ale nie upoważnia
+  do zmiany pomysłów użytkownika ani dodawania wszystkich systemów z GTA.
+- Wykorzystać znane funkcje kontroli terytorialnej Majestic jako inspirację.
+  Własne liczby jawnie odróżniać od potwierdzonych wartości oryginału.
+  Katalog opisów Mitsuki nie jest pełną konfiguracją serwera ani kodem gry.
+- Pieniądze w grze, np. dolary, zamiast emeraldów/diamentów jako waluty.
+  Nie wszystkie korzyści muszą być finansowe; pozostają także wzrost upraw,
+  uzysk i możliwości produkcji.
+- Osobna zakładka „Premie” ma być opracowana później. Nie utożsamiać jej
+  z bonusami kontroli terytorialnej.
+- Pięć podstawowych poziomów jest roboczym kierunkiem. Majestic ma również
+  dodatkowy szósty poziom wybranych punktów i osobne trzy poziomy pomieszczeń;
+  nie obiecywać pięciu poziomów dla absolutnie każdej funkcji.
+- Opracowano dokument `docs/BALANS_TERYTORIOW.md`, dane
+  `balance/territory-v1.json` i narzędzie symulacji `tools/territory_balance.py`.
+  To propozycja projektowa, **nie zaimplementowana gospodarka w JAR-ze 0.1.15**.
+  Minimalne czasy, opłaty, model dochodu z aktywności, zasady łączenia efektów
+  i skale procentowe są własnymi roboczymi rozwiązaniami asystenta.
+- Zwykłe tereny pozostają bez korzyści. Wymagania krytyczne dla konkretnych
+  rzadkich bonusów i bardziej szczegółowe pomiary nadal wymagają implementacji.
+  Nie przyznawać bonusu automatycznie z samego obecnego profilu terenu.

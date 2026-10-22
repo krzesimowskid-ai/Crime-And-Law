@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "status": "design_draft_not_loaded_by_mod",
+  "currency": {
+    "code": "USD",
+    "symbol": "$",
+    "minor_units_per_unit": 100,
+    "storage": "server_ledger",
+    "separate_player_and_gang_accounts": true
+  },
+  "qualification": {
+    "ordinary_chunk_has_bonus": false,
+    "ordinary_chunk_has_levels": false,
+    "specific_permanent_qualification_required": true,
+    "coarse_traits_are_not_qualification": true,
+    "generated_buildings_only": true,
+    "deduplicate_generated_source_across_chunks": true,
+    "bonus_scope": "owning_gang_in_qualified_chunk"
+  },
+  "economy": {
+    "reference_hourly_base_reward_cents": 10000,
+    "money_requires_verified_local_activity": true,
+    "offline_money_generation": false,
+    "same_event_same_effect_combination": "maximum",
+    "rounding": "carry_fractional_minor_units"
+  },
+  "progression": {
+    "base_levels": 5,
+    "special_level_6_enabled": false,
+    "minimum_control_hours": [0, 2, 6, 14, 30],
+    "control_clock": "elapsed_seconds_while_server_running",
+    "upgrade_cost_as_hourly_base_reward_bp": [0, 6000, 12000, 24000, 36000]
+  },
+  "curves": {
+    "activity_money": {
+      "kind": "multiplier",
+      "values_bp": [10000, 11500, 13000, 14500, 16000],
+      "cap_bp": 16000
+    },
+    "extra_resource_yield": {
+      "kind": "increase",
+      "values_bp": [200, 400, 600, 800, 1000],
+      "cap_bp": 1000
+    },
+    "crop_growth_speed": {
+      "kind": "increase",
+      "values_bp": [500, 900, 1200, 1400, 1500],
+      "cap_bp": 1500
+    },
+    "production_speed": {
+      "kind": "increase",
+      "values_bp": [1000, 1800, 2400, 2800, 3000],
+      "cap_bp": 3000
+    },
+    "cost_reduction": {
+      "kind": "reduction",
+      "values_bp": [200, 400, 600, 800, 1000],
+      "cap_bp": 1000
+    },
+    "sabotage_downtime_reduction": {
+      "kind": "reduction",
+      "values_bp": [1000, 1800, 2400, 2800, 3000],
+      "cap_bp": 3000
+    },
+    "cooldown_reduction": {
+      "kind": "reduction",
+      "values_bp": [500, 900, 1200, 1400, 1500],
+      "cap_bp": 1500
+    }
+  },
+  "separate_unlocks_without_percentage_curve": [
+    "production_access",
+    "sabotage_immunity"
+  ],
+  "deferred_systems": [
+    "transport",
+    "police",
+    "npc_gangs",
+    "sidebar_premie"
+  ]
+}
