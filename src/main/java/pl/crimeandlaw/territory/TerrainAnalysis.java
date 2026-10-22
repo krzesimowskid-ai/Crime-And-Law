@@ -34,16 +34,24 @@ public final class TerrainAnalysis {
     private record Buildings(boolean village,List<String> templates){}
     private TerrainAnalysis(){}
     public static TerrainView view(ServerPlayer player){
+        return view(player,new TerrainViewport(player.chunkPosition().x,player.chunkPosition().z));
+    }
+    public static TerrainView view(ServerPlayer player,TerrainViewport viewport){
+        // Work is always limited to the player's loaded surroundings. A remote
+        // viewport can inspect saved tiles, but cannot queue remote analysis.
         ServerLevel level=player.serverLevel();enqueue(level,player.chunkPosition().x,player.chunkPosition().z);
         TerrainCartography.enqueue(level,player.chunkPosition().x,player.chunkPosition().z);
         var gangs=GangSavedData.get(player.server).directory;
-        return TerrainView.snapshot(TerrainSavedData.get(level).atlas,level.dimension().location().toString(),player.chunkPosition().x,player.chunkPosition().z,
-            key->level.getChunkSource().getChunkNow(key.x(),key.z())!=null,id->{var gang=gangs.get(id);return gang==null?null:gang.name;},TerrainSavedData.get(level)::map)
+        var nearby=new TerrainViewport(player.chunkPosition().x,player.chunkPosition().z);
+        return TerrainView.snapshot(TerrainSavedData.get(level).atlas,level.dimension().location().toString(),viewport.x(),viewport.z(),
+            key->nearby.near(key.x(),key.z(),TerrainView.RADIUS)
+                &&level.getChunkSource().getChunkNow(key.x(),key.z())!=null,
+            id->{var gang=gangs.get(id);return gang==null?null:gang.name;},TerrainSavedData.get(level)::map)
             .withPosition(player.getX(),player.getZ(),player.getYRot());
     }
     public static void enqueue(ServerLevel level,int x,int z){
         Queue queue=QUEUES.computeIfAbsent(level.getServer(),s->new Queue());var atlas=TerrainSavedData.get(level).atlas;long tick=level.getServer().getTickCount();
-        // Nearer chunks finish first. A request cannot select a remote location.
+        // Nearer chunks around the player finish first, independent of the viewport.
         for(int r=0;r<=TerrainView.RADIUS;r++)for(int dz=-r;dz<=r;dz++)for(int dx=-r;dx<=r;dx++){
             if(Math.max(Math.abs(dx),Math.abs(dz))!=r)continue;
             if(Math.abs((long)x+dx)>1_875_000||Math.abs((long)z+dz)>1_875_000)continue;

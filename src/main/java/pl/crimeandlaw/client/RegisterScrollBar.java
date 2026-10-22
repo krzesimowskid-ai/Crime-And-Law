@@ -8,13 +8,16 @@ import net.minecraft.network.chat.Component;
 import org.lwjgl.glfw.GLFW;
 import pl.crimeandlaw.gang.GangDirectory.Theme;
 
-/** The only draggable control in the history viewport; page controls stay outside. */
+/** A shared draggable/keyboard scrollbar; list headers and actions stay outside. */
 public final class RegisterScrollBar extends AbstractWidget {
     private final ScrollPosition position;
     private final Supplier<Theme> theme;
     private double grab;
     public RegisterScrollBar(int x,int y,int height,ScrollPosition position,Supplier<Theme> theme){
-        super(x,y,10,height,Component.literal("Przewijanie rejestru"));this.position=position;this.theme=theme;active=position.maximum()>0;
+        this(x,y,height,position,theme,"Przewijanie rejestru");
+    }
+    public RegisterScrollBar(int x,int y,int height,ScrollPosition position,Supplier<Theme> theme,String title){
+        super(x,y,10,height,Component.literal(title));this.position=position;this.theme=theme;active=position.maximum()>0;visible=active;
     }
     @Override public void onClick(double x,double y,int button){
         double local=y-getY(),top=position.thumbTop();

@@ -42,4 +42,9 @@ final class NewRoleScreen extends MenuDialog {
         g.drawString(font,"Nazwa rangi",left+22,top+44,0xFFAAAAB7,false);
         g.drawString(font,"Uprawnienia",left+22,top+93,0xFFAAAAB7,false);
     }
+    @Override public boolean keyPressed(int key,int scanCode,int modifiers){
+        if((key==org.lwjgl.glfw.GLFW.GLFW_KEY_ENTER||key==org.lwjgl.glfw.GLFW.GLFW_KEY_KP_ENTER)
+                &&getFocused()==name&&save!=null&&save.active){save.onPress();return true;}
+        return super.keyPressed(key,scanCode,modifiers);
+    }
 }

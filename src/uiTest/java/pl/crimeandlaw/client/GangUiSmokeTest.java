@@ -22,13 +22,14 @@ import pl.crimeandlaw.gang.GangView;
 @EventBusSubscriber(modid="crimeandlaw", value=Dist.CLIENT)
 public final class GangUiSmokeTest {
     private static final UUID PLAYER=UUID.fromString("00000000-0000-0000-0000-000000000001");
-    private static final Path OUT=Path.of("../build/ui-smoke");
+    private static final Path OUT=Path.of(System.getProperty("crimeandlaw.uiSmokeOutput","../build/ui-smoke"));
     private static int frames,stage=-1;
     private static int waitFrames;
     private static int startupFrames;
     private static GangDirectory directory;
     private static final UUID FRIEND=new UUID(0,2);
     private static GangScreen screen;
+    private static pl.crimeandlaw.territory.TerrainView unshiftedMap;
     private static final StringBuilder REPORT=new StringBuilder();
 
     @SubscribeEvent public static void frame(RenderFrameEvent.Post event) {
@@ -51,7 +52,7 @@ public final class GangUiSmokeTest {
             frames=0;
             switch(stage++) {
                 case 0 -> {
-                    checkCreation(mc);capture(mc,"01-create-scale2");
+                    checkCreation(mc);checkCloseButton(mc);capture(mc,"01-create-scale2");
                     mc.options.guiScale().set(4);mc.resizeDisplay();
                 }
                 case 1 -> {
@@ -288,6 +289,7 @@ public final class GangUiSmokeTest {
                     var panel=widget(screen,"Mapa terenu");var l=GangLayout.of(screen.width,screen.height);
                     require(panel.visible,"Terrain panel is visible without body scrolling");
                     screen.mouseClicked((panel.getX()+6.5*196/11)*l.scale(),(panel.getY()+4.5*196/11)*l.scale(),0);
+                    screen.mouseReleased((panel.getX()+6.5*196/11)*l.scale(),(panel.getY()+4.5*196/11)*l.scale(),0);
                     var sx=GangScreen.class.getDeclaredField("terrainX");sx.setAccessible(true);var sz=GangScreen.class.getDeclaredField("terrainZ");sz.setAccessible(true);
                     require(sx.getInt(screen)==1&&sz.getInt(screen)==-1,"Scaled click selects the correct chunk");
                     screen.mouseScrolled((panel.getX()+250)*l.scale(),(panel.getY()+80)*l.scale(),0,-100);
@@ -300,6 +302,7 @@ public final class GangUiSmokeTest {
                     var sx=GangScreen.class.getDeclaredField("terrainX");sx.setAccessible(true);require(sx.getInt(screen)==1,"GUI scale preserves selected chunk");
                     var panel=widget(screen,"Mapa terenu");var l=GangLayout.of(screen.width,screen.height);
                     screen.mouseClicked((panel.getX()+0.5*196/11)*l.scale(),(panel.getY()+0.5*196/11)*l.scale(),0);
+                    screen.mouseReleased((panel.getX()+0.5*196/11)*l.scale(),(panel.getY()+0.5*196/11)*l.scale(),0);
                 }
                 case 30 -> {
                     capture(mc,"30-terrain-unavailable");
@@ -310,7 +313,7 @@ public final class GangUiSmokeTest {
                     capture(mc,"31-terrain-zoom-and-grid");
                     var radius=GangScreen.class.getDeclaredField("terrainRadius");radius.setAccessible(true);require(radius.getInt(screen)==3,"Zoom changes the visible geographical area");
                     click(mc,"−");click(mc,"−");click(mc,"Siatka");
-                    var actual=Path.of("../build/server-smoke-terrain15a/view.json");
+                    var actual=Path.of(System.getProperty("crimeandlaw.actualTerrainView","../build/server-smoke-terrain16a/view.json"));
                     require(Files.exists(actual),"Actual world surface from the dedicated-server test is available");
                     TerrainClient.receive(Files.readString(actual));
                 }
@@ -320,7 +323,99 @@ public final class GangUiSmokeTest {
                 }
                 case 33 -> {
                     capture(mc,"33-actual-village-map-scale2");checkMapTexture(mc);
-                    REPORT.append("PASS: actual Minecraft renderer, 33 captures, continuous surface map with 49 tiles read from a real dedicated-server village; scaled selection, independent inspector scroll, GUI resize, missing areas, zoom and optional grid; ranks, register, dates, colors and logo import.\n");
+                    fixture(false);JsonArray rows=ClientState.state.getAsJsonArray("gangs");rows.remove(2);rows.remove(1);rows.remove(0);
+                    for(int i=0;i<12;i++){
+                        JsonObject row=new JsonObject();row.addProperty("id",new UUID(16,i).toString());row.addProperty("name","Gang testowy "+(i+1));
+                        row.addProperty("members",i+1);row.addProperty("requested",i==0);rows.add(row);
+                    }
+                    ClientState.state.addProperty("pages",3);screen=new GangScreen();mc.setScreen(screen);click(mc,"Znajdź gang");ClientState.message="";
+                }
+                case 34 -> {
+                    capture(mc,"34-find-twelve-gangs");
+                    var field=screen.children().stream().filter(c->c instanceof EditBox).map(c->(EditBox)c).findFirst().orElseThrow();field.setValue("Wilki");
+                    var bar=widget(screen,"Przewijanie gangów");require(bar.active,"All twelve server results share one scrollable page");
+                    int footer=widget(screen,"›").getY();var l=GangLayout.of(screen.width,screen.height);
+                    screen.mouseScrolled((bar.getX()-80)*l.scale(),(bar.getY()+50)*l.scale(),0,-100);
+                    require(screen.children().contains(field)&&field.getValue().equals("Wilki"),"Scrolling does not rebuild or clear the search field");
+                    require(widget(screen,"›").getY()==footer,"Directory pagination stays fixed");
+                    var position=GangScreen.class.getDeclaredField("directoryScroll");position.setAccessible(true);
+                    require(((ScrollPosition)position.get(screen)).offset()>0,"Directory reaches its final rows");
+                }
+                case 35 -> {
+                    capture(mc,"35-find-scrolled");
+                    var gang=directory.of(PLAYER);
+                    while(gang.roles.size()<GangDirectory.MAX_ROLES)directory.role(PLAYER,"","Ranga"+gang.roles.size(),java.util.Set.of());
+                    fixturePage(PLAYER,0);screen.updated();selectTab(pl.crimeandlaw.gang.GangCategory.ROLES.tabId());
+                    require(widget(screen,"+ Nowa ranga").visible&&!widget(screen,"+ Nowa ranga").active,"Create rank action remains visible at the rank limit");
+                    var field=screen.children().stream().filter(c->c instanceof EditBox).map(c->(EditBox)c).findFirst().orElseThrow();field.setValue("");
+                    require(!widget(screen,"Zapisz rangę").active,"An empty rank name cannot be saved");
+                    var bar=widget(screen,"Przewijanie rang");require(bar.active,"Twelve ranks have an independent scrollbar");
+                    var l=GangLayout.of(screen.width,screen.height);int saveY=widget(screen,"Zapisz rangę").getY(),newY=widget(screen,"+ Nowa ranga").getY();
+                    screen.mouseScrolled((bar.getX()-30)*l.scale(),(bar.getY()+50)*l.scale(),0,-100);
+                    require(widget(screen,"Zapisz rangę").getY()==saveY&&widget(screen,"+ Nowa ranga").getY()==newY,"Rank editor and create action do not scroll with the list");
+                    require(screen.children().contains(field)&&field.getValue().isEmpty(),"Rank list scrolling preserves the draft field");
+                }
+                case 36 -> {
+                    capture(mc,"36-twelve-ranks-scrolled");mc.options.guiScale().set(4);mc.resizeDisplay();
+                    var field=screen.children().stream().filter(c->c instanceof EditBox).map(c->(EditBox)c).findFirst().orElseThrow();
+                    require(field.getValue().isEmpty()&&!widget(screen,"Zapisz rangę").active,"Resizing preserves an intentionally empty rank draft");
+                }
+                case 37 -> {
+                    capture(mc,"37-rank-draft-resize");
+                    var row=widget(screen,"≡  "+new java.util.ArrayList<>(directory.of(PLAYER).roles.values()).getLast().name);require(row.visible,"Final rank is reachable");
+                    var bar=widget(screen,"Przewijanie rang");var l=GangLayout.of(screen.width,screen.height);
+                    double x=(row.getX()+20)*l.scale(),from=(row.getY()+8)*l.scale(),to=(bar.getY()+2)*l.scale();
+                    screen.mouseClicked(x,from,0);
+                    for(int i=0;i<16;i++)screen.mouseDragged(x,to,0,0,to-from);
+                    var position=GangScreen.class.getDeclaredField("roleScroll");position.setAccessible(true);
+                    require(((ScrollPosition)position.get(screen)).offset()==0,"Dragging a rank autoscrolls the list to the beginning");
+                }
+                case 38 -> {
+                    capture(mc,"38-rank-drag-autoscroll");var row=widget(screen,"Przewijanie rang");var l=GangLayout.of(screen.width,screen.height);
+                    screen.mouseReleased((row.getX()-50)*l.scale(),(row.getY()+2)*l.scale(),0);ClientState.message="";selectTab(6);
+                }
+                case 39 -> {capture(mc,"39-premie-panel");selectTab(7);}
+                case 40 -> {capture(mc,"40-balance-panel");selectTab(8);}
+                case 41 -> {capture(mc,"41-blacklist-panel");selectTab(9);}
+                case 42 -> {capture(mc,"42-goals-panel");TerrainClient.home();terrainFixture();selectTab(2);}
+                case 43 -> {
+                    capture(mc,"43-map-before-pan");var panel=widget(screen,"Mapa terenu");var l=GangLayout.of(screen.width,screen.height);
+                    screen.mouseScrolled((panel.getX()+90)*l.scale(),(panel.getY()+90)*l.scale(),0,1);
+                    var radius=GangScreen.class.getDeclaredField("terrainRadius");radius.setAccessible(true);require(radius.getInt(screen)==4,"Wheel over map changes zoom");
+                    unshiftedMap=TerrainClient.view;panel=widget(screen,"Mapa terenu");
+                    double x=(panel.getX()+90)*l.scale(),y=(panel.getY()+90)*l.scale();
+                    require(screen.mouseClicked(x,y,0),"Map drag starts");
+                    require(screen.mouseDragged(x+48*l.scale(),y+24*l.scale(),0,48*l.scale(),24*l.scale()),"Map drag is handled");
+                }
+                case 44 -> {
+                    capture(mc,"44-map-drag-preview");var panel=widget(screen,"Mapa terenu");var l=GangLayout.of(screen.width,screen.height);
+                    screen.mouseReleased((panel.getX()+138)*l.scale(),(panel.getY()+114)*l.scale(),0);
+                    var targetField=TerrainClient.class.getDeclaredField("target");targetField.setAccessible(true);
+                    var target=(pl.crimeandlaw.territory.TerrainViewport)targetField.get(null);
+                    require(target.equals(new pl.crimeandlaw.territory.TerrainViewport(-2,-1)),"Drag converts to the requested chunk viewport");
+                    TerrainClient.receive(ClientState.JSON.toJson(unshiftedMap));require(TerrainClient.view==unshiftedMap,"Stale viewport response is discarded");
+                    JsonObject shifted=ClientState.JSON.toJsonTree(unshiftedMap).getAsJsonObject();
+                    shifted.addProperty("centerX",target.x());shifted.addProperty("centerZ",target.z());
+                    for(var item:shifted.getAsJsonArray("cells")){
+                        var cell=item.getAsJsonObject();cell.addProperty("x",cell.get("x").getAsInt()+target.x());cell.addProperty("z",cell.get("z").getAsInt()+target.z());
+                    }
+                    shifted.addProperty("playerX",1000000);TerrainClient.receive(shifted.toString());
+                    require(TerrainClient.view.centerX()==-2&&!TerrainClient.following(),"Matching panned view is accepted");
+                }
+                case 45 -> {
+                    capture(mc,"45-map-panned-player-outside");click(mc,"Gracz");require(TerrainClient.following(),"Player button restores follow mode");
+                    TerrainClient.receive(ClientState.JSON.toJson(unshiftedMap));click(mc,"›");require(!TerrainClient.following(),"Arrow moves the viewport");
+                    screen.setFocused(null);screen.keyPressed(org.lwjgl.glfw.GLFW.GLFW_KEY_HOME,0,0);require(TerrainClient.following(),"Home restores follow mode");
+                    TerrainClient.receive(ClientState.JSON.toJson(unshiftedMap));
+                }
+                case 46 -> {
+                    capture(mc,"46-map-return-to-player");
+                    TerrainClient.receive(Files.readString(Path.of(System.getProperty("crimeandlaw.actualTerrainView","../build/server-smoke-terrain16a/view.json"))));
+                    mc.options.guiScale().set(2);mc.resizeDisplay();
+                }
+                case 47 -> {
+                    capture(mc,"47-actual-map-navigation-final");checkMapTexture(mc);
+                    REPORT.append("PASS: actual Minecraft renderer; real dedicated-server village map; independent directory/rank/inspector scrolling, fixed list controls, preserved empty rank draft, rank drag autoscroll, all category panels, map drag preview, stale-response rejection, wheel zoom, arrow controls, Home/player return, clipping of distant player marker; earlier creation, register, roles, colors and logo checks retained.\n");
                     Files.writeString(OUT.resolve("result.txt"),REPORT.toString());System.out.println("CRIME_UI_SMOKE_PASS");mc.stop();
                 }
             }
@@ -332,11 +427,11 @@ public final class GangUiSmokeTest {
     }
     private static void capture(Minecraft mc,String name)throws Exception {
         try(var image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){
-            require((image.getPixelRGBA(1600,850)&0xFFFFFF)!=0,"Panel background after scale/tab change: "+name);
+            require((image.getPixelRGBA(image.getWidth()*1600/1920,image.getHeight()*850/1080)&0xFFFFFF)!=0,"Panel background after scale/tab change: "+name);
             if(mc.screen instanceof GangScreen&&ClientState.gang()!=null){
-                require((image.getPixelRGBA(600,200)&0xFFFFFF)!=0,"Header background after tab change: "+name);
-                require((image.getPixelRGBA(250,500)&0xFFFFFF)!=0,"Sidebar background after tab change: "+name);
-                require((image.getPixelRGBA(900,150)&0xFFFFFF)!=0,"Gang name frame after tab change: "+name);
+                require((image.getPixelRGBA(image.getWidth()*600/1920,image.getHeight()*200/1080)&0xFFFFFF)!=0,"Header background after tab change: "+name);
+                require((image.getPixelRGBA(image.getWidth()*250/1920,image.getHeight()*500/1080)&0xFFFFFF)!=0,"Sidebar background after tab change: "+name);
+                require((image.getPixelRGBA(image.getWidth()*900/1920,image.getHeight()*150/1080)&0xFFFFFF)!=0,"Gang name frame after tab change: "+name);
             }
             if(mc.screen instanceof MenuDialog dialog){
                 AbstractWidget cancel=widget(mc.screen,"Anuluj");double scale=dialog.layout.scale()*mc.getWindow().getGuiScale();int bright=0;
@@ -358,6 +453,9 @@ public final class GangUiSmokeTest {
         require(screen.mouseClicked((name.getX()+10)*l.scale(),(name.getY()+8)*l.scale(),0),"Scaled text field click");
         name.setValue("");screen.charTyped('T',0);screen.charTyped('e',0);screen.charTyped('s',0);screen.charTyped('t',0);
         require(name.getValue().equals("Test"),"Typing after scaled click");
+        name.setValue("");require(!widget(screen,"Utwórz gang").active,"Blank gang name cannot be submitted");
+        name.setValue("   ");require(!widget(screen,"Utwórz gang").active,"Whitespace gang name cannot be submitted");
+        name.setValue("Test");require(widget(screen,"Utwórz gang").active,"Valid gang name enables create action");
         var create=screen.children().stream().filter(c->c instanceof AbstractWidget w&&w.getMessage().getString().equals("Utwórz gang"))
                 .map(c->(AbstractWidget)c).findFirst().orElseThrow();
         require(create.visible,"Create action visible without scrolling");
@@ -487,6 +585,14 @@ public final class GangUiSmokeTest {
             tiles.put(new pl.crimeandlaw.territory.TerrainKey("minecraft:overworld",x,z),pl.crimeandlaw.territory.TerrainMapTile.of(pixels));
         }
         TerrainClient.view=pl.crimeandlaw.territory.TerrainView.snapshot(atlas,"minecraft:overworld",0,0,key->key.z()!=-3,id->"Czarne Wilki",tiles::get);
+        // An intentionally long synthetic inspector tests scrolling even though
+        // the production empty-bonus copy is now shorter. Real village captures
+        // below still use unmodified data from the dedicated server.
+        var v=TerrainClient.view;var cells=new java.util.ArrayList<pl.crimeandlaw.territory.TerrainView.Cell>();
+        for(var c:v.cells())cells.add(c.x()==1&&c.z()==-1?new pl.crimeandlaw.territory.TerrainView.Cell(
+            c.x(),c.z(),c.status(),c.minHeight(),c.maxHeight(),c.samples(),c.buildingPieces(),c.biome(),
+            java.util.EnumSet.allOf(pl.crimeandlaw.territory.TerrainProfile.Trait.class),c.source(),c.owner(),c.ownerName(),c.mapPixels()):c);
+        TerrainClient.view=new pl.crimeandlaw.territory.TerrainView(v.dimension(),v.centerX(),v.centerZ(),v.radius(),v.playerX(),v.playerZ(),v.yaw(),cells);
     }
     private static void checkMapTexture(Minecraft mc){
         var id=net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("crimeandlaw","terrain_map");

@@ -2,7 +2,7 @@ plugins {
     id 'java-library'
     id 'net.neoforged.moddev' version '2.0.148'
 }
-version = '0.1.15'
+version = '0.1.16'
 group = 'pl.crimeandlaw'
 base { archivesName = 'crimeandlaw' }
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
@@ -11,8 +11,12 @@ repositories { mavenCentral() }
 def uiSmoke = providers.gradleProperty('uiSmoke').isPresent()
 def serverSmoke = providers.gradleProperty('serverSmoke').isPresent()
 def serverSmokeId = providers.gradleProperty('serverSmokeId').getOrElse('current')
+def uiSmokeId = providers.gradleProperty('uiSmokeId').getOrElse('current')
+def networkSmoke = providers.gradleProperty('networkSmoke').isPresent()
+def networkSmokeId = providers.gradleProperty('networkSmokeId').getOrElse('net16a')
 if (uiSmoke) sourceSets.main.java.srcDir('src/uiTest/java')
 if (serverSmoke) sourceSets.main.java.srcDir('src/serverTest/java')
+if (networkSmoke) sourceSets.main.java.srcDir('src/networkTest/java')
 neoForge {
     version = '21.1.248'
     runs {
@@ -21,7 +25,9 @@ neoForge {
             if (uiSmoke) {
                 systemProperty 'crimeandlaw.uiSmoke', 'true'
                 systemProperty 'crimeandlaw.logoFixtures', file('src/test/resources/logo-formats.json').absolutePath
-                programArguments.addAll '--width', '1920', '--height', '1080'
+                systemProperty 'crimeandlaw.uiSmokeOutput', file('build/ui-smoke-'+uiSmokeId).absolutePath
+                systemProperty 'crimeandlaw.actualTerrainView', file('build/server-smoke-terrain16a/view.json').absolutePath
+                programArguments.addAll '--width', providers.gradleProperty('uiWidth').getOrElse('1920'), '--height', providers.gradleProperty('uiHeight').getOrElse('1080')
             }
         }
         server {
@@ -30,6 +36,33 @@ neoForge {
                 systemProperty 'crimeandlaw.serverSmoke', 'true'
                 systemProperty 'crimeandlaw.serverSmokeOutput', file('build/server-smoke-'+serverSmokeId).absolutePath
                 gameDirectory = file('run-server-smoke-'+serverSmokeId)
+            }
+        }
+        if (networkSmoke) {
+            networkServer {
+                server(); programArgument '--nogui'
+                gameDirectory = file('run-network-server-'+networkSmokeId)
+                jvmArgument '-Xmx1200m'
+                jvmArgument '-Djava.awt.headless=true'
+                systemProperty 'crimeandlaw.networkSmokeOutput', file('build/network-smoke-'+networkSmokeId).absolutePath
+                systemProperty 'crimeandlaw.networkSmokeGang', 'Test interfejsu '+networkSmokeId
+                systemProperty 'crimeandlaw.networkSmokePersistence', providers.gradleProperty('networkPersistence').getOrElse('false')
+            }
+            networkOwner {
+                client(); gameDirectory = file('run-network-owner-'+networkSmokeId)
+                jvmArgument '-Xmx1200m'
+                systemProperty 'crimeandlaw.networkSmokeRole', 'owner'
+                systemProperty 'crimeandlaw.networkSmokeOutput', file('build/network-smoke-'+networkSmokeId).absolutePath
+                systemProperty 'crimeandlaw.networkSmokeGang', 'Test interfejsu '+networkSmokeId
+                programArguments.addAll '--username', 'Owner16', '--uuid', java.util.UUID.nameUUIDFromBytes('OfflinePlayer:Owner16'.getBytes('UTF-8')).toString(), '--width', '960', '--height', '540'
+            }
+            networkMember {
+                client(); gameDirectory = file('run-network-member-'+networkSmokeId)
+                jvmArgument '-Xmx1200m'
+                systemProperty 'crimeandlaw.networkSmokeRole', 'member'
+                systemProperty 'crimeandlaw.networkSmokeOutput', file('build/network-smoke-'+networkSmokeId).absolutePath
+                systemProperty 'crimeandlaw.networkSmokeGang', 'Test interfejsu '+networkSmokeId
+                programArguments.addAll '--username', 'Member16', '--uuid', java.util.UUID.nameUUIDFromBytes('OfflinePlayer:Member16'.getBytes('UTF-8')).toString(), '--width', '960', '--height', '540'
             }
         }
     }
@@ -66,6 +99,9 @@ configurations.additionalRuntimeClasspath.extendsFrom(configurations.jarJar)
 tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
 tasks.named('test') { useJUnitPlatform() }
 // Keep fixture automation out of releases even after a prior smoke-test compile.
-tasks.named('jar') { exclude 'pl/crimeandlaw/client/GangUiSmokeTest*', 'pl/crimeandlaw/territory/TerrainServerSmoke*' }
+tasks.named('jar') {
+    exclude 'pl/crimeandlaw/client/GangUiSmokeTest*', 'pl/crimeandlaw/territory/TerrainServerSmoke*',
+        'pl/crimeandlaw/client/GangMultiplayerSmoke*', 'pl/crimeandlaw/gang/GangNetworkPersistenceSmoke*'
+}
 tasks.named('wrapper') { distributionType = Wrapper.DistributionType.BIN }
 

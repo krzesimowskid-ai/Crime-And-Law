@@ -4,7 +4,7 @@ Stan projektu: 22 października 2026.
 
 ## Status i sposób dalszej pracy
 
-To zapis pomysłów i decyzji użytkownika, a nie opis gotowego moda. Powstaje prototyp panelu gangów, obecnie wersja 0.1.15. 19 października użytkownik odłożył DarkPerazera i wrócił do Crime And Law. Zaakceptował rozpoczęcie od podstaw panelu gangów; obecnie doprecyzowuje jego wygląd. Dla pierwszego prototypu przyjęto Minecraft 1.21.1 i NeoForge 21.1.248: użytkownik polecił rozpoczęcie bez wskazania innej platformy. Jest to jawne założenie wykonawcze, nie wcześniejsza deklaracja użytkownika.
+To zapis pomysłów i decyzji użytkownika, a nie opis gotowego moda. Powstaje prototyp panelu gangów, obecnie wersja 0.1.16. 19 października użytkownik odłożył DarkPerazera i wrócił do Crime And Law. Zaakceptował rozpoczęcie od podstaw panelu gangów; obecnie doprecyzowuje jego wygląd. Dla pierwszego prototypu przyjęto Minecraft 1.21.1 i NeoForge 21.1.248: użytkownik polecił rozpoczęcie bez wskazania innej platformy. Jest to jawne założenie wykonawcze, nie wcześniejsza deklaracja użytkownika.
 
 Crime And Law jest nowym, osobnym modem. McArk pozostaje odłożony, zachowując cel odwzorowania ASA 1:1. Nie zmieniać projektu McArk w Crime And Law ani nie usuwać jego materiałów w ramach tej pracy.
 
@@ -402,3 +402,22 @@ gdy właściwe systemy własności oraz mapy będą rozwijane.
 - Dobór pierwiastków wyjściowych ma wynikać z materiału wejściowego.
   Nie zakładać pozyskiwania dowolnego pierwiastka z dowolnego bloku.
   Sposoby dostępu do całego docelowego układu okresowego wymagają dalszego projektu.
+
+
+## Dopracowanie istniejącego menu — 22 października, wersja 0.1.16
+
+- Użytkownik wskazał aktualny priorytet: dokończyć istniejący interfejs gangu,
+  a później przejść do gangsterskiej produkcji. Przegląd, poprawki i budowanie
+  wykonuje asystent. Nie przerzucać na użytkownika uruchamiania dostępnych testów.
+- Zachowano zaakceptowany układ, kolory, centralne logo/nazwę i informacyjne kolumny.
+  Ujednolicono puste kategorie przyszłych systemów; Premie pozostają osobną kategorią.
+- Dodano zamknięcie X przed dołączeniem do gangu, walidację nazwy i Enter,
+  niezależne przewijanie 12 wyników wyszukiwania oraz listy 12 rang.
+  Formularze i przyciski pozostają nieruchome; pusty szkic nazwy nie znika
+  po zmianie rozmiaru okna. Przeciąganie rang przewija listę przy krawędzi.
+- Mapa: podgląd podczas przeciągania, kółko do przybliżania, przyciski kierunków,
+  strzałki klawiatury oraz Home/przycisk Gracz do powrotu. To przegląd zapisanych
+  wycinków, bez osobistej mgły odkrycia i bez pobierania całego świata naraz.
+  Odsunięcie widoku nie generuje ani nie wczytuje odległych chunków.
+- Protokół 8 wymaga wspólnej aktualizacji klienta i serwera. Nie dodano jeszcze
+  przejmowania, rzadkich aktywnych bonusów, ekonomii, roślin ani multibloków.

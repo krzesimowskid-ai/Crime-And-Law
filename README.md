@@ -1,19 +1,19 @@
 # Crime And Law
 
 Autorski mod gangsterski: panel gangów, członkostwo i własny wygląd menu.
-Wersja **0.1.15**.
+Wersja **0.1.16**.
 
 Pierwsza propozycja własnej ekonomii w dolarach i rozwoju terenów:
 [Balans terytoriów](docs/BALANS_TERYTORIOW.md) oraz
 [symulacja](docs/SYMULACJA_BALANSU.md). To projekt do dalszej implementacji;
-JAR 0.1.15 nie odczytuje tych reguł i nie wypłaca jeszcze pieniędzy.
+JAR 0.1.16 nie odczytuje tych reguł i nie wypłaca jeszcze pieniędzy.
 
 ## Uruchomienie
 
 - Minecraft **1.21.1**, Java **21**, NeoForge **21.1.248**.
-- Włóż `crimeandlaw-0.1.15.jar` do `mods`, zastępując poprzedni JAR tego moda.
+- Włóż `crimeandlaw-0.1.16.jar` do `mods`, zastępując poprzedni JAR tego moda.
 - W rozgrywce sieciowej mod musi być **u graczy i na serwerze**.
-  Zaktualizuj serwer i wszystkich klientów do 0.1.15. Dane terenu używają protokołu 7.
+  Zaktualizuj serwer i wszystkich klientów do 0.1.16. Dane terenu używają protokołu 8.
 - W świecie jednoosobowym część serwerowa działa razem ze światem.
 - **G** otwiera panel; skrót można zmienić w sterowaniu. Esc lub X zamyka okno.
 
@@ -21,6 +21,8 @@ JAR 0.1.15 nie odczytuje tych reguł i nie wypłaca jeszcze pieniędzy.
 
 Bez gangu: dwie równe zakładki u góry — „Stwórz gang” i „Znajdź gang”.
 Możesz ustawić nazwę i opcjonalne logo albo wysłać zgłoszenie do istniejącego gangu.
+Enter zatwierdza poprawną nazwę lub wyszukiwanie. Na każdej stronie wyników
+można przewinąć wszystkie 12 gangów; wyszukiwanie i przełączanie stron pozostają na miejscu.
 Zgłoszenie przyjmuje lider lub osoba z uprawnieniem do zgłoszeń.
 
 Po dołączeniu: kompaktowy nagłówek, zakładki „Gang”, „Członkowie”, „Rangi”, „Rejestr” i „Mapa”.
@@ -29,7 +31,7 @@ obszaru treści. Poniżej „Informacje o gangu” i trzy równomierne kolumny:
 liczba członków, lider oraz miejsce na poziom gangu. Członkowie nie mają limitu.
 Pole poziomu pokazuje „— / Wkrótce”; system zdobywania poziomów jest do ustalenia.
 „Ustawienia” znajdują się na dole nawigacji, nad „Opuść gang”.
-Mapa pokazuje rozpoznawane tereny w otoczeniu gracza; przejmowanie pozostaje dalszym etapem.
+Mapa pokazuje rozpoznane tereny i pozwala przesuwać zapisany obraz; przejmowanie pozostaje dalszym etapem.
 Rejestr pokazuje rzeczywiste wydarzenia: utworzenie gangu, dołączenia, odejścia,
 usunięcia członków, przekazanie przywództwa i przypisywanie rang członkom.
 Zmiany kolorów, logo, definicji i kolejności rang nie tworzą nowych wpisów.
@@ -55,6 +57,8 @@ ma nazwę, uprawnienia i „Zapisz rangę”. Anuluj, X i Esc odrzucają nowy sz
 Zmiana skali GUI zachowuje wpisaną nazwę i wybrane uprawnienia. Można
 ustawić nazwę i uprawnienia: zgłoszenia, usuwanie członków, zarządzanie rangami
 oraz wspólny wygląd/logo. Osoby bez uprawnień mogą przeglądać rangi.
+Lista rang przewija się niezależnie od formularza. Nową rangę można zapisać
+Enterem z pola nazwy. Przeciąganie przy krawędzi przewija listę.
 Przeciąganie ustawia kolejność; także ranga bez uprawnień może być wyżej od
 Lidera. Pozycja na liście nie daje uprawnień ani własności gangu. Uprawnienia
 Lidera są stałe. Zachowano roboczy limit dawnego systemu: 12 rang łącznie.
@@ -136,15 +140,22 @@ Windows: gradlew.bat build
 Linux/macOS: ./gradlew build
 ```
 
-Wynik: `build/libs/crimeandlaw-0.1.15.jar`.
+Wynik: `build/libs/crimeandlaw-0.1.16.jar`.
 Gradle Wrapper 9.2.1, ModDevGradle 2.0.148, NeoForge 21.1.248.
 `./gradlew test` sprawdza model, migrację zapisów, duże listy i prywatność
 zgłoszeń, walidację/edycję logo, kolory oraz skalowanie menu.
 
 `./gradlew -PuiSmoke runClient` uruchamia prawdziwy klient z przykładowymi danymi,
-sprawdza menu i edytory oraz zapisuje obrazy i raport w `build/ui-smoke`.
+sprawdza menu i edytory oraz zapisuje obrazy i raport w `build/ui-smoke-current`.
+Własny katalog próby wybiera `-PuiSmokeId=nazwa`; rozdzielczość:
+`-PuiWidth=1280 -PuiHeight=720`.
 Wymaga ekranu/OpenGL. Kod z `src/uiTest` jest wyłączony z wydania JAR.
-Test graficzny nie łączy dwóch graczy na serwerze.
+Ten test graficzny korzysta z przygotowanych danych. Osobny test sieciowy
+`-PnetworkSmoke -PnetworkSmokeId=nazwa` udostępnia zadania `runNetworkServer`,
+`runNetworkOwner` i `runNetworkMember`: dwa klienty łączą się z własnym serwerem
+na 127.0.0.1:25597, obsługują menu i sprawdzają synchronizację/uprawnienia.
+Raporty trafiają do `build/network-smoke-nazwa`; kod automatyzacji jest wyłączony
+z wydania. Szczegóły wykonanych prób: [VALIDATION.md](VALIDATION.md).
 
 ## Dalszy zakres
 
@@ -190,7 +201,7 @@ a X ma równe przekątne i jest wyśrodkowany. Rejestr nie dopisuje konfiguracji
 wyglądu ani definicji/kolejności rang; pełna data z rokiem jest nad opisem.
 
 
-## Mapa świata i stałe cechy terenu — 0.1.15
+## Mapa świata i stałe cechy terenu
 Mapa pokazuje ciągły obraz prawdziwej powierzchni: woda zachowuje przebieg
 rzek i brzegów, widoczne są lasy, piasek, skały, śnieg oraz dachy i drogi
 wiosek. Każdy piksel danych odpowiada jednej kolumnie bloków; kolory pochodzą
@@ -198,7 +209,10 @@ z palety map Minecrafta, a nachylenie i głębokość wody wpływają na cieniow
 To mapa barwna z cieniowaniem rzeźby, nie zdjęcie tekstur z góry.
 
 Domyślnie widoczny jest obszar 11×11 chunków (176×176 bloków) wokół gracza.
-Przyciski +/− zmieniają przybliżenie; przycisk „Siatka” włącza granice chunków.
+Przyciski +/− oraz kółko nad mapą zmieniają przybliżenie.
+Przeciąganie lewym przyciskiem i strzałki pod mapą przesuwają widok;
+„Gracz” lub Home przywraca śledzenie gracza. Działają też strzałki klawiatury
+poza zaznaczonym paskiem przewijania. Przycisk „Siatka” włącza granice chunków.
 Siatka domyślnie jest wyłączona. Rzeczywista pozycja i kierunek gracza,
 północ, podziałka i zaznaczenie chunka są nakładką na krajobraz.
 Kliknięcie wybiera chunk; opis po prawej przewija się niezależnie.
@@ -209,7 +223,9 @@ Brakujące fragmenty pozostają zasłonięte, także jeśli mają już profil ce
 z wcześniejszej wersji. Odczytany obraz zapisuje się ze światem osobno dla
 każdego wymiaru i chunka, przeżywa restart i odświeża się po przebudowie
 wczytanego terenu. Dane są wspólne dla serwera; nie dodano jeszcze osobistej
-mgły odkrycia, przesuwania mapy ani przeglądu całego świata naraz.
+mgły odkrycia ani przeglądu całego świata naraz. Można przeglądać zapisane
+wcześniej fragmenty po odsunięciu widoku od gracza. Przesunięcie nie wczytuje
+odległych chunków; nowy obraz jest zbierany tylko wokół gracza.
 Mapa jest odświeżana tylko podczas jej przeglądania, a nie w tle dla wszystkich
 chunków. Dane powierzchni przychodzą stopniowo, niezależnie od analizy cech.
 
@@ -272,7 +288,18 @@ gotowe kafle są zapisywane. Ponowny odczyt tego samego wczytanego chunka
 następuje najwcześniej po 100 tickach. Klient utrzymuje jedną teksturę mapy,
 aktualizowaną przy zmianie pikseli, a nie przebudowywaną w każdej klatce.
 
-Test interfejsu 0.1.15 korzysta także z danych prawdziwej mapy: przed
+Test interfejsu 0.1.16 korzysta także z danych prawdziwej mapy: przed
 `./gradlew -PuiSmoke runClient` wykonaj dwa starty testu serwera z
-`-PserverSmokeId=terrain15a`. Jego raport `build/server-smoke-terrain15a/view.json`
+`-PserverSmokeId=terrain16a`. Jego raport `build/server-smoke-terrain16a/view.json`
 jest wejściem do sprawdzenia tekstury oraz ostatnich zrzutów klienta.
+
+
+## Dopracowanie panelu — 0.1.16
+
+Wyniki wyszukiwania i lista rang mają niezależne przewijanie; przyciski oraz
+formularze nie przesuwają się wraz z listą. Pusty szkic nazwy rangi zachowuje
+się przy zmianie rozmiaru, a przeciąganie do krawędzi przewija listę.
+Niepotrzebne paski przewijania są ukrywane. Zbyt długie napisy przycisków
+mają wielokropek i podpowiedź z pełnym tekstem. Puste kategorie przyszłych
+systemów mają wspólny wygląd, bez udawanych danych. X działa także przed
+utworzeniem gangu. Na mapie dodano przesuwanie oraz szybki powrót do gracza.

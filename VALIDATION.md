@@ -1,99 +1,145 @@
-# Sprawdzenie 0.1.15
+# Sprawdzenie 0.1.16
 
-21 października 2026. Minecraft 1.21.1, NeoForge 21.1.248, JDK 21.
+22 października 2026. Minecraft 1.21.1, NeoForge 21.1.248, JDK 21.
 
 ## Zmiana
 
-Zastąpiono jednolite kolory chunków ciągłą mapą aktualnej powierzchni.
-Każda kolumna bloków ma osobny piksel w palecie map Minecrafta; wysokość
-sąsiednich kolumn i głębokość wody wpływają na cieniowanie. Widok 11×11
-chunków, przybliżanie do 5×5, opcjonalna siatka, pozycja/kierunek gracza,
-północ, podziałka oraz wybór chunka z przewijanym opisem.
+Dopracowanie istniejącego panelu gangów: zamknięcie przed dołączeniem,
+walidacja nazwy, Enter, niezależne przewijanie wyników wyszukiwania i rang,
+nieruchome formularze/przyciski, zachowanie pustego szkicu po zmianie rozmiaru,
+przewijanie przy przeciąganiu rang, ukrywanie zbędnych pasków przewijania,
+podpowiedzi dla uciętych przycisków i spójne puste kategorie przyszłych systemów.
+Zachowano zaakceptowany układ i kolory menu.
 
-Rysunek aktualizuje się niezależnie od stałych profili generowania, jest
-zapisywany ze światem i może pokazywać budowle graczy bez przyznawania
-im cech wygenerowanych budynków. Brakujące dane są zasłonięte.
-Usunięto automatyczne opisy potencjalnych korzyści przy każdej cesze;
-API opisuje cechy posiadanego terenu. Nie ma automatycznych boosterów.
-Konkretne rzadkie premie, ich krytyczne warunki i wartości są do ustalenia.
+Mapa: przeciąganie z podglądem, przyciski kierunków, klawisze strzałek,
+Home/przycisk Gracz oraz przybliżanie kółkiem. Klient łączy szybkie żądania,
+odrzuca nieaktualne odpowiedzi i nie rysuje odległego znacznika nad opisem.
+Serwer sprawdza współrzędne i odczytuje odległy widok wyłącznie z zapisanych
+kafli. Analiza nowych danych nadal odbywa się tylko wokół gracza.
+Sekcja „Bonusy terenu” pozostaje osobna od zakładki „Premie”.
 
 ## Testy jednostkowe
 
-69 testów JUnit, bez błędów, niepowodzeń i pominięć.
-Nowe sprawdzenia: 256 pikseli na chunk, niezmienność danych przez tablice,
-odrzucenie niepełnych/uszkodzonych kafli, mapa niezależna od profilu cech,
-dokładna pozycja gracza, zapis i odczyt map dla wymiaru/chunka, odświeżenie
-rysunku bez zmiany cech, migracja zapisów 0.1.14 bez rastrów.
-
-Pełna mapa 121 chunków, z rastrami, wszystkimi opisowymi cechami i właścicielami,
-przechodzi osobny kodek sieciowy w założonym budżecie, bez przesyłania logo.
-Zachowano wcześniejsze testy rang, członkostwa, rejestru, kolorów i obrazów.
+72 testy JUnit, bez błędów, niepowodzeń i pominięć.
+Trzy nowe próby granic widoku obejmują ujemne współrzędne, skrajne pozycje,
+bardzo duże przesunięcia i odrzucenie pozycji poza światem.
+Zachowano wcześniejsze testy członkostwa, uprawnień, prywatności, rejestru,
+logo, kolorów, profili generowania, mapy, zapisu oraz kodeków pakietów.
 
 ## Rzeczywisty serwer dedykowany
 
-CRIME_TERRAIN_SERVER_PASS: FIRST_RUN i RESTART tego samego izolowanego świata
-`terrain15a`, ziarno 123456789, warsztat w chunku (-17, 12), Overworld.
+CRIME_TERRAIN_SERVER_PASS: FIRST_RUN oraz RESTART tego samego izolowanego
+świata `terrain16a`, ziarno 123456789, warsztat w chunku (-17, 12), Overworld.
 
-- Rzeczywista wygenerowana wioska i szablon warsztatu rozpoznane.
-- Pierwotny profil i zapis źródłowy zachowane mimo zmian bloków.
-- Rekonstrukcja starego chunka wyklucza wysokie konstrukcje gracza.
-- Odczyt powierzchni objął co najmniej 49 chunków prawdziwego świata.
-- Poszczególne kolory bloków, także poza dawną siatką 16 próbek, zachowane.
-- Oba brzegi granicy chunków zachowują właściwe piksele.
-- Zamiana bloku zmienia raster przy odświeżeniu, bez zmiany cech naturalnych.
-- Raster, zaktualizowany piksel, profile i dane źródłowe przetrwały prawdziwy
-  restart; zapis mapy sprawdzono przed ponownym skanowaniem.
-- Zapis SavedData NBT zachowuje pierwotny profil i lokalne przypisanie własności.
+- Wygenerowana wioska/warsztat, zapis źródłowy i rekonstrukcja starszego chunka.
+- Stały profil mimo przebudowy; pomijanie wysokiej konstrukcji gracza.
+- Co najmniej 49 kafli odczytanych z prawdziwych bloków.
+- Kolory poszczególnych kolumn i obu stron granicy chunków.
+- Zmiana bloku odświeża raster, zachowując stałe cechy.
+- Restart zachowuje piksele, profile, pomiary źródłowe i lokalną własność.
+- Odległy widok (400000, -400000) zwraca wcześniej zapisany kafel, nie ładuje
+  docelowego chunka i nie zmienia liczby wczytanych chunków.
+- Widoki przy wszystkich czterech narożnikach granicy świata pozostają poprawne
+  i nie wczytują terenu.
+- Pozycja gracza pozostaje rzeczywistą pozycją, niezależną od środka mapy.
 
-Test utrzymuje okolice wsi w pamięci biletami wyłącznie w świecie testowym.
-Produkcja nie dodaje biletów i nie generuje odległych chunków dla mapy.
-W świecie testowym stoją bloki kontrolne użyte do sprawdzenia kolorów.
+Bilety podtrzymujące wioskę i bloki kontrolne istnieją wyłącznie w świecie
+tej automatycznej próby. Kod produkcyjny nie dodaje takich biletów.
 
 ## Rzeczywisty renderer Minecrafta
 
-CRIME_UI_SMOKE_PASS, 33 zrzuty 1920×1080, skale GUI 2 i 4.
-Sprawdzono skalowany wybór chunków, niezależne przewijanie opisu,
-nieznane obszary, zmianę przybliżenia, przełącznik siatki i skalowanie GUI.
+CRIME_UI_SMOKE_PASS w 1920×1080 i 1280×720, co najmniej 47 etapów na przebieg,
+skale GUI 2 oraz maksymalna dostępna (4 albo 3).
 
-Dwa ostatnie zrzuty pokazują dane powierzchni odczytane z rzeczywistego
-świata powyższego serwera; wcześniejsze próby interakcji korzystają też
-z syntetycznego testowego przebiegu rzeki. Każdy nieprzezroczysty piksel
-rastrów świata porównano z gotową teksturą klienta: pozycja, orientacja,
-kanały barw i kolor są zachowane. Wizualnie sprawdzono mapę wsi/rzeki
-oraz powiększony widok z siatką. Zachowano próby rang, dat, rejestru,
-kolorów oraz importu/kadrowania logo.
+Sprawdzono wszystkie obecne kategorie, tworzenie/wyszukiwanie, listę 12 gangów,
+12 rang i ich przewijanie, zmianę rozmiaru z pustą nazwą rangi, przeciąganie
+z przewijaniem, rejestr i strony, zarządzanie, kolory, import/kadrowanie logo,
+nieaktywność ukrytego Transportu oraz zachowanie uprawnień w interfejsie.
 
-To test renderera z zapisanymi danymi serwera, a nie rozgrywka dwóch klientów
-połączonych przez TCP. Nie twierdzić, że odbyła się taka rozgrywka.
+Próby mapy obejmują wybór i przewijanie opisu, zoom kółkiem/przyciskami,
+siatkę, podgląd podczas przeciągania, przesunięty widok, odrzucenie starej
+odpowiedzi, przyciski kierunków, Home i powrót do gracza oraz przycięcie
+znacznika gracza poza mapą. Część interakcji używa syntetycznego zestawu
+cech i testowej rzeki. Końcowe ujęcia i porównanie pikseli korzystają
+z danych rzeczywistej wioski powyższego serwera, nie z narysowanej makiety.
+Wizualnie obejrzano gang, listy, puste kategorie i mapę w obu rozdzielczościach.
 
-## Budowanie
+## Dwa klienty i restart
 
-`./gradlew build --rerun-tasks`
-`./gradlew -PserverSmoke -PserverSmokeId=terrain15a runServer` — dwa starty.
-`./gradlew -PuiSmoke runClient` — po teście serwera, używa jego view.json.
+CRIME_NETWORK_OWNER_PASS, CRIME_NETWORK_MEMBER_PASS i CRIME_NETWORK_RESTART_PASS.
+Dwa rzeczywiste klienty Minecrafta (960×540, konta deweloperskie Owner16/Member16)
+połączone przez TCP z izolowanym serwerem na 127.0.0.1:25597; próba `net16b`.
 
-Test serwera wymaga zaakceptowania EULA w izolowanym katalogu
-`run-server-smoke-terrain15a`. JAR produkcyjny nie zawiera klas automatyzacji
-serwera/klienta. Zawiera 15 dotychczasowych bibliotek importu logo.
-Wersja 0.1.15 i protokół 7: aktualizacja klienta oraz serwera wymagana.
+- Utworzenie gangu, znalezienie, zgłoszenie i przyjęcie przez faktyczne menu.
+- Zwykły członek nie widzi zarządzania ani prywatnych zgłoszeń; próba zmiany
+  wspólnego motywu bez uprawnień zostaje odrzucona na serwerze.
+- Lider tworzy rangę Stylista i przypisuje ją drugiemu graczowi. Uprawnienie
+  wyglądu odblokowuje odpowiedni przycisk, bez dostępu do rang i zgłoszeń.
+- Import pliku, okno kadrowania i zapis logo poprzez kontrolki klienta.
+  Szczegółowy PNG 512×512, 1 200 288 znaków Base64: faktyczne przesłanie
+  klient → serwer → oba klienty; zgodne SHA-256 danych i tekstura 512×512
+  u odbiorcy. Ten przypadek przekracza dawny limit krótkiego ciągu znaków.
+- Zapis wspólnego tła przez koło kolorów/pole HEX; zmiana dociera do obu klientów.
+- Delegowana osoba nadal nie może usunąć właściciela. Serwer odrzuca pakiet;
+  członkostwo dwóch graczy pozostaje nienaruszone.
+- Klienty zamknięto, serwer zapisano i zatrzymano. Ponowny start tego samego
+  świata potwierdził członków, właściciela, rangę/uprawnienia, tło i duże logo.
+
+W pierwszej próbie `net16a` serwer dostał DISPLAY środowiska testowego,
+a Java ImageIO próbowała użyć niedostępnej biblioteki X11. To nie jest wynik
+zaliczony. Powtórzenie `net16b` i restart używały `java.awt.headless=true`;
+ustawienie dodano też do zadania serwera tej próby. Ostrzeżenia usług uwierzytelniania
+wynikają z lokalnych kont deweloperskich/offline, nie z prawdziwego logowania.
+
+## Odtwarzanie
+
+```text
+./gradlew build --rerun-tasks
+./gradlew -PserverSmoke -PserverSmokeId=terrain16a runServer
+./gradlew -PserverSmoke -PserverSmokeId=terrain16a runServer
+./gradlew -PuiSmoke -PuiSmokeId=menu16c runClient
+./gradlew -PuiSmoke -PuiSmokeId=menu16-1280 -PuiWidth=1280 -PuiHeight=720 runClient
+```
+
+Test serwera wymaga zaakceptowania EULA w swoim izolowanym katalogu.
+Test graficzny wymaga ekranu/OpenGL i używa pliku
+`build/server-smoke-terrain16a/view.json`. Raporty i zrzuty trafiają do
+`build/ui-smoke-<identyfikator>`.
+
+Test sieciowy: najpierw zbudować klasy z `-PnetworkSmoke -PnetworkSmokeId=net16b`,
+a następnie uruchomić `runNetworkServer`, `runNetworkOwner`, `runNetworkMember`
+z tymi samymi właściwościami w oddzielnych terminalach (serwer jako pierwszy).
+Świat próby musi być nowy, z EULA oraz `server-ip=127.0.0.1`, `server-port=25597`,
+`online-mode=false`. To wyłącznie izolowany serwer testowy. Po raportach
+owner.PASS/member.PASS zatrzymać serwer poleceniem stop i uruchomić go z
+`-PnetworkPersistence=true`, aby otrzymać restart.PASS. Próby wykonywane tu
+użyły przygotowanych przez Gradle parametrów startu bez równoległego kompilowania.
+
+JAR wydania nie zawiera klas automatyzacji z `src/uiTest`, `src/serverTest`
+ani `src/networkTest`; zawiera 15 bibliotek importu obrazów.
+Wersja 0.1.16 i protokół 8 wymagają aktualizacji klienta i serwera.
 
 ## Granice sprawdzenia
 
-Mapa jest lokalnym widokiem 176×176 bloków, nie przeglądem całego świata.
-Brak przesuwania i osobistej mgły odkrycia. Dane kartograficzne zapisują
-się wspólnie na serwerze, oddzielnie od naturalnych cech i od własności.
-Paleta map pokazuje barwy materiałów; nie renderuje tekstur bloków ani
-wnętrza podziemnych budynków. Przetestowano powierzchnię Overworld, nie
-czytelność mapy pod sufitem Netheru.
+Widoczny wycinek ma najwyżej 176×176 bloków, z przybliżeniem do 80×80.
+Można przesuwać go po zapisanym atlasie. Nie ma osobistej mgły odkrycia,
+widoku całego świata naraz ani pobierania nieznanego odległego terenu.
+Atlas jest wspólny na serwerze, osobny dla każdego wymiaru.
+Przetestowano powierzchnię Overworld; nie sprawdzano czytelności pod sufitem Netheru.
 
-Rysowanie: najwyżej 128 kolumn na tick, porcje po 32 i miękki budżet 2 ms.
-Odświeżenie chunka najwcześniej po 100 tickach. Kolejka najwyżej 256 zadań;
-nieodświeżane zadania wygasają po 200 tickach. Praca odbywa się tylko na
-chunkach już dostępnych jako FULL. Klient używa jednej tekstury, zmienianej
-po aktualizacji pikseli. Nie wykonano benchmarku dużego serwera.
+Odczyt powierzchni: najwyżej 128 kolumn na tick, porcje po 32 i miękki budżet
+2 ms; pojedynczy krok może go przekroczyć. Kolejka do 256 zadań, wygaśnięcie
+po 200 tickach, ponowne odświeżenie nie wcześniej niż po 100 tickach.
+Praca obejmuje tylko dostępne chunki FULL. Klient utrzymuje jedną teksturę,
+aktualizowaną po zmianie pikseli. Nie wykonano benchmarku dużego serwera.
 
-Analiza stałych cech nadal używa 16 próbek i nazw szablonów vanilla.
-To przybliżony opis, nie szczegółowy silnik kwalifikacji rzadkich premii.
-Nie dodano przejmowania, receptur, przedmiotów ani aktywnych mnożników.
-Dotychczasowe ograniczenia importu logo pozostają jak w README.
-Lokalna poprawka narzędzia NeoForm Runtime nie trafia do źródeł ani JAR-a.
+Stałe cechy nadal opierają się na 16 próbkach i szablonach wiosek vanilla.
+To opis terenu, nie silnik kwalifikacji rzadkich bonusów. Brak przejmowania,
+ekonomii, receptur, roślin i aktywnych mnożników. Premie, Saldo, Czarna lista
+oraz Cele mają tylko przygotowane panele. Transport pozostaje ukryty.
+Import nie obsługuje HEIC/AVIF, PDF ani animowanego logo; pozostałe limity
+są opisane w README. Te sprawdzenia nie oznaczają gwarancji braku błędów
+na każdej konfiguracji i w dowolnej paczce modów.
+
+Lokalna poprawka narzędzia NeoForm Runtime i konfiguracja Xvfb nie trafiają
+ani do źródeł moda, ani do JAR-a.

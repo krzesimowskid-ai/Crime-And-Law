@@ -49,7 +49,7 @@ public final class GangNetwork {
         @Override public Type<? extends CustomPacketPayload> type(){return TYPE;}
     }
     public static void register(RegisterPayloadHandlersEvent event){
-        var registrar=event.registrar("7");
+        var registrar=event.registrar("8");
         registrar.playToServer(Action.TYPE,Action.CODEC,GangNetwork::handle);
         registrar.playToClient(State.TYPE,State.CODEC,(p,c)->clientReceiver.accept(p.json));
         registrar.playToClient(Terrain.TYPE,Terrain.CODEC,(p,c)->terrainReceiver.accept(p.json));
@@ -65,7 +65,10 @@ public final class GangNetwork {
             JsonObject a=JsonParser.parseString(packet.json).getAsJsonObject();String action=text(a,"action");
             if(action.equals("terrain_view")){
                 if(d.of(actor)==null)throw new IllegalArgumentException("Najpierw dołącz do gangu.");
-                PacketDistributor.sendToPlayer(player,new Terrain(JSON.toJson(pl.crimeandlaw.territory.TerrainAnalysis.view(player))));return;
+                boolean remote=a.has("centerX")||a.has("centerZ");
+                var viewport=remote?new pl.crimeandlaw.territory.TerrainViewport(exactInteger(a,"centerX"),exactInteger(a,"centerZ")):
+                    new pl.crimeandlaw.territory.TerrainViewport(player.chunkPosition().x,player.chunkPosition().z);
+                PacketDistributor.sendToPlayer(player,new Terrain(JSON.toJson(pl.crimeandlaw.territory.TerrainAnalysis.view(player,viewport))));return;
             }
             if(action.equals("refresh")){
                 String query=text(a,"query");if(query.length()>32)query=query.substring(0,32);
@@ -129,5 +132,11 @@ public final class GangNetwork {
     }
     private static String text(JsonObject a,String key){return a.has(key)&&!a.get(key).isJsonNull()?a.get(key).getAsString():"";}
     private static int integer(JsonObject a,String key,int fallback){return a.has(key)?a.get(key).getAsInt():fallback;}
+    private static int exactInteger(JsonObject a,String key){
+        if(!a.has(key)||!a.get(key).isJsonPrimitive()||!a.getAsJsonPrimitive(key).isNumber())
+            throw new IllegalArgumentException("Nieprawidłowa pozycja mapy.");
+        try{return a.get(key).getAsBigDecimal().intValueExact();}
+        catch(ArithmeticException exception){throw new IllegalArgumentException("Nieprawidłowa pozycja mapy.");}
+    }
     private static UUID uuid(JsonObject a,String key){return UUID.fromString(text(a,key));}
 }

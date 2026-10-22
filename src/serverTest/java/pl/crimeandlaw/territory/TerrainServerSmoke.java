@@ -126,7 +126,24 @@ public final class TerrainServerSmoke {
             require(profile.equals(restored.get(target)),"Actual SavedData NBT roundtrip preserves the profile");
             var view=TerrainView.snapshot(saved.atlas,target.dimension(),target.x(),target.z(),key->level.getChunkSource().getChunkNow(key.x(),key.z())!=null,id->"Gang testowy",saved::map);
             Files.writeString(OUT.resolve("view.json"),JSON.toJson(view));
-            String result=(restart?"RESTART":"FIRST_RUN")+" PASS: dedicated server, real village "+target+", generated "+expected+", original profile, old-chunk reconstruction, local descriptive traits, 49 real surface tiles, all-column colors, cross-chunk seam, live map update without changing original features, saved map after restart.\n";
+            var viewer=new net.minecraft.server.level.ServerPlayer(server,level,
+                new com.mojang.authlib.GameProfile(new java.util.UUID(16,16),"MapViewer"),
+                net.minecraft.server.level.ClientInformation.createDefault());
+            viewer.setPos(target.x()*16+8,80,target.z()*16+8);
+            var remote=new TerrainKey(target.dimension(),400_000,-400_000);
+            saved.rememberMap(remote,saved.map(target));
+            int loaded=level.getChunkSource().getLoadedChunksCount();
+            var remoteView=TerrainAnalysis.view(viewer,new TerrainViewport(remote.x(),remote.z()));
+            require(remoteView.centerX()==remote.x()&&remoteView.centerZ()==remote.z(),"Server respects a bounded remote viewport");
+            require(remoteView.cells().stream().anyMatch(c->c.x()==remote.x()&&c.z()==remote.z()&&c.mapPixels().equals(saved.map(target).pixels())),"Remote viewport reads saved pixels");
+            require(level.getChunkSource().getChunkNow(remote.x(),remote.z())==null&&level.getChunkSource().getLoadedChunksCount()==loaded,"Panning does not load or generate remote chunks");
+            require(remoteView.playerX()==viewer.getX()&&remoteView.playerZ()==viewer.getZ(),"Remote viewport keeps the real player position");
+            for(int edgeX:new int[]{-TerrainViewport.LIMIT,TerrainViewport.LIMIT})for(int edgeZ:new int[]{-TerrainViewport.LIMIT,TerrainViewport.LIMIT}){
+                var edgeView=TerrainAnalysis.view(viewer,new TerrainViewport(edgeX,edgeZ));
+                require(edgeView.centerX()==edgeX&&edgeView.centerZ()==edgeZ&&edgeView.cells().size()==TerrainView.SIDE*TerrainView.SIDE,"Views at all four world corners remain valid");
+            }
+            require(level.getChunkSource().getLoadedChunksCount()==loaded,"World-corner views do not load terrain");
+            String result=(restart?"RESTART":"FIRST_RUN")+" PASS: dedicated server, real village "+target+", generated "+expected+", original profile, old-chunk reconstruction, local descriptive traits, 49 real surface tiles, all-column colors, cross-chunk seam, live map update without changing original features, saved map after restart; remote saved viewport without loading/generating remote chunks.\n";
             Files.writeString(OUT.resolve("result.txt"),result,StandardOpenOption.CREATE,StandardOpenOption.APPEND);
             System.out.println("CRIME_TERRAIN_SERVER_PASS "+result);done=true;server.halt(false);
         }catch(Throwable error){fail(server,error);}
