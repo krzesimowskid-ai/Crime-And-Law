@@ -64,10 +64,17 @@ Kwoty skalują się z bazą źródła; nie stosować ceny 60 $ do dowolnie bogat
 To skale dla przyszłych kwalifikujących się efektów, nie lista gotowych
 bonusów przyznawanych za aktualne etykiety mapy.
 
+**Doprecyzowanie zakresu:** wzrost dotyczy przede wszystkim własnych roślin
+do fikcyjnych produktów gangsterskich. Tempo produkcji i uzysk mają wspierać
+nadchodzące multibloki i pozyskiwanie surowców/pierwiastków. Krzywe są narzędziem
+do późniejszego powiązania z tymi mechanikami, nie poleceniem dodania bonusów
+pszenicy, rybołówstwa, hodowli czy zwykłych pieców. Lista takich zastosowań
+z poprzedniej odpowiedzi asystenta nie została zaakceptowana przez użytkownika.
+
 | Efekt | Poz. 1 | Poz. 2 | Poz. 3 | Poz. 4 | Poz. 5 |
 |---|---:|---:|---:|---:|---:|
 | Dodatkowy uzysk zasobów | +2% | +4% | +6% | +8% | +10% |
-| Tempo wzrostu upraw | +5% | +9% | +12% | +14% | +15% |
+| Tempo wzrostu własnych roślin gangsterskich | +5% | +9% | +12% | +14% | +15% |
 | Tempo produkcji | +10% | +18% | +24% | +28% | +30% |
 | Obniżka kwalifikującego się kosztu | 2% | 4% | 6% | 8% | 10% |
 | Skrócenie przestoju po sabotażu | 10% | 18% | 24% | 28% | 30% |
@@ -109,6 +116,13 @@ Osobna zakładka **Premie** pozostaje do późniejszego opracowania. Nie jest
 przekształcana w zakładkę bonusów terenowych. Transport nadal ma wyłącznie
 ukrytą definicję. Nie aktywowano policji, gangów NPC, samolotów, samochodów,
 automatycznego przejmowania ani wszystkich kategorii znanych z GTA.
+
+Priorytet po organizacyjnej podstawie panelu gangu: własne rośliny, logiczne
+pozyskiwanie pierwiastków i multiblokowa produkcja fikcyjnych produktów,
+z minigrami i regulacją parametrów. Legalne prace i szerszy świat RP są później.
+Źródła i kryteria lokalnych bonusów należy projektować pod ten rdzeń. Sam
+ekstraktor pierwiastków jest kierunkiem do opracowania; nie dodano jego modelu
+ani receptury. Nie zmieniono roboczych krzywych liczbowych w tej korekcie zakresu.
 
 ## Sprawdzenie modelu
 

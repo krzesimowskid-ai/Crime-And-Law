@@ -377,3 +377,28 @@ gdy właściwe systemy własności oraz mapy będą rozwijane.
 - Zwykłe tereny pozostają bez korzyści. Wymagania krytyczne dla konkretnych
   rzadkich bonusów i bardziej szczegółowe pomiary nadal wymagają implementacji.
   Nie przyznawać bonusu automatycznie z samego obecnego profilu terenu.
+
+## Pierwszeństwo gangsterskiego rdzenia — doprecyzowanie 22 października
+
+- Panel gangu jest podstawą organizacyjną. Najbliższy główny etap obejmuje
+  własne rośliny do fikcyjnych produktów, pozyskiwanie pierwiastków, duże
+  multibloki, wieloetapową produkcję, minigry i regulację parametrów.
+- Bonus wzrostu omawiany przez użytkownika dotyczy **własnych roślin związanych
+  z gangsterską produkcją**, nie automatycznie pszenicy i wszystkich upraw vanilla.
+  Inne efekty należy dobierać do tych nadchodzących systemów.
+- Rybołówstwo, zwykłe rolnictwo, hodowla i przetop z poprzedniej listy asystenta
+  nie są zatwierdzoną listą do realizacji. Legalne prace i rozszerzenie moda
+  w większy świat RP pozostają znacznie późniejszym etapem.
+- Lekkie kamizelki i pozostałe przyszłe przedmioty nie uzasadniają teraz
+  rozwijania ich produkcji kosztem gangsterskiego rdzenia.
+- Zachować założenie produktów i receptur fikcyjnych oraz umownych jednostek
+  termów i barytów. Konkretne nazwy, procesy, urządzenia i minigry pozostają
+  do zaprojektowania; przykłady asystenta nie stają się automatycznie decyzjami.
+- Użytkownik wymaga logicznego pozyskiwania pierwiastków. Nie robić prostej
+  receptury na stole „węgiel Minecrafta → pudełko pierwiastka węgla”. Rozważyć
+  ekstraktor lub inne urządzenie przetwarzające odpowiednie surowce, z czasem,
+  obsługą i rozdzielaniem składników. Ekstraktor jest kierunkiem do opracowania,
+  a nie gotową, zatwierdzoną konstrukcją lub recepturą.
+- Dobór pierwiastków wyjściowych ma wynikać z materiału wejściowego.
+  Nie zakładać pozyskiwania dowolnego pierwiastka z dowolnego bloku.
+  Sposoby dostępu do całego docelowego układu okresowego wymagają dalszego projektu.
