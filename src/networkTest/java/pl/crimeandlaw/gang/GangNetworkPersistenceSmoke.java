@@ -19,7 +19,8 @@ public final class GangNetworkPersistenceSmoke {
             var member=gang.members.entrySet().stream().filter(e->e.getValue().name.equals("Member16")).findFirst().orElseThrow();
             if(!gang.roles.get(member.getValue().role).name.equals("Stylista")||!GangDirectory.allowed(gang,member.getKey(),GangDirectory.Permission.MANAGE_THEME))throw new AssertionError("Assigned role/permission not persisted");
             if(gang.theme.background()!=0x253047||gang.logo.length()<=28000||GangLogo.validate(gang.logo).isEmpty())throw new AssertionError("Shared theme/detailed logo not persisted");
-            Files.createDirectories(out);Files.writeString(out.resolve("restart.PASS"),"Dedicated-server restart retained two members, owner, assigned role/permissions, shared theme and detailed logo.\n");
+            if(gang.banner.image().length()<=1_000_000||GangBanner.validateImage(gang.banner.image()).isEmpty()||gang.members.values().stream().anyMatch(m->m.joinedAt<=0))throw new AssertionError("Banner/join dates not persisted");
+            Files.createDirectories(out);Files.writeString(out.resolve("restart.PASS"),"Dedicated-server restart retained two members, owner, assigned role/permissions, shared theme, detailed logo/banner and join dates.\n");
             System.out.println("CRIME_NETWORK_RESTART_PASS");
         }catch(Throwable error){
             error.printStackTrace();try{Files.createDirectories(out);Files.writeString(out.resolve("restart.FAIL"),error.toString());}catch(Exception ignored){}

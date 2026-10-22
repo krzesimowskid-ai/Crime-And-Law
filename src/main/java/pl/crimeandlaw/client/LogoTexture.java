@@ -28,7 +28,11 @@ public final class LogoTexture {
         catch(Exception exception){return null;}
     }
     public static void draw(GuiGraphics graphics,int x,int y,int drawWidth,int drawHeight){
-        if(valid)graphics.blit(ID,x,y,drawWidth,drawHeight,0f,0f,width,height,width,height);
+        if(valid){
+            graphics.flush();com.mojang.blaze3d.systems.RenderSystem.enableBlend();com.mojang.blaze3d.systems.RenderSystem.defaultBlendFunc();
+            graphics.blit(ID,x,y,drawWidth,drawHeight,0f,0f,width,height,width,height);
+            com.mojang.blaze3d.systems.RenderSystem.disableBlend();
+        }
     }
     public static void clear(){if(valid)Minecraft.getInstance().getTextureManager().release(ID);valid=false;current="";width=height=0;}
 }

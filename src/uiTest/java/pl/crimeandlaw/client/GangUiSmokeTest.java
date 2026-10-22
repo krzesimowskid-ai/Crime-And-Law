@@ -30,6 +30,7 @@ public final class GangUiSmokeTest {
     private static final UUID FRIEND=new UUID(0,2);
     private static GangScreen screen;
     private static pl.crimeandlaw.territory.TerrainView unshiftedMap;
+    private static int chosenX,chosenZ;
     private static final StringBuilder REPORT=new StringBuilder();
 
     @SubscribeEvent public static void frame(RenderFrameEvent.Post event) {
@@ -45,7 +46,7 @@ public final class GangUiSmokeTest {
                 fixture(false);screen=new GangScreen();mc.setScreen(screen);
                 stage=0;frames=0;return;
             }
-            if(stage==12&&!(mc.screen instanceof LogoCropScreen)){
+            if((stage==12||stage==50)&&!(mc.screen instanceof LogoCropScreen)){
                 if(++waitFrames>600)throw new AssertionError("Crop dialog did not open: "+ClientState.message);return;
             }
             if(++frames<24)return;
@@ -157,6 +158,7 @@ public final class GangUiSmokeTest {
                 }
                 case 14 -> {
                     capture(mc,"14-member-settings");
+                    var savedLogo=GangScreen.class.getDeclaredField("draftLogo");savedLogo.setAccessible(true);require(((String)savedLogo.get(screen)).isEmpty(),"Acknowledged logo draft no longer shadows future shared updates");
                     directory.of(PLAYER).name="W".repeat(32);fixturePage(PLAYER,0);screen.updated();selectTab(0);
                     mc.options.guiScale().set(2);mc.resizeDisplay();
                 }
@@ -220,7 +222,7 @@ public final class GangUiSmokeTest {
                     require(mc.screen instanceof NewRoleScreen,"New rank opens a separate dialog");
                     require(!widget(mc.screen,"Zapisz rangę").active,"Blank rank cannot be saved");
                     var edit=mc.screen.children().stream().filter(c->c instanceof EditBox).map(c->(EditBox)c).findFirst().orElseThrow();
-                    edit.setValue("Rekruter");click(mc,"[ ] Zapraszanie / zgłoszenia");click(mc,"[ ] Wygląd i logo gangu");
+                    edit.setValue("Rekruter");click(mc,"Zapraszanie / zgłoszenia");click(mc,"Wygląd i logo gangu");
                     require(widget(mc.screen,"Zapisz rangę").active,"Rank form can be saved");
                 }
                 case 22 -> {
@@ -268,13 +270,13 @@ public final class GangUiSmokeTest {
                     capture(mc,"26-clean-logo");
                     fixturePage(PLAYER,0);screen.updated();selectTab(pl.crimeandlaw.gang.GangCategory.ROLES.tabId());click(mc,"+ Nowa ranga");
                     var edit=mc.screen.children().stream().filter(c->c instanceof EditBox).map(c->(EditBox)c).findFirst().orElseThrow();
-                    edit.setValue("Bez zapisu");click(mc,"[ ] Usuwanie członków");
+                    edit.setValue("Bez zapisu");click(mc,"Usuwanie członków");
                     mc.options.guiScale().set(2);mc.resizeDisplay();
                 }
                 case 27 -> {
                     capture(mc,"27-rank-dialog-scale2");checkCloseButton(mc);
                     var edit=mc.screen.children().stream().filter(c->c instanceof EditBox).map(c->(EditBox)c).findFirst().orElseThrow();
-                    require(edit.getValue().equals("Bez zapisu")&&widget(mc.screen,"[x] Usuwanie członków").active,"Rank draft survives a GUI resize");
+                    require(edit.getValue().equals("Bez zapisu")&&widget(mc.screen,"Usuwanie członków").active,"Rank draft survives a GUI resize");
                     int count=directory.of(PLAYER).roles.size();
                     mc.screen.keyPressed(org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE,0,0);
                     require(mc.screen==screen&&directory.of(PLAYER).roles.size()==count,"Escape cancels the rank without changes");
@@ -315,7 +317,7 @@ public final class GangUiSmokeTest {
                     click(mc,"−");click(mc,"−");click(mc,"Siatka");
                     var actual=Path.of(System.getProperty("crimeandlaw.actualTerrainView","../build/server-smoke-terrain16a/view.json"));
                     require(Files.exists(actual),"Actual world surface from the dedicated-server test is available");
-                    TerrainClient.receive(Files.readString(actual));
+                    TerrainClient.receive(Files.readString(actual));selectMapCenter();
                 }
                 case 32 -> {
                     capture(mc,"32-actual-village-map-scale4");checkMapTexture(mc);
@@ -366,11 +368,13 @@ public final class GangUiSmokeTest {
                     var bar=widget(screen,"Przewijanie rang");var l=GangLayout.of(screen.width,screen.height);
                     double x=(row.getX()+20)*l.scale(),from=(row.getY()+8)*l.scale(),to=(bar.getY()+2)*l.scale();
                     screen.mouseClicked(x,from,0);
-                    for(int i=0;i<16;i++)screen.mouseDragged(x,to,0,0,to-from);
-                    var position=GangScreen.class.getDeclaredField("roleScroll");position.setAccessible(true);
-                    require(((ScrollPosition)position.get(screen)).offset()==0,"Dragging a rank autoscrolls the list to the beginning");
+                    screen.mouseDragged(x,to,0,0,to-from);
+                    // No more mouse movement: rendering must continue scrolling by elapsed time.
+
                 }
                 case 38 -> {
+                    var position=GangScreen.class.getDeclaredField("roleScroll");position.setAccessible(true);
+                    require(((ScrollPosition)position.get(screen)).offset()==0,"Holding a dragged rank at the edge continues scrolling without movement");
                     capture(mc,"38-rank-drag-autoscroll");var row=widget(screen,"Przewijanie rang");var l=GangLayout.of(screen.width,screen.height);
                     screen.mouseReleased((row.getX()-50)*l.scale(),(row.getY()+2)*l.scale(),0);ClientState.message="";selectTab(6);
                 }
@@ -383,6 +387,8 @@ public final class GangUiSmokeTest {
                     screen.mouseScrolled((panel.getX()+90)*l.scale(),(panel.getY()+90)*l.scale(),0,1);
                     var radius=GangScreen.class.getDeclaredField("terrainRadius");radius.setAccessible(true);require(radius.getInt(screen)==4,"Wheel over map changes zoom");
                     unshiftedMap=TerrainClient.view;panel=widget(screen,"Mapa terenu");
+                    var sx=GangScreen.class.getDeclaredField("terrainX");sx.setAccessible(true);chosenX=sx.getInt(screen);
+                    var sz=GangScreen.class.getDeclaredField("terrainZ");sz.setAccessible(true);chosenZ=sz.getInt(screen);
                     double x=(panel.getX()+90)*l.scale(),y=(panel.getY()+90)*l.scale();
                     require(screen.mouseClicked(x,y,0),"Map drag starts");
                     require(screen.mouseDragged(x+48*l.scale(),y+24*l.scale(),0,48*l.scale(),24*l.scale()),"Map drag is handled");
@@ -401,21 +407,77 @@ public final class GangUiSmokeTest {
                     }
                     shifted.addProperty("playerX",1000000);TerrainClient.receive(shifted.toString());
                     require(TerrainClient.view.centerX()==-2&&!TerrainClient.following(),"Matching panned view is accepted");
+                    var sx=GangScreen.class.getDeclaredField("terrainX");sx.setAccessible(true);var sz=GangScreen.class.getDeclaredField("terrainZ");sz.setAccessible(true);
+                    require(sx.getInt(screen)==chosenX&&sz.getInt(screen)==chosenZ,"Panning preserves the independently selected chunk");
                 }
                 case 45 -> {
-                    capture(mc,"45-map-panned-player-outside");click(mc,"Gracz");require(TerrainClient.following(),"Player button restores follow mode");
-                    TerrainClient.receive(ClientState.JSON.toJson(unshiftedMap));click(mc,"›");require(!TerrainClient.following(),"Arrow moves the viewport");
+                    capture(mc,"45-map-panned-player-outside");click(mc,"Wróć do gracza");require(TerrainClient.following(),"Player button restores follow mode");
+                    TerrainClient.receive(ClientState.JSON.toJson(unshiftedMap));screen.setFocused(null);screen.keyPressed(org.lwjgl.glfw.GLFW.GLFW_KEY_RIGHT,0,0);require(!TerrainClient.following(),"Keyboard arrow moves the viewport");
+                    require(screen.children().stream().noneMatch(c->c instanceof AbstractWidget w&&java.util.Set.of("‹","›","↑","↓","Gracz").contains(w.getMessage().getString())),"No bottom map arrows or text player button");
+                    var icon=widget(screen,"Wróć do gracza");require(icon.getY()==widget(screen,"Siatka").getY(),"Player icon is in the map header");
+                    for(String name:new String[]{"−","+","Odśwież"})require(((FlatButton)widget(screen,name)).isTextCentered(),"Centered map action "+name);
                     screen.setFocused(null);screen.keyPressed(org.lwjgl.glfw.GLFW.GLFW_KEY_HOME,0,0);require(TerrainClient.following(),"Home restores follow mode");
                     TerrainClient.receive(ClientState.JSON.toJson(unshiftedMap));
                 }
                 case 46 -> {
                     capture(mc,"46-map-return-to-player");
                     TerrainClient.receive(Files.readString(Path.of(System.getProperty("crimeandlaw.actualTerrainView","../build/server-smoke-terrain16a/view.json"))));
-                    mc.options.guiScale().set(2);mc.resizeDisplay();
+                    selectMapCenter();mc.options.guiScale().set(2);mc.resizeDisplay();
                 }
                 case 47 -> {
                     capture(mc,"47-actual-map-navigation-final");checkMapTexture(mc);
-                    REPORT.append("PASS: actual Minecraft renderer; real dedicated-server village map; independent directory/rank/inspector scrolling, fixed list controls, preserved empty rank draft, rank drag autoscroll, all category panels, map drag preview, stale-response rejection, wheel zoom, arrow controls, Home/player return, clipping of distant player marker; earlier creation, register, roles, colors and logo checks retained.\n");
+                    var bar=widget(screen,"Przewijanie opisu terenu");require(bar.active||!bar.visible,"A short terrain inspector hides its unused scrollbar");
+                    selectTab(3);click(mc,"Baner");click(mc,"Jednolity kolor");click(mc,"Zmień kolor baneru…");
+                    var hex=mc.screen.children().stream().filter(c->c instanceof EditBox).map(c->(EditBox)c).findFirst().orElseThrow();hex.setValue("416B80");click(mc,"Zastosuj");
+                }
+                case 48 -> {
+                    capture(mc,"48-banner-color-settings");var field=GangScreen.class.getDeclaredField("draftBanner");field.setAccessible(true);
+                    var banner=(pl.crimeandlaw.gang.GangBanner)field.get(screen);require(banner.color()==0x416B80&&banner.opacity()==255,"Banner color wheel changes the solid preview");
+                    require(((FlatButton)widget(screen,"Zapisz baner gangu")).isTextCentered(),"Banner save label is centered");
+                    directory.banner(PLAYER,banner);fixturePage(PLAYER,0);screen.updated();selectTab(0);
+                }
+                case 49 -> {
+                    capture(mc,"49-banner-solid-overview");selectTab(3);click(mc,"Baner");
+                    var image=new java.awt.image.BufferedImage(1024,256,java.awt.image.BufferedImage.TYPE_INT_ARGB);var draw=image.createGraphics();
+                    draw.setPaint(new java.awt.GradientPaint(0,0,new java.awt.Color(0x552E59),1024,256,new java.awt.Color(0x347898)));draw.fillRect(0,0,1024,256);
+                    draw.setColor(new java.awt.Color(255,255,255,80));for(int x=0;x<1024;x+=64)draw.fillRect(x,0,2,256);draw.dispose();
+                    Path file=OUT.resolve("wide-banner-fixture.png").toAbsolutePath();javax.imageio.ImageIO.write(image,"png",file.toFile());screen.onFilesDrop(java.util.List.of(file));
+                }
+                case 50 -> {
+                    capture(mc,"50-banner-wide-crop");require(mc.screen instanceof LogoCropScreen,"Banner gets its own crop dialog");
+                    require(widget(mc.screen,"Wypełnij baner").visible,"Wide crop mode is explicit");click(mc,"Zastosuj baner");
+                }
+                case 51 -> {
+                    capture(mc,"51-banner-image-settings");var field=GangScreen.class.getDeclaredField("draftBanner");field.setAccessible(true);
+                    var banner=(pl.crimeandlaw.gang.GangBanner)field.get(screen);
+                    var decoded=javax.imageio.ImageIO.read(new java.io.ByteArrayInputStream(java.util.Base64.getDecoder().decode(banner.image())));
+                    require(decoded.getWidth()==1024&&decoded.getHeight()==256,"Banner keeps its independent 1024x256 texture");
+                    directory.banner(PLAYER,banner);fixturePage(PLAYER,0);screen.updated();selectTab(0);
+                }
+                case 52 -> {
+                    capture(mc,"52-banner-image-overview");checkLogoTexture(mc,net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("crimeandlaw","gang_banner"),1024,256);
+                    fixture(false);screen=new GangScreen();mc.setScreen(screen);
+                    var name=screen.children().stream().filter(c->c instanceof EditBox).map(c->(EditBox)c).findFirst().orElseThrow();name.setValue("Test");
+                    screen.setFocused(widget(screen,"Zamknij"));screen.keyPressed(org.lwjgl.glfw.GLFW.GLFW_KEY_ENTER,0,0);
+                    require(mc.screen!=screen,"Enter activates the focused close button instead of submitting the form");mc.setScreen(screen);
+                    name=screen.children().stream().filter(c->c instanceof EditBox).map(c->(EditBox)c).findFirst().orElseThrow();screen.setFocused(name);screen.keyPressed(org.lwjgl.glfw.GLFW.GLFW_KEY_ENTER,0,0);
+                    require(!ClientState.message.isBlank(),"Enter in the name field submits the form");
+                }
+                case 53 -> {
+                    capture(mc,"53-create-primary-action");require(((FlatButton)widget(screen,"Utwórz gang")).isTextCentered(),"Create action label is centered");
+                    fixturePage(PLAYER,0);screen.updated();selectTab(1);click(mc,"Gracz2");
+                    var card=widget(screen,"Profil członka:");var l=GangLayout.of(screen.width,screen.height);
+                    require(card.getX()>=0&&card.getX()+card.getWidth()<=l.canvasWidth()&&card.getY()+card.getHeight()<=l.canvasHeight(),"Member portrait card fits inside the screen");
+                }
+                case 54 -> {
+                    capture(mc,"54-member-skin-card");screen.keyPressed(org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE,0,0);
+                    require(mc.screen==screen&&screen.children().stream().noneMatch(c->c instanceof MemberCard),"Escape closes the member card first");
+                    click(mc,"Gracz2");click(mc,"Gang");require(screen.children().stream().noneMatch(c->c instanceof MemberCard),"Clicking outside closes the member card and activates navigation");
+                    selectTab(3);click(mc,"Baner");
+                }
+                case 55 -> {
+                    capture(mc,"55-banner-final-settings");
+                    REPORT.append("PASS: actual Minecraft renderer; earlier map, list, roles, register and logo checks retained; centered actions, accented creation form, member skin card/dismissal, banner color/image/crop, Enter focus, stationary rank-drag autoscroll, persistent chunk selection and top player icon.\n");
                     Files.writeString(OUT.resolve("result.txt"),REPORT.toString());System.out.println("CRIME_UI_SMOKE_PASS");mc.stop();
                 }
             }
@@ -445,6 +507,11 @@ public final class GangUiSmokeTest {
         }
         REPORT.append(name).append(" — ").append(mc.getWindow().getWidth()).append('x').append(mc.getWindow().getHeight())
                 .append(", GUI ").append(mc.getWindow().getGuiScale()).append('\n');
+    }
+    private static void selectMapCenter(){
+        var panel=widget(screen,"Mapa terenu");var l=GangLayout.of(screen.width,screen.height);
+        double x=(panel.getX()+TerrainPanel.GRID/2.0)*l.scale(),y=(panel.getY()+TerrainPanel.GRID/2.0)*l.scale();
+        screen.mouseClicked(x,y,0);screen.mouseReleased(x,y,0);
     }
     private static void checkCreation(Minecraft mc)throws ReflectiveOperationException {
         var l=GangLayout.of(screen.width,screen.height);
@@ -559,7 +626,7 @@ public final class GangUiSmokeTest {
     }
     private static void fixturePage(UUID player,int page){fixturePage(player,page,0);}
     private static void fixturePage(UUID player,int page,int historyPage){
-        JsonObject state=GangView.snapshot(directory.of(PLAYER),player,page,0,historyPage);
+        JsonObject state=GangView.snapshot(directory.of(PLAYER),player,page,0,historyPage,java.util.Set.of(PLAYER,FRIEND));
         state.addProperty("player",player.toString());state.addProperty("message","");
         state.add("gangs",new JsonArray());state.addProperty("page",0);state.addProperty("pages",1);
         ClientState.state=state;ClientState.message="";

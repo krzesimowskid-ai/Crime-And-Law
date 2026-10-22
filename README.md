@@ -1,19 +1,19 @@
 # Crime And Law
 
 Autorski mod gangsterski: panel gangów, członkostwo i własny wygląd menu.
-Wersja **0.1.16**.
+Wersja **0.1.17**.
 
 Pierwsza propozycja własnej ekonomii w dolarach i rozwoju terenów:
 [Balans terytoriów](docs/BALANS_TERYTORIOW.md) oraz
 [symulacja](docs/SYMULACJA_BALANSU.md). To projekt do dalszej implementacji;
-JAR 0.1.16 nie odczytuje tych reguł i nie wypłaca jeszcze pieniędzy.
+JAR 0.1.17 nie odczytuje tych reguł i nie wypłaca jeszcze pieniędzy.
 
 ## Uruchomienie
 
 - Minecraft **1.21.1**, Java **21**, NeoForge **21.1.248**.
-- Włóż `crimeandlaw-0.1.16.jar` do `mods`, zastępując poprzedni JAR tego moda.
+- Włóż `crimeandlaw-0.1.17.jar` do `mods`, zastępując poprzedni JAR tego moda.
 - W rozgrywce sieciowej mod musi być **u graczy i na serwerze**.
-  Zaktualizuj serwer i wszystkich klientów do 0.1.16. Dane terenu używają protokołu 8.
+  Zaktualizuj serwer i wszystkich klientów do 0.1.17. Sieć moda używa protokołu 9.
 - W świecie jednoosobowym część serwerowa działa razem ze światem.
 - **G** otwiera panel; skrót można zmienić w sterowaniu. Esc lub X zamyka okno.
 
@@ -59,10 +59,17 @@ ustawić nazwę i uprawnienia: zgłoszenia, usuwanie członków, zarządzanie ra
 oraz wspólny wygląd/logo. Osoby bez uprawnień mogą przeglądać rangi.
 Lista rang przewija się niezależnie od formularza. Nową rangę można zapisać
 Enterem z pola nazwy. Przeciąganie przy krawędzi przewija listę.
+Przewijanie trwa także po zatrzymaniu przeciąganego wiersza przy krawędzi.
 Przeciąganie ustawia kolejność; także ranga bez uprawnień może być wyżej od
 Lidera. Pozycja na liście nie daje uprawnień ani własności gangu. Uprawnienia
 Lidera są stałe. Zachowano roboczy limit dawnego systemu: 12 rang łącznie.
 
+Lista członków pokazuje nazwę, rangę, status online/offline oraz licznik online / wszystkich.
+Kliknięcie otwiera kartę obok wiersza: portret górnej części skina, nazwa,
+ranga, status i data dołączenia. Kliknięcie poza kartą, jej X lub pierwszy Esc
+zamyka kartę. Skórka pochodzi z bieżących danych Minecrafta albo zapisanego
+profilu; w czasie ładowania/braku danych używana jest domyślna skórka gry.
+Starszym członkom bez zapisanej daty nie przypisuje się wymyślonej daty.
 Lista członków służy przeglądaniu. Czynności dostępne dla danej osoby znajdują
 się w **Ustawienia → Zarządzanie**. „Zmień rangę” przełącza wybranego członka
 na kolejną dostępną rangę. Przekazanie przywództwa wymaga obecnego lidera.
@@ -74,7 +81,7 @@ Odejście ostatniego członka usuwa pusty gang po potwierdzeniu.
 
 ## Kolory i wygląd
 
-Ustawienia mają kategorie „Wygląd”, „Logo” oraz, dla uprawnionych osób, „Zarządzanie”.
+Ustawienia mają kategorie „Wygląd”, „Logo”, „Baner” oraz, dla uprawnionych osób, „Zarządzanie”.
 „Zmień kolor…” otwiera koło barw, pola HEX/RGB i pionowe suwaki z gradientami:
 
 - **Jasność:** wybrany kolor u góry, czerń na dole.
@@ -118,6 +125,29 @@ podczas wcześniejszego importu, wczytaj ponownie oryginalny plik i zapisz logo.
 Pozostali gracze nie potrzebują pliku źródłowego. Import z linku nie jest jeszcze
 obsługiwany.
 
+
+## Baner gangu — 0.1.17
+
+Opcjonalny baner jest tłem szerokiego obszaru z logo i nazwą w zakładce Gang.
+Nazwa ma osobną ramkę zapewniającą czytelność. Baner ustawia się po utworzeniu
+gangu w **Ustawienia → Baner**. Formularz tworzenia nadal dotyczy nazwy i logo.
+
+Wybierz jednolity kolor albo obraz. Edytor koloru ma koło barw, jasność,
+nasycenie, krycie i pola HEX/RGB. Przy obrazie można zmienić krycie.
+„Usuń baner” przygotowuje usunięcie; „Zapisz baner gangu” zatwierdza zmiany
+na serwerze. Zamknięcie panelu bez zapisania odrzuca szkic.
+
+Obraz można wybrać z plików lub przeciągnąć, mając otwartą zakładkę Baner.
+Importer korzysta z tych samych formatów i limitów źródła co logo.
+Osobne kadrowanie 4:1 pozwala przesuwać obraz, przybliżać albo zmieścić całość
+z przezroczystymi marginesami. Wynik to PNG **1024×256**, do 1,1 MB;
+wyświetlanie zachowuje proporcje i dopasowuje kadr do szerokości pasa.
+Logo pozostaje osobnym PNG 512×512.
+
+Baner zapisuje lider lub osoba z dotychczasowym uprawnieniem do wyglądu/logo.
+Serwer ponownie sprawdza uprawnienia, obraz i limity. Baner jest wspólny
+oraz zapisywany ze światem. Osobisty motyw menu nadal działa niezależnie.
+
 ## Zapis i aktualizacja
 
 Gangi: `data/crimeandlaw_gangs.dat` w danych świata Overworld.
@@ -140,7 +170,7 @@ Windows: gradlew.bat build
 Linux/macOS: ./gradlew build
 ```
 
-Wynik: `build/libs/crimeandlaw-0.1.16.jar`.
+Wynik: `build/libs/crimeandlaw-0.1.17.jar`.
 Gradle Wrapper 9.2.1, ModDevGradle 2.0.148, NeoForge 21.1.248.
 `./gradlew test` sprawdza model, migrację zapisów, duże listy i prywatność
 zgłoszeń, walidację/edycję logo, kolory oraz skalowanie menu.
@@ -210,8 +240,8 @@ To mapa barwna z cieniowaniem rzeźby, nie zdjęcie tekstur z góry.
 
 Domyślnie widoczny jest obszar 11×11 chunków (176×176 bloków) wokół gracza.
 Przyciski +/− oraz kółko nad mapą zmieniają przybliżenie.
-Przeciąganie lewym przyciskiem i strzałki pod mapą przesuwają widok;
-„Gracz” lub Home przywraca śledzenie gracza. Działają też strzałki klawiatury
+Przeciąganie lewym przyciskiem przesuwa widok;
+ikona postaci u góry („Wróć do gracza”) lub Home przywraca śledzenie gracza. Działają też strzałki klawiatury
 poza zaznaczonym paskiem przewijania. Przycisk „Siatka” włącza granice chunków.
 Siatka domyślnie jest wyłączona. Rzeczywista pozycja i kierunek gracza,
 północ, podziałka i zaznaczenie chunka są nakładką na krajobraz.
@@ -303,3 +333,18 @@ Niepotrzebne paski przewijania są ukrywane. Zbyt długie napisy przycisków
 mają wielokropek i podpowiedź z pełnym tekstem. Puste kategorie przyszłych
 systemów mają wspólny wygląd, bez udawanych danych. X działa także przed
 utworzeniem gangu. Na mapie dodano przesuwanie oraz szybki powrót do gracza.
+
+
+## Poprawki interfejsu — 0.1.17
+
+Zniknęły strzałki pod mapą; powrót do gracza ma własną ikonę w nagłówku.
+Plus, minus i Odśwież mają wyśrodkowane napisy, a aktywna Siatka pełną,
+pogrubioną ramkę. Przesuwanie mapy nie wybiera innego chunka; kliknięcie
+wybiera teren, a opis wybranego obszaru pozostaje podczas odsuwania widoku.
+
+Strzałki stron i przyciski czynności mają wyśrodkowane napisy/symbole.
+Nawigacja, nazwy rang i etykiety uprawnień pozostają po lewej.
+Uprawnienia mają przełączniki z opisem stanu dla czytnika ekranu.
+Enter zatwierdza formularz z pola tekstowego i zachowuje działanie zaznaczonego
+przycisku. Tworzenie gangu ma uporządkowaną kartę i wyróżniony przycisk główny.
+Nie dodano magazynów, pojazdów, finansów ani innych przyszłych systemów.

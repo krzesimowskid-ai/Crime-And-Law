@@ -104,20 +104,25 @@ public final class LogoImages {
         return out.toByteArray();
     }
     public static String encode(BufferedImage image,LogoCrop crop)throws IOException {
-        int side=GangLogo.SIDE;
-        BufferedImage target=new BufferedImage(side,side,BufferedImage.TYPE_INT_ARGB);var g=target.createGraphics();
+        return encode(image,crop,false);
+    }
+    public static String encode(BufferedImage image,LogoCrop crop,boolean banner)throws IOException {
+        int outWidth=banner?pl.crimeandlaw.gang.GangBanner.WIDTH:GangLogo.SIDE;
+        int outHeight=banner?pl.crimeandlaw.gang.GangBanner.HEIGHT:GangLogo.SIDE;
+        BufferedImage target=new BufferedImage(outWidth,outHeight,BufferedImage.TYPE_INT_ARGB);var g=target.createGraphics();
         try {
             g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,RenderingHints.VALUE_INTERPOLATION_BICUBIC);
             if(crop.fit()){
-                double scale=Math.min((double)side/image.getWidth(),(double)side/image.getHeight());
+                double scale=Math.min((double)outWidth/image.getWidth(),(double)outHeight/image.getHeight());
                 int w=Math.max(1,(int)Math.round(image.getWidth()*scale)),h=Math.max(1,(int)Math.round(image.getHeight()*scale));
-                g.drawImage(image,(side-w)/2,(side-h)/2,w,h,null);
+                g.drawImage(image,(outWidth-w)/2,(outHeight-h)/2,w,h,null);
             }else{
                 int x1=(int)Math.floor(crop.x()),y1=(int)Math.floor(crop.y());
-                int x2=Math.min(image.getWidth(),(int)Math.ceil(crop.x()+crop.side())),y2=Math.min(image.getHeight(),(int)Math.ceil(crop.y()+crop.side()));
-                g.drawImage(image,0,0,side,side,x1,y1,x2,y2,null);
+                int x2=Math.min(image.getWidth(),(int)Math.ceil(crop.x()+crop.side())),y2=Math.min(image.getHeight(),(int)Math.ceil(crop.y()+crop.cropHeight()));
+                g.drawImage(image,0,0,outWidth,outHeight,x1,y1,x2,y2,null);
             }
         }finally{g.dispose();}
-        return GangLogo.validate(Base64.getEncoder().encodeToString(png(target)));
+        String encoded=Base64.getEncoder().encodeToString(png(target));
+        return banner?pl.crimeandlaw.gang.GangBanner.validateImage(encoded):GangLogo.validate(encoded);
     }
 }

@@ -25,10 +25,9 @@ final class NewRoleScreen extends MenuDialog {
         int row=0;
         for(Permission permission:Permission.values()){
             String text=RIGHTS[row];
-            button(left+22,top+110+row++*24,panelWidth-44,permissionText(permission,text),b->{
+            addRenderableWidget(new PermissionToggle(left+22,top+110+row++*24,panelWidth-44,text,()->permissions.contains(permission),()->{
                 if(!permissions.remove(permission))permissions.add(permission);
-                b.setMessage(Component.literal(permissionText(permission,text)));
-            });
+            },this::theme));
         }
         button(left+18,top+panelHeight-35,90,"Anuluj",b->onClose());
         save=button(left+panelWidth-138,top+panelHeight-35,120,"Zapisz rangę",b->{

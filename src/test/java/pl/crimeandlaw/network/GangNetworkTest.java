@@ -28,6 +28,10 @@ class GangNetworkTest {
         }finally{upload.release();}
         JsonObject parsed=JsonParser.parseString(received).getAsJsonObject();UUID owner=new UUID(19,11);
         GangDirectory directory=new GangDirectory();directory.create(owner,"Lider",parsed.get("name").getAsString(),GangLogo.validate(parsed.get("logo").getAsString()));
+        var wide=new BufferedImage(1024,256,BufferedImage.TYPE_INT_ARGB);
+        for(int y=0;y<256;y++)for(int x=0;x<1024;x++)wide.setRGB(x,y,random.nextInt()|0xFF000000);
+        String banner=LogoImages.encode(wide,new LogoCrop(1024,256,4),true);
+        directory.banner(owner,new GangBanner(banner,0x334455,180));
         GangDirectory restored=GangDirectory.fromJson(directory.toJson());
         assertEquals(logo,restored.of(owner).logo);
         String snapshot=GangView.snapshot(restored.of(owner),owner,0,0).toString();
@@ -39,6 +43,9 @@ class GangNetworkTest {
             BufferedImage displayed=ImageIO.read(new ByteArrayInputStream(Base64.getDecoder().decode(state.getAsJsonObject("gang").get("logo").getAsString())));
             assertEquals(512,displayed.getWidth());assertEquals(512,displayed.getHeight());
             assertEquals(image.getRGB(128,128),displayed.getRGB(128,128));
+            var receivedBanner=state.getAsJsonObject("gang").getAsJsonObject("banner");
+            assertEquals(banner,receivedBanner.get("image").getAsString());assertEquals(180,receivedBanner.get("opacity").getAsInt());
+            assertTrue(snapshot.length()>2_000_000,"Both detailed assets share the same bounded state packet");
         }finally{download.release();}
     }
     @Test void packetCodecsStillRejectOverBudgetStrings(){

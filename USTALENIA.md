@@ -4,7 +4,7 @@ Stan projektu: 22 października 2026.
 
 ## Status i sposób dalszej pracy
 
-To zapis pomysłów i decyzji użytkownika, a nie opis gotowego moda. Powstaje prototyp panelu gangów, obecnie wersja 0.1.16. 19 października użytkownik odłożył DarkPerazera i wrócił do Crime And Law. Zaakceptował rozpoczęcie od podstaw panelu gangów; obecnie doprecyzowuje jego wygląd. Dla pierwszego prototypu przyjęto Minecraft 1.21.1 i NeoForge 21.1.248: użytkownik polecił rozpoczęcie bez wskazania innej platformy. Jest to jawne założenie wykonawcze, nie wcześniejsza deklaracja użytkownika.
+To zapis pomysłów i decyzji użytkownika, a nie opis gotowego moda. Powstaje prototyp panelu gangów, obecnie wersja 0.1.17. 19 października użytkownik odłożył DarkPerazera i wrócił do Crime And Law. Zaakceptował rozpoczęcie od podstaw panelu gangów; obecnie doprecyzowuje jego wygląd. Dla pierwszego prototypu przyjęto Minecraft 1.21.1 i NeoForge 21.1.248: użytkownik polecił rozpoczęcie bez wskazania innej platformy. Jest to jawne założenie wykonawcze, nie wcześniejsza deklaracja użytkownika.
 
 Crime And Law jest nowym, osobnym modem. McArk pozostaje odłożony, zachowując cel odwzorowania ASA 1:1. Nie zmieniać projektu McArk w Crime And Law ani nie usuwać jego materiałów w ramach tej pracy.
 
@@ -421,3 +421,34 @@ gdy właściwe systemy własności oraz mapy będą rozwijane.
   Odsunięcie widoku nie generuje ani nie wczytuje odległych chunków.
 - Protokół 8 wymaga wspólnej aktualizacji klienta i serwera. Nie dodano jeszcze
   przejmowania, rzadkich aktywnych bonusów, ekonomii, roślin ani multibloków.
+
+
+## Kolejna korekta menu — 22 października, wersja 0.1.17
+
+- Po zakończeniu zbierania uwag użytkownik napisał „to chyba wszystko”.
+  Wdrożyć zebrany zakres bez ponownego pytania o rozpoczęcie.
+- Usunąć strzałki pod mapą. Powrót do gracza jako ikonka w górnym pasku,
+  przy Siatce. Symbole plus/minus i napis Odśwież wyśrodkować wewnątrz przycisków.
+  Przyjęto pogrubioną ramkę aktywnego przycisku Siatka.
+- Przeciąganie mapy zmienia widok, a nie wybór chunka; wybór przez osobne kliknięcie.
+  Zachować opis zaznaczonego terenu również po odsunięciu widoku.
+- Wyśrodkować symbole strzałek stron oraz napisy przycisków czynności, w tym
+  Anuluj, Zapisz rangę, Utwórz gang i wybór obrazu. Nawigacja, rangi i etykiety
+  uprawnień pozostają wyrównane do lewej.
+- Osobna ramka nazwy gangu. Opcjonalny wspólny baner w szerokim obszarze z logo
+  i nazwą z przekazanego zdjęcia: jednolity kolor albo własny obraz, edycja
+  barwy/krycia i szerokie kadrowanie. Dodawanie w ustawieniach po stworzeniu gangu.
+  Wykonawczo wynik PNG 1024×256 do 1,1 MB; logo pozostaje osobne 512×512.
+- Kliknięcie członka otwiera kartę przy jego wierszu, z doborem strony i ograniczeniem
+  do okna. Portret górnej części skina, nazwa, ranga; dodano także proponowany
+  status online/offline i datę dołączenia. Stare nieznane daty pozostają nieznane.
+- Z 19 zdjęć Majestic wybrać inspiracje dla istniejących kategorii: schludne listy,
+  przełączniki uprawnień, podkategorie ustawień i wyróżnianie wyboru. Zachować
+  własny ciemny motyw oraz kolorystykę gracza/gangu. Rangi zachowują oddzielną
+  kategorię i niezależność pozycji od uprawnień.
+- Magazyny, pojazdy, zestawy, finanse, kontrakty i wpływy pozostają dalszymi etapami.
+  Panele W przygotowaniu zaakceptowano; Transport nadal jest ukryty.
+- Poprawić dwie uwagi asystenta: Enter zależny od fokusu oraz ciągłe przewijanie
+  przy przytrzymaniu przeciąganej rangi na krawędzi.
+- Protokół 9: wspólna aktualizacja klienta i serwera, ze zgodnym odczytem starszych
+  światów. Nowych dat dołączenia/profili nie odtwarzać fikcyjnie wstecz.

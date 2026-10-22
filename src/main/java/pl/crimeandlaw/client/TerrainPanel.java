@@ -15,6 +15,7 @@ import pl.crimeandlaw.territory.*;
 final class TerrainPanel extends AbstractWidget {
     private record Line(FormattedCharSequence text,int y,int color){}
     private final TerrainView view;
+    private final TerrainView.Cell knownSelection;
     private final int selectedX,selectedZ,radius;
     private final boolean grid;
     private final Supplier<Theme> theme;
@@ -28,8 +29,8 @@ final class TerrainPanel extends AbstractWidget {
     private int textHeight;
     private boolean dragging,moved;
     private double startX,startY,dragX,dragY;
-    TerrainPanel(int x,int y,int width,int height,TerrainView view,int selectedX,int selectedZ,int radius,boolean grid,Supplier<Theme> theme,ScrollPosition scroll,Consumer<TerrainView.Cell> selected,BiConsumer<Integer,Integer> pan,IntConsumer zoom){
-        super(x,y,width,height,Component.literal("Mapa terenu"));this.view=view;this.selectedX=selectedX;this.selectedZ=selectedZ;this.radius=radius;this.grid=grid;this.theme=theme;this.scroll=scroll;this.selected=selected;this.pan=pan;this.zoom=zoom;
+    TerrainPanel(int x,int y,int width,int height,TerrainView view,int selectedX,int selectedZ,TerrainView.Cell knownSelection,int radius,boolean grid,Supplier<Theme> theme,ScrollPosition scroll,Consumer<TerrainView.Cell> selected,BiConsumer<Integer,Integer> pan,IntConsumer zoom){
+        super(x,y,width,height,Component.literal("Mapa terenu"));this.view=view;this.knownSelection=knownSelection;this.selectedX=selectedX;this.selectedZ=selectedZ;this.radius=radius;this.grid=grid;this.theme=theme;this.scroll=scroll;this.selected=selected;this.pan=pan;this.zoom=zoom;
         if(view!=null)for(var cell:view.cells()){
             int dx=cell.x()-view.centerX()+TerrainView.RADIUS,dz=cell.z()-view.centerZ()+TerrainView.RADIUS;
             if(dx>=0&&dx<TerrainView.SIDE&&dz>=0&&dz<TerrainView.SIDE)cells[dz*TerrainView.SIDE+dx]=cell;
@@ -49,7 +50,7 @@ final class TerrainPanel extends AbstractWidget {
         if(view==null){line("Pobieranie mapy…",0xFFE9E8EC);return;}
         line("Chunk "+selectedX+", "+selectedZ,0xFFEFE9F3);
         line("X: "+selectedX*16+"…"+(selectedX*16+15)+"  Z: "+selectedZ*16+"…"+(selectedZ*16+15),0xFFAAA3B3);
-        var cell=cell(selectedX,selectedZ);
+        var cell=cell(selectedX,selectedZ);if(cell==null&&knownSelection!=null&&knownSelection.x()==selectedX&&knownSelection.z()==selectedZ)cell=knownSelection;
         if(cell==null||cell.status()!=TerrainView.Status.READY){
             line(cell!=null&&cell.status()==TerrainView.Status.PENDING?"Trwa rozpoznawanie pierwotnego terenu i struktur…":"Brak rozpoznania. Podejdź bliżej, aby wczytać teren.",0xFFAAA3B3);return;
         }
@@ -124,7 +125,7 @@ final class TerrainPanel extends AbstractWidget {
         if(button!=0||!dragging)return false;
         dragging=false;
         int dx=(int)Math.round(-dragX*(radius*2+1)/GRID),dz=(int)Math.round(-dragY*(radius*2+1)/GRID);
-        if(moved&&(dx!=0||dz!=0)){pan.accept(dx,dz);return true;}
+        if(moved){if(dx!=0||dz!=0)pan.accept(dx,dz);else{dragX=0;dragY=0;}return true;}
         dragX=0;dragY=0;
         if(x>=getX()&&x<getX()+GRID&&y>=getY()&&y<getY()+GRID){
             int side=radius*2+1;

@@ -37,7 +37,7 @@ abstract class MenuDialog extends Screen {
         }finally{g.pose().popPose();}
     }
     protected FlatButton button(int x,int y,int w,String text,net.minecraft.client.gui.components.Button.OnPress action){
-        return addRenderableWidget(new FlatButton(x,y,w,21,text,action,this::theme,false));
+        return addRenderableWidget(new FlatButton(x,y,w,21,text,action,this::theme,false).centered());
     }
     protected void scissor(GuiGraphics g,int x,int y,int w,int h){
         g.enableScissor((int)(x*layout.scale()),(int)(y*layout.scale()),(int)Math.ceil((x+w)*layout.scale()),(int)Math.ceil((y+h)*layout.scale()));

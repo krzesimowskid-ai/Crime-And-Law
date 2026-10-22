@@ -28,7 +28,7 @@ public final class ClientEvents {
             }
         }
         @SubscribeEvent public static void logout(ClientPlayerNetworkEvent.LoggingOut event){
-            ClientState.state=new com.google.gson.JsonObject();ClientState.message="";LogoTexture.clear();TerrainClient.clear();
+            ClientState.state=new com.google.gson.JsonObject();ClientState.message="";LogoTexture.clear();BannerTexture.clear();TerrainClient.clear();
         }
     }
 }

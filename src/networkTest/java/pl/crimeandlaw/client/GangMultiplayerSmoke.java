@@ -27,7 +27,8 @@ public final class GangMultiplayerSmoke {
     private static final String NAME=System.getProperty("crimeandlaw.networkSmokeGang","Test interfejsu net16a");
     private static long started,poll;
     private static int frames,step=-1;
-    private static String expectedLogo="";
+    private static String expectedLogo="",expectedBanner="";
+    private static JsonObject lastState;
     private static String capturePending="";
     private static boolean finished;
 
@@ -75,7 +76,7 @@ public final class GangMultiplayerSmoke {
             case 5 -> {
                 if(!Files.exists(OUT.resolve("member-initial.PASS")))return;
                 press(mc,"Rangi");press(mc,"+ Nowa ranga");nameField(mc).setValue("Stylista");
-                press(mc,"[ ] Wygląd i logo gangu");press(mc,"Zapisz rangę");next("create role via dialog");
+                press(mc,"Wygląd i logo gangu");press(mc,"Zapisz rangę");next("create role via dialog");
             }
             case 6 -> {
                 if(gang.roles.values().stream().noneMatch(r->r.name.equals("Stylista")))return;
@@ -100,11 +101,28 @@ public final class GangMultiplayerSmoke {
                 Files.writeString(OUT.resolve("logo.sha256"),hash(gang.logo));
                 press(mc,"Wygląd");press(mc,"Zmień kolor tła…");nameField(mc).setValue("253047");press(mc,"Zastosuj");press(mc,"Zapisz dla gangu");next("save shared theme via dialog");
             }
-            case 11 -> {if(gang.theme.background()!=0x253047)return;press(mc,"Gang");capture(mc,"owner-overview.png");next("wait for member final checks");}
-            case 12 -> {
+            case 11 -> {
+                if(gang.theme.background()!=0x253047)return;
+                press(mc,"Baner");BufferedImage image=new BufferedImage(1024,256,BufferedImage.TYPE_INT_ARGB);var random=new Random(1717);
+                for(int y=0;y<256;y++)for(int x=0;x<1024;x++)image.setRGB(x,y,random.nextInt()|0xFF000000);
+                Path file=OUT.resolve("large-banner-fixture.png");ImageIO.write(image,"png",file.toFile());
+                ((GangScreen)mc.screen).onFilesDrop(List.of(file));next("import wide banner");
+            }
+            case 12 -> {if(!(mc.screen instanceof LogoCropScreen))return;press(mc,"Zastosuj baner");next("apply wide crop");}
+            case 13 -> {
+                if(!(mc.screen instanceof GangScreen))return;
+                var field=GangScreen.class.getDeclaredField("draftBanner");field.setAccessible(true);
+                expectedBanner=((pl.crimeandlaw.gang.GangBanner)field.get(mc.screen)).image();require(expectedBanner.length()>1_000_000,"Detailed banner exercises a large simultaneous asset state");
+                press(mc,"Zapisz baner gangu");next("save banner beside detailed logo over TCP");
+            }
+            case 14 -> {
+                if(!gang.banner.image().equals(expectedBanner))return;
+                Files.writeString(OUT.resolve("banner.sha256"),hash(gang.banner.image()));press(mc,"Gang");capture(mc,"owner-overview.png");next("wait for member final checks");
+            }
+            case 15 -> {
                 if(!Files.exists(OUT.resolve("member.PASS")))return;
                 require(gang.owner.equals(mc.player.getUUID())&&ClientState.memberCount()==2,"Unauthorized member operation did not change membership");
-                pass(mc,"Owner created a gang, accepted the other client, created/assigned a role, saved a detailed 512x512 logo and shared theme through UI actions; logo chars="+gang.logo.length());
+                pass(mc,"Owner created/accepted membership and assigned appearance rights through UI, saved 512x512 logo + 1024x256 banner and shared theme; logo chars="+gang.logo.length()+", banner chars="+gang.banner.image().length());
             }
         }
     }
@@ -132,25 +150,35 @@ public final class GangMultiplayerSmoke {
             case 4 -> {
                 if(ClientState.message.isBlank()||ClientState.message.equals("Zapisano."))return;
                 require(gang.theme.background()==GangDirectory.Theme.DEFAULT.background(),"Server rejects unauthorized appearance changes");
-                Files.writeString(OUT.resolve("member-initial.PASS"),"Ordinary member UI, private data and server authorization checked.\n");next("wait for delegated permission");
+                require(ClientState.number("onlineCount",0)==2&&gang.members.get(mc.player.getUUID()).joinedAt>0,"Online totals and actual membership date received");
+                press(mc,"Baner");require(!widget(mc,"Zapisz baner gangu").active,"Ordinary member cannot save banners");
+                lastState=ClientState.state;JsonObject args=new JsonObject();args.addProperty("image","");args.addProperty("color",0xFF0000);args.addProperty("opacity",255);ClientState.action("banner",args);next("attempt unauthorized banner");
             }
             case 5 -> {
+                if(ClientState.state==lastState)return;
+                require(gang.banner.equals(pl.crimeandlaw.gang.GangBanner.DEFAULT),"Server rejected unauthorized banner changes");
+                Files.writeString(OUT.resolve("member-initial.PASS"),"Ordinary member UI, private data, theme/banner authorization, online count and join date checked.\n");next("wait for delegated permission");
+            }
+            case 6 -> {
                 if(!GangDirectory.allowed(gang,mc.player.getUUID(),Permission.MANAGE_THEME))return;
                 require(!GangDirectory.allowed(gang,mc.player.getUUID(),Permission.MANAGE_ROLES)&&!ClientState.state.has("requestCount"),"Appearance permission grants no rank/application access");
                 press(mc,"Ustawienia");press(mc,"Wygląd");require(widget(mc,"Zapisz dla gangu").active,"Delegated appearance permission updates the UI");next("wait for shared logo and theme");
             }
-            case 6 -> {
-                if(gang.logo.length()<=28_000||gang.theme.background()!=0x253047||!Files.exists(OUT.resolve("logo.sha256")))return;
+            case 7 -> {
+                if(gang.logo.length()<=28_000||gang.banner.image().length()<=1_000_000||gang.theme.background()!=0x253047||!Files.exists(OUT.resolve("logo.sha256"))||!Files.exists(OUT.resolve("banner.sha256")))return;
+                require(hash(gang.banner.image()).equals(Files.readString(OUT.resolve("banner.sha256"))),"Both clients received the same detailed wide banner");
+                var bannerTexture=(net.minecraft.client.renderer.texture.DynamicTexture)mc.getTextureManager().getTexture(BannerTexture.get(gang.banner.image()));
+                require(bannerTexture.getPixels().getWidth()==1024&&bannerTexture.getPixels().getHeight()==256,"Remote banner has its full independent resolution");
                 require(hash(gang.logo).equals(Files.readString(OUT.resolve("logo.sha256"))),"Both clients received identical detailed logo data");
                 var location=LogoTexture.get(gang.logo);var texture=(net.minecraft.client.renderer.texture.DynamicTexture)mc.getTextureManager().getTexture(location);
                 require(texture.getPixels().getWidth()==512&&texture.getPixels().getHeight()==512,"Remote logo renders at saved resolution");
                 press(mc,"Gang");capture(mc,"member-overview.png");
                 JsonObject args=new JsonObject();args.addProperty("target",gang.owner.toString());ClientState.action("kick",args);next("attempt unauthorized membership change");
             }
-            case 7 -> {
+            case 8 -> {
                 if(ClientState.message.isBlank()||ClientState.message.equals("Zapisano."))return;
                 require(ClientState.memberCount()==2&&gang.members.containsKey(gang.owner),"Server rejects unauthorized membership change");
-                pass(mc,"Member joined via the panel, received delegated permission, identical detailed logo and shared theme; rejected unauthorized theme/kick; private applications remained hidden.");
+                pass(mc,"Member joined via the panel, received delegated permission, identical detailed logo/banner and shared theme; rejected unauthorized theme/banner/kick; private applications remained hidden.");
             }
         }
     }

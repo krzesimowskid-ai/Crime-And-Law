@@ -14,15 +14,20 @@ public final class GangView {
         return snapshot(source,viewer,memberPage,requestPage,0);
     }
     public static JsonObject snapshot(Gang source,UUID viewer,int memberPage,int requestPage,int historyPage){
+        return snapshot(source,viewer,memberPage,requestPage,historyPage,Set.of());
+    }
+    public static JsonObject snapshot(Gang source,UUID viewer,int memberPage,int requestPage,int historyPage,Set<UUID> online){
         if(!source.members.containsKey(viewer))throw new IllegalArgumentException("Nie należysz do tego gangu.");
         JsonObject result=new JsonObject(),gang=new JsonObject();
         gang.addProperty("id",source.id.toString());gang.addProperty("owner",source.owner.toString());
         gang.addProperty("name",source.name);gang.addProperty("logo",source.logo);gang.add("theme",JSON.toJsonTree(source.theme));
-        gang.add("roles",JSON.toJsonTree(source.roles));
+        gang.add("roles",JSON.toJsonTree(source.roles));gang.add("banner",JSON.toJsonTree(source.banner));
         int mp=page(memberPage,source.members.size());Map<UUID,Member> members=new LinkedHashMap<>();JsonArray ids=new JsonArray();
         source.members.entrySet().stream().skip((long)mp*PAGE_SIZE).limit(PAGE_SIZE).forEach(e->{members.put(e.getKey(),e.getValue());ids.add(e.getKey().toString());});
         members.put(source.owner,source.members.get(source.owner));members.put(viewer,source.members.get(viewer));
         gang.add("members",JSON.toJsonTree(members));result.add("memberIds",ids);
+        JsonArray onlineIds=new JsonArray();for(UUID id:members.keySet())if(online.contains(id))onlineIds.add(id.toString());
+        result.add("onlineMemberIds",onlineIds);result.addProperty("onlineCount",online.stream().filter(source.members::containsKey).count());
         result.addProperty("memberCount",source.members.size());result.addProperty("memberPage",mp);
         result.addProperty("memberPages",Math.max(1,(source.members.size()+PAGE_SIZE-1)/PAGE_SIZE));
         if(GangDirectory.allowed(source,viewer,Permission.INVITE)){

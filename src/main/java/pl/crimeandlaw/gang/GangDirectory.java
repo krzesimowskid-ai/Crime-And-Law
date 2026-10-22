@@ -25,6 +25,8 @@ public final class GangDirectory {
     public static final class Member {
         public UUID id;
         public String name,role;
+        public long joinedAt;
+        public String textures="",textureSignature="";
         public Member(UUID id,String name){this(id,name,"member");}
         public Member(UUID id,String name,String role){this.id=id;this.name=name;this.role=role;}
     }
@@ -32,6 +34,7 @@ public final class GangDirectory {
         public UUID id, owner;
         public String name, logo="";
         public Theme theme=Theme.DEFAULT;
+        public GangBanner banner=GangBanner.DEFAULT;
         public Map<UUID,Member> members=new LinkedHashMap<>();
         public Map<String,Role> roles=new LinkedHashMap<>();
         public Map<UUID,String> requests=new LinkedHashMap<>();
@@ -60,7 +63,7 @@ public final class GangDirectory {
         final String chosen=name;
         require(gangs.values().stream().noneMatch(g->g.name.equalsIgnoreCase(chosen)),"Ta nazwa jest już zajęta.");
         Gang g=new Gang();g.id=UUID.randomUUID();g.owner=actor;g.name=name;g.logo=logo;
-        defaultRoles(g);g.members.put(actor,new Member(actor,playerName,"leader"));gangs.put(g.id,g);record(g,playerName+" tworzy gang.");return g;
+        defaultRoles(g);g.members.put(actor,new Member(actor,playerName,"leader"));g.members.get(actor).joinedAt=System.currentTimeMillis();gangs.put(g.id,g);record(g,playerName+" tworzy gang.");return g;
     }
     public void request(UUID actor,String name,UUID id){
         require(of(actor)==null,"Należysz już do gangu.");Gang g=required(id);
@@ -70,7 +73,7 @@ public final class GangDirectory {
         Gang g=own(actor,Permission.INVITE);
         String name=g.requests.get(target);require(name!=null,"Nie ma takiego zgłoszenia.");
         require(of(target)==null,"Ten gracz należy już do gangu.");
-        g.members.put(target,new Member(target,name));record(g,name+" dołącza do gangu.");
+        g.members.put(target,new Member(target,name));g.members.get(target).joinedAt=System.currentTimeMillis();record(g,name+" dołącza do gangu.");
         for(Gang other:gangs.values())other.requests.remove(target);
     }
     public void reject(UUID actor,UUID target){own(actor,Permission.INVITE).requests.remove(target);}
@@ -121,6 +124,16 @@ public final class GangDirectory {
     }
     public void theme(UUID actor,Theme theme){own(actor,Permission.MANAGE_THEME).theme=theme;}
     public void logo(UUID actor,String logo){own(actor,Permission.MANAGE_THEME).logo=logo;}
+    public void banner(UUID actor,GangBanner banner){
+        Gang g=own(actor,Permission.MANAGE_THEME);
+        g.banner=new GangBanner(GangBanner.validateImage(banner.image()),banner.color(),banner.opacity());
+    }
+    public boolean rememberProfile(UUID player,String name,String textures,String signature){
+        Gang g=of(player);if(g==null)return false;Member m=g.members.get(player);
+        if(textures==null||textures.length()>8192||signature==null||signature.length()>2048)return false;
+        boolean changed=!Objects.equals(m.name,name)||!Objects.equals(m.textures,textures)||!Objects.equals(m.textureSignature,signature);
+        m.name=name;m.textures=textures;m.textureSignature=signature;return changed;
+    }
     public void renameSeenPlayer(UUID player,String name){
         Gang g=of(player);if(g!=null)g.members.get(player).name=name;
         for(Gang other:gangs.values())if(other.requests.containsKey(player))other.requests.put(player,name);
@@ -148,6 +161,7 @@ public final class GangDirectory {
             Gang g=entry.getValue();
             require(g!=null && entry.getKey().equals(g.id) && g.owner!=null,"Uszkodzony identyfikator gangu.");
             validName(g.name,3,32);
+            if(g.banner==null)g.banner=GangBanner.DEFAULT;
             if(g.history==null)g.history=new ArrayList<>();
             for(Event event:g.history)require(event!=null&&event.timestamp()>=0&&event.text()!=null&&event.text().length()<=256,"Uszkodzony rejestr gangu.");
             if(g.history.size()>HISTORY_LIMIT)g.history.subList(0,g.history.size()-HISTORY_LIMIT).clear();
@@ -163,6 +177,9 @@ public final class GangDirectory {
             g.roles.get("leader").permissions=EnumSet.allOf(Permission.class);
             for(var member:g.members.entrySet()){
                 require(member.getValue()!=null && member.getKey().equals(member.getValue().id) && seen.add(member.getKey()),"Powielone członkostwo.");
+                Member m=member.getValue();
+                if(m.textures==null)m.textures="";if(m.textureSignature==null)m.textureSignature="";
+                require(m.joinedAt>=0&&m.textures.length()<=8192&&m.textureSignature.length()<=2048,"Uszkodzony profil członka.");
                 if(member.getValue().role==null)member.getValue().role=member.getKey().equals(g.owner)?"leader":"member";
                 require(g.roles.containsKey(member.getValue().role),"Nieznana ranga członka.");
                 require(member.getKey().equals(g.owner)=="leader".equals(member.getValue().role),"Uszkodzona ranga lidera.");

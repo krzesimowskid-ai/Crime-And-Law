@@ -1,145 +1,119 @@
-# Sprawdzenie 0.1.16
+# Sprawdzenie 0.1.17
 
 22 października 2026. Minecraft 1.21.1, NeoForge 21.1.248, JDK 21.
 
-## Zmiana
+## Zakres zmiany
 
-Dopracowanie istniejącego panelu gangów: zamknięcie przed dołączeniem,
-walidacja nazwy, Enter, niezależne przewijanie wyników wyszukiwania i rang,
-nieruchome formularze/przyciski, zachowanie pustego szkicu po zmianie rozmiaru,
-przewijanie przy przeciąganiu rang, ukrywanie zbędnych pasków przewijania,
-podpowiedzi dla uciętych przycisków i spójne puste kategorie przyszłych systemów.
-Zachowano zaakceptowany układ i kolory menu.
-
-Mapa: przeciąganie z podglądem, przyciski kierunków, klawisze strzałek,
-Home/przycisk Gracz oraz przybliżanie kółkiem. Klient łączy szybkie żądania,
-odrzuca nieaktualne odpowiedzi i nie rysuje odległego znacznika nad opisem.
-Serwer sprawdza współrzędne i odczytuje odległy widok wyłącznie z zapisanych
-kafli. Analiza nowych danych nadal odbywa się tylko wokół gracza.
-Sekcja „Bonusy terenu” pozostaje osobna od zakładki „Premie”.
+- Mapa: górna ikona powrotu do gracza, bez dolnych strzałek; wyśrodkowane −/+
+  i Odśwież; pełna ramka aktywnej Siatki. Przesuwanie nie zmienia wybranego
+  chunka, również przy ruchu zbyt krótkim, aby przesunąć widok o cały chunk.
+  Opis zaznaczonego terenu zachowuje ostatnie dane po odsunięciu widoku.
+- Formularz tworzenia: zwarta karta, podgląd logo i wyróżniona główna czynność.
+- Wyrównanie tekstu zależne od rodzaju przycisku; zachowana boczna nawigacja.
+- Przełączniki uprawnień i ciągłe przewijanie przeciąganej rangi przy krawędzi,
+  także gdy mysz się zatrzyma. Enter respektuje aktywne pole/przycisk.
+- Karta członka ze skinem od głowy do torsu, rangą, statusem i datą dołączenia;
+  licznik online / wszyscy, zamykanie karty kliknięciem poza nią, X lub Esc.
+- Wspólny baner: jednolity kolor z kołem barw/kryciem albo obraz z kadrowaniem
+  4:1, wynik PNG 1024×256 do 1,1 MB. Logo pozostaje osobne 512×512.
+  Nazwa gangu ma własną ramkę. Osobna zakładka ustawień baneru.
+- Zapis i sprawdzanie uprawnień po stronie serwera; zgodna migracja starszych
+  światów, rzeczywiste daty nowych członkostw i pamiętanie publicznego profilu skina.
 
 ## Testy jednostkowe
 
-72 testy JUnit, bez błędów, niepowodzeń i pominięć.
-Trzy nowe próby granic widoku obejmują ujemne współrzędne, skrajne pozycje,
-bardzo duże przesunięcia i odrzucenie pozycji poza światem.
-Zachowano wcześniejsze testy członkostwa, uprawnień, prywatności, rejestru,
-logo, kolorów, profili generowania, mapy, zapisu oraz kodeków pakietów.
-
-## Rzeczywisty serwer dedykowany
-
-CRIME_TERRAIN_SERVER_PASS: FIRST_RUN oraz RESTART tego samego izolowanego
-świata `terrain16a`, ziarno 123456789, warsztat w chunku (-17, 12), Overworld.
-
-- Wygenerowana wioska/warsztat, zapis źródłowy i rekonstrukcja starszego chunka.
-- Stały profil mimo przebudowy; pomijanie wysokiej konstrukcji gracza.
-- Co najmniej 49 kafli odczytanych z prawdziwych bloków.
-- Kolory poszczególnych kolumn i obu stron granicy chunków.
-- Zmiana bloku odświeża raster, zachowując stałe cechy.
-- Restart zachowuje piksele, profile, pomiary źródłowe i lokalną własność.
-- Odległy widok (400000, -400000) zwraca wcześniej zapisany kafel, nie ładuje
-  docelowego chunka i nie zmienia liczby wczytanych chunków.
-- Widoki przy wszystkich czterech narożnikach granicy świata pozostają poprawne
-  i nie wczytują terenu.
-- Pozycja gracza pozostaje rzeczywistą pozycją, niezależną od środka mapy.
-
-Bilety podtrzymujące wioskę i bloki kontrolne istnieją wyłącznie w świecie
-tej automatycznej próby. Kod produkcyjny nie dodaje takich biletów.
+79 testów JUnit: 0 błędów, 0 niepowodzeń, 0 pominiętych. Końcowe `build` zakończone sukcesem.
+Dodano siedem prób dotyczących proporcji i granic szerokiego kadru,
+przezroczystych marginesów, osobnej walidacji logo/baneru, uprawnień,
+atomowego odrzucenia błędnego obrazu, migracji bez fikcyjnych dat,
+zapisu profilu/dat i ograniczonego przesyłania statusów dużego gangu.
+Rozszerzono kodek o równoczesne szczegółowe logo i baner: pełny JSON powyżej
+2 mln znaków przechodzi zapis świata i kodek State, zachowując obie grafiki.
+Zachowano wcześniejsze testy modelu, rang, rejestru, importu obrazów,
+kolorów, skalowania, mapy i granic świata.
 
 ## Rzeczywisty renderer Minecrafta
 
-CRIME_UI_SMOKE_PASS w 1920×1080 i 1280×720, co najmniej 47 etapów na przebieg,
-skale GUI 2 oraz maksymalna dostępna (4 albo 3).
+Zaliczone przebiegi `menu17a` (1920×1080), `menu17-1280` i `menu17b-1280`
+(1280×720). Po ostatniej korekcie krótkiego paska przewijania wykonano drugi
+przebieg 1280×720. Każdy obejmuje 55 zrzutów oraz skale GUI 2 i maksymalną
+(4 albo 3). Zaliczony przebieg końcowy `menu17-final` sprawdza także usunięcie szkicu
+logo po potwierdzeniu jego zapisu, aby nie zasłaniał przyszłych zmian wspólnych.
 
-Sprawdzono wszystkie obecne kategorie, tworzenie/wyszukiwanie, listę 12 gangów,
-12 rang i ich przewijanie, zmianę rozmiaru z pustą nazwą rangi, przeciąganie
-z przewijaniem, rejestr i strony, zarządzanie, kolory, import/kadrowanie logo,
-nieaktywność ukrytego Transportu oraz zachowanie uprawnień w interfejsie.
+Sprawdzono wszystkie dotychczasowe kategorie, import/kadrowanie logo,
+prywatność interfejsu, rangi, zachowanie szkicu przy zmianie rozmiaru,
+przewijanie rang bez kolejnych ruchów myszy, Enter na zaznaczonym X oraz
+w polu nazwy, przyciski mapy i utrzymanie wyboru chunka po przesunięciu.
+Nowe etapy obejmują baner koloru/obrazu, dialog szerokiego kadrowania,
+pełną teksturę 1024×256, kartę skina, dopasowanie jej do okna i zamykanie.
 
-Próby mapy obejmują wybór i przewijanie opisu, zoom kółkiem/przyciskami,
-siatkę, podgląd podczas przeciągania, przesunięty widok, odrzucenie starej
-odpowiedzi, przyciski kierunków, Home i powrót do gracza oraz przycięcie
-znacznika gracza poza mapą. Część interakcji używa syntetycznego zestawu
-cech i testowej rzeki. Końcowe ujęcia i porównanie pikseli korzystają
-z danych rzeczywistej wioski powyższego serwera, nie z narysowanej makiety.
-Wizualnie obejrzano gang, listy, puste kategorie i mapę w obu rozdzielczościach.
+Wizualnie obejrzano formularz, członków, rangi, mapę, baner i ustawienia.
+Część danych jest syntetyczna. Mapa końcowych ujęć pochodzi z rzeczywistej
+wioski dedykowanego serwera `terrain16a`; każdy dostępny piksel jej rastra
+porównano z teksturą klienta. Dane backendu tej mapy nie zostały zmienione.
+W 0.1.16 przeprowadzono jej pierwszy zapis, restarty, przebudowę powierzchni
+oraz widoki granic świata bez wczytywania odległego terenu.
 
-## Dwa klienty i restart
+## Dwa rzeczywiste klienty przez TCP
 
-CRIME_NETWORK_OWNER_PASS, CRIME_NETWORK_MEMBER_PASS i CRIME_NETWORK_RESTART_PASS.
-Dwa rzeczywiste klienty Minecrafta (960×540, konta deweloperskie Owner16/Member16)
-połączone przez TCP z izolowanym serwerem na 127.0.0.1:25597; próba `net16b`.
+`net17a`: dwa klienty Minecrafta 960×540, deweloperskie konta Owner16/Member16,
+własny serwer na 127.0.0.1:25597. Wyniki OWNER_PASS i MEMBER_PASS.
 
-- Utworzenie gangu, znalezienie, zgłoszenie i przyjęcie przez faktyczne menu.
-- Zwykły członek nie widzi zarządzania ani prywatnych zgłoszeń; próba zmiany
-  wspólnego motywu bez uprawnień zostaje odrzucona na serwerze.
-- Lider tworzy rangę Stylista i przypisuje ją drugiemu graczowi. Uprawnienie
-  wyglądu odblokowuje odpowiedni przycisk, bez dostępu do rang i zgłoszeń.
-- Import pliku, okno kadrowania i zapis logo poprzez kontrolki klienta.
-  Szczegółowy PNG 512×512, 1 200 288 znaków Base64: faktyczne przesłanie
-  klient → serwer → oba klienty; zgodne SHA-256 danych i tekstura 512×512
-  u odbiorcy. Ten przypadek przekracza dawny limit krótkiego ciągu znaków.
-- Zapis wspólnego tła przez koło kolorów/pole HEX; zmiana dociera do obu klientów.
-- Delegowana osoba nadal nie może usunąć właściciela. Serwer odrzuca pakiet;
-  członkostwo dwóch graczy pozostaje nienaruszone.
-- Klienty zamknięto, serwer zapisano i zatrzymano. Ponowny start tego samego
-  świata potwierdził członków, właściciela, rangę/uprawnienia, tło i duże logo.
+- Tworzenie gangu, wyszukiwanie, zgłoszenie, przyjęcie, tworzenie/przypisanie
+  rangi i zapisy wyglądu wykonane przez prawdziwe kontrolki gry oraz pakiety.
+- Zwykły członek nie dostaje prywatnych zgłoszeń ani narzędzi zarządzania.
+  Serwer odrzuca jego pakiety zmiany wspólnego tła i baneru.
+- Po nadaniu wyłącznie MANAGE_THEME odblokowuje się zapis wyglądu,
+  pozostając bez uprawnień do rang/usuwania członków.
+- Logo 512×512: 1 200 288 znaków Base64. Baner 1024×256: 1 199 972 znaki.
+  Obie duże grafiki są równocześnie w stanie gangu; faktyczny przesył
+  klient → serwer → oba klienty przechodzi, a hashe SHA-256 i rozdzielczości
+  tekstur są zgodne. Nie ograniczono próby do małych jednokolorowych PNG.
+- Wspólne kolory, licznik dwóch graczy online i rzeczywista data członkostwa
+  docierają z serwera. Próba usunięcia właściciela bez uprawnień jest odrzucona.
+- Po zamknięciu klientów i poprawnym zapisie/zatrzymaniu serwera ponownie
+  uruchomiono ten sam świat. RESTART_PASS: członkowie, właściciel,
+  przypisana ranga/uprawnienia, motyw, duże logo/baner i daty zachowane.
 
-W pierwszej próbie `net16a` serwer dostał DISPLAY środowiska testowego,
-a Java ImageIO próbowała użyć niedostępnej biblioteki X11. To nie jest wynik
-zaliczony. Powtórzenie `net16b` i restart używały `java.awt.headless=true`;
-ustawienie dodano też do zadania serwera tej próby. Ostrzeżenia usług uwierzytelniania
-wynikają z lokalnych kont deweloperskich/offline, nie z prawdziwego logowania.
+Serwer testowy używa trybu headless. Są to lokalne konta deweloperskie,
+nie logowanie do usług Mojang. Karta skina była renderowana z domyślnymi
+skórkami; integracja korzysta z PlayerInfo/SkinManager i zapamiętanej
+właściwości textures. Brak dostępu do usług profili w środowisku oznacza,
+że pobrania nowej niestandardowej skórki z Mojang nie zweryfikowano end-to-end.
 
 ## Odtwarzanie
 
 ```text
-./gradlew build --rerun-tasks
-./gradlew -PserverSmoke -PserverSmokeId=terrain16a runServer
-./gradlew -PserverSmoke -PserverSmokeId=terrain16a runServer
-./gradlew -PuiSmoke -PuiSmokeId=menu16c runClient
-./gradlew -PuiSmoke -PuiSmokeId=menu16-1280 -PuiWidth=1280 -PuiHeight=720 runClient
+./gradlew build
+./gradlew -PuiSmoke -PuiSmokeId=menu17-final runClient
+./gradlew -PuiSmoke -PuiSmokeId=menu17b-1280 -PuiWidth=1280 -PuiHeight=720 runClient
 ```
 
-Test serwera wymaga zaakceptowania EULA w swoim izolowanym katalogu.
-Test graficzny wymaga ekranu/OpenGL i używa pliku
-`build/server-smoke-terrain16a/view.json`. Raporty i zrzuty trafiają do
-`build/ui-smoke-<identyfikator>`.
+GUI wymaga ekranu/OpenGL i danych `build/server-smoke-terrain16a/view.json`.
+Można je przygotować przez dwa uruchomienia
+`./gradlew -PserverSmoke -PserverSmokeId=terrain16a runServer`, z EULA
+zaakceptowaną tylko dla izolowanego katalogu tej próby.
 
-Test sieciowy: najpierw zbudować klasy z `-PnetworkSmoke -PnetworkSmokeId=net16b`,
-a następnie uruchomić `runNetworkServer`, `runNetworkOwner`, `runNetworkMember`
-z tymi samymi właściwościami w oddzielnych terminalach (serwer jako pierwszy).
-Świat próby musi być nowy, z EULA oraz `server-ip=127.0.0.1`, `server-port=25597`,
-`online-mode=false`. To wyłącznie izolowany serwer testowy. Po raportach
-owner.PASS/member.PASS zatrzymać serwer poleceniem stop i uruchomić go z
-`-PnetworkPersistence=true`, aby otrzymać restart.PASS. Próby wykonywane tu
-użyły przygotowanych przez Gradle parametrów startu bez równoległego kompilowania.
+Dla TCP użyć świeżego identyfikatora i przygotować klasy z `-PnetworkSmoke`.
+`runNetworkServer`, `runNetworkOwner`, `runNetworkMember` uruchomić z tym samym
+`-PnetworkSmokeId=nazwa` w oddzielnych terminalach, z serwerem jako pierwszym.
+Serwer próby: 127.0.0.1:25597, online-mode=false i zaakceptowana EULA.
+Po raportach obu klientów zapisać/zatrzymać serwer poleceniem stop;
+ponowny start z `-PnetworkPersistence=true` sprawdza trwałość danych.
+W tym środowisku użyto przygotowanych przez Gradle parametrów startu,
+bez równoległego przebudowywania klas w czasie właściwych prób.
 
-JAR wydania nie zawiera klas automatyzacji z `src/uiTest`, `src/serverTest`
-ani `src/networkTest`; zawiera 15 bibliotek importu obrazów.
-Wersja 0.1.16 i protokół 8 wymagają aktualizacji klienta i serwera.
+## Wydanie i granice
 
-## Granice sprawdzenia
+Protokół 9 wymaga tego samego JAR-a 0.1.17 u klientów i na serwerze.
+Klasy automatyzacji z uiTest/serverTest/networkTest są wykluczone z JAR-a.
+Biblioteki importu obrazów pozostają dołączone (15 bibliotek).
 
-Widoczny wycinek ma najwyżej 176×176 bloków, z przybliżeniem do 80×80.
-Można przesuwać go po zapisanym atlasie. Nie ma osobistej mgły odkrycia,
-widoku całego świata naraz ani pobierania nieznanego odległego terenu.
-Atlas jest wspólny na serwerze, osobny dla każdego wymiaru.
-Przetestowano powierzchnię Overworld; nie sprawdzano czytelności pod sufitem Netheru.
-
-Odczyt powierzchni: najwyżej 128 kolumn na tick, porcje po 32 i miękki budżet
-2 ms; pojedynczy krok może go przekroczyć. Kolejka do 256 zadań, wygaśnięcie
-po 200 tickach, ponowne odświeżenie nie wcześniej niż po 100 tickach.
-Praca obejmuje tylko dostępne chunki FULL. Klient utrzymuje jedną teksturę,
-aktualizowaną po zmianie pikseli. Nie wykonano benchmarku dużego serwera.
-
-Stałe cechy nadal opierają się na 16 próbkach i szablonach wiosek vanilla.
-To opis terenu, nie silnik kwalifikacji rzadkich bonusów. Brak przejmowania,
-ekonomii, receptur, roślin i aktywnych mnożników. Premie, Saldo, Czarna lista
-oraz Cele mają tylko przygotowane panele. Transport pozostaje ukryty.
-Import nie obsługuje HEIC/AVIF, PDF ani animowanego logo; pozostałe limity
-są opisane w README. Te sprawdzenia nie oznaczają gwarancji braku błędów
-na każdej konfiguracji i w dowolnej paczce modów.
-
-Lokalna poprawka narzędzia NeoForm Runtime i konfiguracja Xvfb nie trafiają
-ani do źródeł moda, ani do JAR-a.
+Dane kartograficzne są wspólne na serwerze, nie mają osobistej mgły odkrycia.
+Przesuwanie odczytuje zapisane kafle; nie pobiera nieznanego odległego świata.
+Brak przejmowania ziemi, rzadkich aktywnych bonusów, ekonomii, magazynów,
+pojazdów, roślin i multibloków. Premie/Saldo/Czarna lista/Cele mają dotychczasowe
+panele W przygotowaniu; Transport pozostaje ukrytą definicją.
+Nie wykonano benchmarku dużego serwera ani testu dowolnej paczki innych modów.
+Import nadal nie obejmuje HEIC/AVIF, PDF ani animowanego logo/baneru.
+Lokalne narzędzia uruchomieniowe i konfiguracja Xvfb nie trafiają do wydania.

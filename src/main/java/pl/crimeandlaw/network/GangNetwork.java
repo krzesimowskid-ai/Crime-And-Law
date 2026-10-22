@@ -16,7 +16,7 @@ import pl.crimeandlaw.gang.GangDirectory.*;
 
 public final class GangNetwork {
     public static final int ACTION_MAX_JSON=GangLogo.MAX_ENCODED_LENGTH+1024;
-    public static final int STATE_MAX_JSON=GangLogo.MAX_ENCODED_LENGTH+100_000;
+    public static final int STATE_MAX_JSON=2*GangLogo.MAX_ENCODED_LENGTH+200_000;
     private static final Gson JSON=new Gson();
     public static Consumer<String> clientReceiver=ignored->{};
     public static Consumer<String> terrainReceiver=ignored->{};
@@ -49,7 +49,7 @@ public final class GangNetwork {
         @Override public Type<? extends CustomPacketPayload> type(){return TYPE;}
     }
     public static void register(RegisterPayloadHandlersEvent event){
-        var registrar=event.registrar("8");
+        var registrar=event.registrar("9");
         registrar.playToServer(Action.TYPE,Action.CODEC,GangNetwork::handle);
         registrar.playToClient(State.TYPE,State.CODEC,(p,c)->clientReceiver.accept(p.json));
         registrar.playToClient(Terrain.TYPE,Terrain.CODEC,(p,c)->terrainReceiver.accept(p.json));
@@ -99,9 +99,12 @@ public final class GangNetwork {
                     List<String> order=new ArrayList<>();for(JsonElement id:a.getAsJsonArray("order"))order.add(id.getAsString());d.reorderRoles(actor,order);
                 }
                 case "theme" -> d.theme(actor,new Theme(integer(a,"background",Theme.DEFAULT.background()),integer(a,"border",Theme.DEFAULT.border()),integer(a,"opacity",235)));
+                case "banner" -> d.banner(actor,new GangBanner(text(a,"image"),integer(a,"color",0x15161C),integer(a,"opacity",255)));
                 case "logo" -> d.logo(actor,GangLogo.validate(text(a,"logo")));
                 default -> throw new IllegalArgumentException("Nieznana czynność.");
             }
+            rememberProfile(player);
+            if(action.equals("accept")){var accepted=player.server.getPlayerList().getPlayer(uuid(a,"target"));if(accepted!=null)rememberProfile(accepted);}
             saved.setDirty();
             // Every viewer receives authoritative membership/permissions, including kicked members.
             for(ServerPlayer online:player.server.getPlayerList().getPlayers()){
@@ -111,12 +114,16 @@ public final class GangNetwork {
         catch(RuntimeException exception){sendState(player,"Nie udało się wykonać czynności. Sprawdź dane i spróbuj ponownie.");}
     }
     public static void sendState(ServerPlayer player,String message){
+        sendState(player,message,null);
+    }
+    private static void sendState(ServerPlayer player,String message,UUID disconnected){
         GangDirectory d=GangSavedData.get(player.server).directory;
         View view=views.computeIfAbsent(player,p->new View("",0,0,0,0));
         JsonObject result=new JsonObject();result.addProperty("player",player.getUUID().toString());result.addProperty("message",message);
         Gang current=d.of(player.getUUID());
         if(current!=null){
-            JsonObject snapshot=GangView.snapshot(current,player.getUUID(),view.memberPage,view.requestPage,view.historyPage);
+            JsonObject snapshot=GangView.snapshot(current,player.getUUID(),view.memberPage,view.requestPage,view.historyPage,
+                player.server.getPlayerList().getPlayers().stream().map(ServerPlayer::getUUID).filter(id->!id.equals(disconnected)).collect(java.util.stream.Collectors.toSet()));
             for(var entry:snapshot.entrySet())result.add(entry.getKey(),entry.getValue());
         }
         List<Gang> matches=d.gangs().stream().filter(g->g.name.toLowerCase(Locale.ROOT).contains(view.query.toLowerCase(Locale.ROOT)))
@@ -129,6 +136,16 @@ public final class GangNetwork {
         }
         result.add("gangs",rows);result.addProperty("page",page);result.addProperty("pages",Math.max(1,(matches.size()+11)/12));
         PacketDistributor.sendToPlayer(player,new State(JSON.toJson(result)));
+    }
+    public static void rememberProfile(ServerPlayer player){
+        var property=player.getGameProfile().getProperties().get("textures").stream().findFirst().orElse(null);
+        var saved=GangSavedData.get(player.server);
+        if(saved.directory.rememberProfile(player.getUUID(),player.getGameProfile().getName(),property==null?"":property.value(),property==null||property.signature()==null?"":property.signature()))saved.setDirty();
+    }
+    public static void presenceChanged(ServerPlayer player,boolean joined){
+        if(joined)rememberProfile(player);
+        var gang=GangSavedData.get(player.server).directory.of(player.getUUID());if(gang==null)return;
+        for(var viewer:player.server.getPlayerList().getPlayers())if(viewer!=player&&gang.members.containsKey(viewer.getUUID())&&views.containsKey(viewer))sendState(viewer,"",joined?null:player.getUUID());
     }
     private static String text(JsonObject a,String key){return a.has(key)&&!a.get(key).isJsonNull()?a.get(key).getAsString():"";}
     private static int integer(JsonObject a,String key,int fallback){return a.has(key)?a.get(key).getAsInt():fallback;}
