@@ -1,65 +1,39 @@
-# Weryfikacja 0.1.20
+# Weryfikacja 0.1.21
 
-Minecraft 1.21.1, NeoForge 21.1.248, Java 21, protokół 12.
+Minecraft 1.21.1, NeoForge 21.1.248, Java 21. Protokół 12 bez zmian.
 
-## Poprawiony przypadek
+## Zakres
 
-Nagranie użytkownika pokazuje przesuwanie gotowego małego prostokąta i puste
-pasy przy kolejnych zmianach kierunku. Weryfikacja obejmuje cały gest, także
-z nadal wciśniętą myszą oraz odpowiedziami serwera w trakcie ruchu.
+Wspólna oś nagłówka: baner, logo oraz ramka nazwy. Poprzednia pozycja
+logo i nazwy była o 3 jednostki GUI w lewo względem środka pełnego pasa.
+Zmiana nie wpływa na zapis obrazów ani na kadr i powiększenie użytkownika.
 
-## Testy
+## Wyniki
 
-- `build --offline`: **BUILD SUCCESSFUL**; **97 testów**, bez błędów,
-  niepowodzeń i pominięć. Obejmują przeliczenie ruchu myszy na współrzędne
-  świata, zmianę kierunku, granice świata, niezależne zaznaczenie i pamięć
-  sąsiednich odpowiedzi. Pełna wiadomość 225 kafli mieści się w limicie kodeka.
-- `map20a`: prawdziwy renderer Minecrafta, 1920 × 1080, skale GUI 2 i 4,
-  78 zrzutów. Dodatkowy przypadek obejmuje trzy przybliżenia i **18 kroków
-  przeciągania ze zmianami kierunku**. Opóźnione odpowiedzi dla sąsiednich
-  widoków docierają przy wciśniętej myszy. Kontrola pikseli potwierdza brak
-  tła i mgły na całym widocznym, wcześniej rozpoznanym terenie. Fokus,
-  zaznaczenie chunka, powrót i puszczenie myszy pozostają poprawne.
-- `terrain20b`: prawdziwy serwer dedykowany, pierwszy start i restart tego
-  samego świata. Zachowano próby wioski, stałych cech, kolorów wszystkich
-  kolumn, granic kafli, odświeżenia zmian i skrajnych współrzędnych.
-  Sprawdzono kafel przy kamerze poza dawnym zasięgiem gracza oraz zimny odczyt
-  rzeczywistego zapisu chunka FULL po restarcie. Paleta i heightmapa odtwarzają
-  przygotowaną powierzchnię. Odczyt nie ładuje tego chunka do świata, nie
-  zwiększa liczby załadowanych chunków i nie tworzy odległego pustego regionu.
-- `net20b`: serwer dedykowany i **dwa oddzielne klienty przez TCP**. Na
-  rzeczywistym terenie wykonano sześć zmian kierunku z trzymaną myszą;
-  **29 odpowiedzi serwera** nie przerwało gestu, nie zmieniło zaznaczenia
-  i nie zostawiło uciętych brzegów. Sprawdzenie obejmuje piksele całego
-  znanego widoku, powrót kamery oraz puszczenie przycisku. Zachowano próby
-  członkostwa, uprawnień, prywatności zgłoszeń i identycznych szczegółowych
-  obrazów na obu klientach. Logo (19 196 396 znaków Base64) i baner
-  (17 687 236 znaków) przeszły transmisję i porównanie skrótów; restart
-  zachował obrazy, członków, rangi, uprawnienia, daty i wspólny wygląd.
+- Końcowe `build --offline`: **BUILD SUCCESSFUL**.
+- 97 testów JUnit: bez niepowodzeń, błędów i pominięć.
+- `header21d`: prawdziwy renderer Minecrafta, 1920×1080. Pionowe źródło
+  240×300 dopasowane w całości, następnie dodatkowo oddalone do 0,65
+  tego przybliżenia. Każdy wariant sprawdzony przy skalach GUI 2 i 4.
+- Cztery porównania pikseli rzeczywistego obrazu: środek widocznej grafiki
+  banera, czerwonego logo oraz obramówki nazwy wyniósł za każdym razem
+  dokładnie **1089,5 px**. Dopuszczalna różnica próby: 1,1 fizycznego piksela;
+  zmierzona różnica pomiędzy tymi trzema elementami: **0 px**.
+- Powstały cztery zrzuty `header-alignment-0.png`–`header-alignment-3.png`.
+  Wynik: `build/ui-smoke-header21d/result.txt`, zakończenie klienta kodem 0.
 
-Wyniki lokalne: `build/ui-smoke-map20a/result.txt`,
-`build/server-smoke-terrain20b/result.txt` oraz trzy pliki `*.PASS` w
-`build/network-smoke-net20b/`. Próby klienta i sieci uruchamiają prawdziwą
-grę; nie zastępują długotrwałego pomiaru wydajności na komputerze gracza.
+Próba używa kontrolowanej pionowej grafiki, żeby wykrywać przesunięcie osi
+niezależnie od zawartości oryginalnego obrazu. Porównuje obraz wyrenderowany,
+nie tylko wartości współrzędnych w kodzie. Nie wymusza zmiany proporcji,
+wybranego kadru ani zapisanego banera gracza.
 
 ## Gotowy JAR
 
-`crimeandlaw-0.1.20.jar`: 1 840 411 bajtów. Archiwum bez błędów CRC i
-powtórzonych wpisów; 97 klas produkcyjnych zgodnych bajt w bajt z kompilacją,
-15 bibliotek JarJar, poprawna wersja metadanych, bez klas automatyzacji prób.
+`crimeandlaw-0.1.21.jar`: 1 840 415 bajtów. Bez błędów CRC, powtórzonych
+wpisów i klas automatyzacji. 97 klas produkcyjnych zgodnych bajt w bajt
+z kompilacją, 15 dołączonych bibliotek JarJar, metadane wersji 0.1.21.
 
-SHA-256: `37d8ed9743c963d482431ac0b2568feb2ea0fc5bcde0b4e322777dc17437994e`.
+SHA-256: `95054d56075f97cfe8e03eb5176f611f4e6b30dfcc24f5c4c6a7e941c5439a2b`.
 
-Protokół 12 wymaga tej wersji na serwerze i u wszystkich graczy.
-
-## Granice zachowania
-
-Mapa używa prawdziwych danych: załadowanych bloków, gotowych kafli i istniejących
-pełnych chunków NBT. Dane są zbierane stopniowo. Niewygenerowany teren i zapis
-w nieobsługiwanym lub uszkodzonym formacie pozostają zasłonięte. Mod nie generuje
-świata dla mapy, nie tworzy pustych regionów i nie utrzymuje odległych chunków
-w pamięci świata. Cieniowanie przy granicy pojedynczego pliku korzysta z
-lokalnej wysokości; analiza stałych cech terenu pozostaje oddzielna.
-
-Wcześniejsze sprawdzenia: [0.1.19](docs/VALIDATION_0.1.19.md),
-[0.1.18](docs/VALIDATION_0.1.18.md).
+Poprzednie pełne sprawdzenie mapy i sieci:
+[0.1.20](docs/VALIDATION_0.1.20.md).

@@ -529,7 +529,8 @@ public final class GangScreen extends Screen {
         }
     }
     private void drawGangOverview(GuiGraphics g,Gang gang,net.minecraft.resources.ResourceLocation logo){
-        int center=cx+cw/2,logoY=cy,accent=theme().borderArgb();
+        // Identity content shares the full banner's axis, including its wider side margins.
+        int center=left+109+(w-110)/2,logoY=cy,accent=theme().borderArgb();
         drawBanner(g,banner(),left+109,top+43,w-110,123);
         if(logo!=null)LogoTexture.draw(g,center-32,logoY,64,64);
         else{

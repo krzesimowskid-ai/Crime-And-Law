@@ -541,3 +541,16 @@ gdy właściwe systemy własności oraz mapy będą rozwijane.
   zapisu są asynchroniczne; tylko skończony kafel trafia do zapisu świata.
 - Protokół 12 po obu stronach; nie dodawano przejmowania terenu, bonusów,
   produkcji ani innych mechanik. Wcześniejsze szczegółowe obrazy pozostają.
+
+
+## Wyrównanie nagłówka — 0.1.21
+
+- Oddalony pionowy baner na zdjęciu pokazał przesunięcie logo i nazwy w lewo.
+  Pomiar: środek widocznego banera 594 px, logo 587,5 px.
+- Powód: logo/nazwa były liczone od wewnętrznej treści (`cx + cw/2`),
+  a baner obejmuje szerszy pas (`left+109`, szerokość `w-110`).
+- Wspólna oś jest liczona od pełnego pasa. Zmiana nie wymusza wypełnienia
+  obrazem, nie rozciąga źródła i nie zmienia wybranego kadru/przybliżenia.
+- Próba graficzna `-Dcrimeandlaw.headerAlignmentOnly=true` obejmuje pionowe
+  źródło 240×300: dopasowanie całości i dalsze oddalenie, skale GUI 2 oraz 4.
+  Porównuje rzeczywiste piksele banera, logo i ramki nazwy.

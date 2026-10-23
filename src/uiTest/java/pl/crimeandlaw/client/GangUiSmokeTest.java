@@ -37,11 +37,13 @@ public final class GangUiSmokeTest {
     private static double mapPointerX,mapPointerY;
     private static final double[][] MAP_PATH={{1.7,-1.4},{-2.1,2.2},{.35,.45},{2.4,1.1},{-2,-2},{0,0}};
     private static final StringBuilder REPORT=new StringBuilder();
+    private static int headerStep=-1;
 
     @SubscribeEvent public static void frame(RenderFrameEvent.Post event) {
         if(!Boolean.getBoolean("crimeandlaw.uiSmoke"))return;
         Minecraft mc=Minecraft.getInstance();
         try {
+            if(Boolean.getBoolean("crimeandlaw.headerAlignmentOnly")){checkHeaderAlignmentRun(mc);return;}
             if(stage==-2){
                 if(++frames<24)return;capture(mc,"00-loading");
                 require(screen.children().stream().noneMatch(c->c instanceof EditBox||c instanceof AbstractWidget w&&java.util.Set.of("Stwórz gang","Znajdź gang").contains(w.getMessage().getString())),"No creation flash before the authoritative snapshot");
@@ -567,6 +569,59 @@ public final class GangUiSmokeTest {
             try{Files.createDirectories(OUT);Files.writeString(OUT.resolve("result.txt"),"FAIL: "+error);}catch(Exception ignored){}
             stage=1000;mc.stop();
         }
+    }
+    /** A narrow, zoomed-out banner exposes differences between the three rendered axes. */
+    private static void checkHeaderAlignmentRun(Minecraft mc)throws Exception {
+        if(headerStep<0){
+            if(++startupFrames>1800)throw new AssertionError("Header client did not reach the title screen");
+            if(mc.getOverlay()==null&&mc.screen instanceof net.minecraft.client.gui.screens.AccessibilityOnboardingScreen onboarding){mc.options.onboardingAccessibilityFinished();onboarding.onClose();return;}
+            if(!(mc.screen instanceof TitleScreen)||mc.getOverlay()!=null)return;
+            Files.createDirectories(OUT);directory=new GangDirectory();directory.create(PLAYER,"Gracz","ZSRR","");
+            var logo=new java.awt.image.BufferedImage(64,64,java.awt.image.BufferedImage.TYPE_INT_ARGB);
+            var paint=logo.createGraphics();paint.setColor(java.awt.Color.RED);paint.fillRect(0,0,64,64);paint.dispose();
+            directory.of(PLAYER).logo=java.util.Base64.getEncoder().encodeToString(LogoImages.png(logo));
+            fixturePage(PLAYER,0);mc.options.guiScale().set(2);mc.resizeDisplay();screen=new GangScreen();mc.setScreen(screen);
+            headerBanner(false);headerStep=0;frames=0;return;
+        }
+        if(++frames<24)return;frames=0;
+        capture(mc,"header-alignment-"+headerStep);
+        var layout=GangLayout.of(screen.width,screen.height);double scale=layout.scale()*mc.getWindow().getGuiScale();
+        int left=(layout.canvasWidth()-layout.panelWidth())/2,top=(layout.canvasHeight()-layout.panelHeight())/2;
+        int from=(int)Math.ceil((left+109)*scale),to=(int)((left+layout.panelWidth()-1)*scale),cy=top+55;
+        try(var image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){
+            double banner=headerPixelCenter(image,from,to,(int)((cy+69)*scale),0xFFFFFF);
+            double logo=headerPixelCenter(image,from,to,(int)((cy+24)*scale),0xFF0000);
+            double name=headerPixelCenter(image,from,to,(int)((cy+76)*scale),screen.currentTheme().border());
+            double strip=(left+109+(layout.panelWidth()-110)/2.0)*scale;
+            require(Math.abs(banner-strip)<=1.1,"The zoomed-out source stays centered in the full banner strip");
+            require(Math.abs(logo-banner)<=1.1,"Logo aligns with the banner center: logo="+logo+", banner="+banner);
+            require(Math.abs(name-banner)<=1.1,"Name frame aligns with the banner center: frame="+name+", banner="+banner);
+            REPORT.append("PASS header ").append(headerStep).append(": banner=").append(banner).append(", logo=").append(logo).append(", name=").append(name).append(" pixels\n");
+        }
+        switch(headerStep++){
+            case 0->{mc.options.guiScale().set(4);mc.resizeDisplay();}
+            case 1->headerBanner(true);
+            case 2->{mc.options.guiScale().set(2);mc.resizeDisplay();}
+            case 3->{REPORT.append("PASS: actual Minecraft framebuffer; full-image and further zoomed-out portrait banner, GUI scales 2 and 4, shared banner/logo/name axis within 1.1 physical pixels.\n");Files.writeString(OUT.resolve("result.txt"),REPORT.toString());System.out.println("CRIME_HEADER_ALIGNMENT_PASS");mc.stop();}
+        }
+    }
+    private static void headerBanner(boolean zoomOut)throws Exception {
+        var source=new java.awt.image.BufferedImage(240,300,java.awt.image.BufferedImage.TYPE_INT_ARGB);
+        var paint=source.createGraphics();paint.setColor(java.awt.Color.WHITE);paint.fillRect(0,0,240,300);paint.dispose();
+        var crop=new LogoCrop(240,300,screen.bannerAspect());crop.fit(true);if(zoomOut)crop.zoom(crop.zoom()*.65);
+        directory.of(PLAYER).banner=new pl.crimeandlaw.gang.GangBanner(LogoImages.encode(source,crop,true),0x15161C,255);
+        fixturePage(PLAYER,0);screen.updated();
+    }
+    private static double headerPixelCenter(com.mojang.blaze3d.platform.NativeImage image,int from,int to,int y,int rgb){
+        int first=-1,last=-1;
+        for(int x=from;x<to;x++){
+            int rgba=image.getPixelRGBA(x,y),actual=(rgba&255)<<16|(rgba&0xFF00)|(rgba>>16&255);
+            // The menu presentation can shade the white fixture vertically; its edges stay neutral.
+            boolean neutral=rgb==0xFFFFFF&&(actual>>16&255)>170&&(actual>>16&255)==(actual>>8&255)&&(actual>>8&255)==(actual&255);
+            if(actual==rgb||neutral){if(first<0)first=x;last=x;}
+        }
+        require(first>=0&&last>first,"Header fixture color is visible: "+Integer.toHexString(rgb));
+        return (first+last+1)/2.0;
     }
     private static pl.crimeandlaw.territory.TerrainView wideMap(int x,int z,float yaw){
         return pl.crimeandlaw.territory.TerrainView.snapshot(new pl.crimeandlaw.territory.TerrainAtlas(),"minecraft:overworld",x,z,key->true,id->"",key->{
