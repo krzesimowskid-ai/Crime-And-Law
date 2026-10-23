@@ -14,7 +14,7 @@ import pl.crimeandlaw.territory.*;
 /** Continuous surface map, optional chunk overlay and a separate terrain inspector. */
 final class TerrainPanel extends AbstractWidget {
     private record Line(FormattedCharSequence text,int y,int color){}
-    private final TerrainView view;
+    private TerrainView view;
     private final TerrainView.Cell knownSelection;
     private final int selectedX,selectedZ,radius;
     private final boolean grid;
@@ -24,22 +24,29 @@ final class TerrainPanel extends AbstractWidget {
     private final IntConsumer zoom;
     private final ScrollPosition scroll;
     private final List<Line> lines=new ArrayList<>();
-    private final TerrainView.Cell[] cells=new TerrainView.Cell[TerrainView.SIDE*TerrainView.SIDE];
+    private TerrainView.Cell[] cells=new TerrainView.Cell[0];
     static final int GRID=196,DETAILS=GRID+16;
     private int textHeight;
-    private boolean dragging,moved;
-    private double startX,startY,dragX,dragY;
+    private final TerrainDrag drag=new TerrainDrag();
+    private boolean cameraStarted;
+    private double dragX,dragY;
     TerrainPanel(int x,int y,int width,int height,TerrainView view,int selectedX,int selectedZ,TerrainView.Cell knownSelection,int radius,boolean grid,Supplier<Theme> theme,ScrollPosition scroll,Consumer<TerrainView.Cell> selected,BiConsumer<Integer,Integer> pan,IntConsumer zoom){
         super(x,y,width,height,Component.literal("Mapa terenu"));this.view=view;this.knownSelection=knownSelection;this.selectedX=selectedX;this.selectedZ=selectedZ;this.radius=radius;this.grid=grid;this.theme=theme;this.scroll=scroll;this.selected=selected;this.pan=pan;this.zoom=zoom;
+        update(view);
+    }
+    boolean dragging(){return drag.active();}
+    void update(TerrainView next){
+        view=next;int side=view==null?0:view.radius()*2+1;cells=new TerrainView.Cell[side*side];
         if(view!=null)for(var cell:view.cells()){
-            int dx=cell.x()-view.centerX()+TerrainView.RADIUS,dz=cell.z()-view.centerZ()+TerrainView.RADIUS;
-            if(dx>=0&&dx<TerrainView.SIDE&&dz>=0&&dz<TerrainView.SIDE)cells[dz*TerrainView.SIDE+dx]=cell;
+            int dx=cell.x()-view.centerX()+view.radius(),dz=cell.z()-view.centerZ()+view.radius();
+            if(dx>=0&&dx<side&&dz>=0&&dz<side)cells[dz*side+dx]=cell;
         }
-        TerrainMapTexture.update(view);buildDetails();scroll.range(height-12,textHeight);
+        if(view!=null&&drag.active()){dragX=drag.offsetX(view.centerX());dragY=drag.offsetY(view.centerZ());}
+        TerrainMapTexture.update(view);lines.clear();textHeight=0;buildDetails();scroll.range(height-12,textHeight);
     }
     private TerrainView.Cell cell(int x,int z){
-        if(view==null)return null;int dx=x-view.centerX()+TerrainView.RADIUS,dz=z-view.centerZ()+TerrainView.RADIUS;
-        return dx>=0&&dx<TerrainView.SIDE&&dz>=0&&dz<TerrainView.SIDE?cells[dz*TerrainView.SIDE+dx]:null;
+        if(view==null)return null;int side=view.radius()*2+1,dx=x-view.centerX()+view.radius(),dz=z-view.centerZ()+view.radius();
+        return dx>=0&&dx<side&&dz>=0&&dz<side?cells[dz*side+dx]:null;
     }
     private void line(String text,int color){
         var font=Minecraft.getInstance().font;
@@ -73,7 +80,7 @@ final class TerrainPanel extends AbstractWidget {
         if(view!=null){
             int side=radius*2+1;double cellSize=GRID/(double)side;
             // Overlays have no gaps and never replace the underlying terrain image.
-            for(int row=0;row<side;row++)for(int col=0;col<side;col++){
+            for(int row=-1;row<=side;row++)for(int col=-1;col<=side;col++){
                 var cell=cell(view.centerX()-radius+col,view.centerZ()-radius+row);if(cell==null)continue;
                 int px=x+(int)Math.round(col*cellSize),py=y+(int)Math.round(row*cellSize);
                 int w=(int)Math.round((col+1)*cellSize)-(px-x),h=(int)Math.round((row+1)*cellSize)-(py-y);
@@ -113,22 +120,27 @@ final class TerrainPanel extends AbstractWidget {
     @Override public boolean mouseClicked(double x,double y,int button){
         if(button!=0||!isMouseOver(x,y)||view==null)return false;
         if(x<getX()+GRID&&y<getY()+GRID){
-            dragging=true;moved=false;startX=x;startY=y;dragX=0;dragY=0;return true;
+            drag.begin(new TerrainViewport(view.centerX(),view.centerZ()),x,y,radius,GRID);cameraStarted=false;dragX=0;dragY=0;return true;
         }
         return x>=getX()+DETAILS&&x<getX()+width-10;
     }
     @Override public boolean mouseDragged(double x,double y,int button,double dx,double dy){
-        if(button!=0||!dragging)return false;
-        dragX=x-startX;dragY=y-startY;moved|=Math.hypot(dragX,dragY)>3;return true;
+        if(button!=0||!drag.active())return false;
+        drag.move(x,y);
+        if(drag.moved()){
+            var target=drag.viewport();int dxChunks=target.x()-view.centerX(),dzChunks=target.z()-view.centerZ();
+            if(!cameraStarted||dxChunks!=0||dzChunks!=0){cameraStarted=true;pan.accept(dxChunks,dzChunks);}
+            dragX=drag.offsetX(view.centerX());dragY=drag.offsetY(view.centerZ());
+        }
+        return true;
     }
     @Override public boolean mouseReleased(double x,double y,int button){
-        if(button!=0||!dragging)return false;
-        dragging=false;
-        int dx=(int)Math.round(-dragX*(radius*2+1)/GRID),dz=(int)Math.round(-dragY*(radius*2+1)/GRID);
-        // A release must end the preview even if the server returns an identical
-        // view (e.g. an immediate drag back). No subsequent packet is required.
+        if(button!=0||!drag.active())return false;
+        drag.finish();
         dragX=0;dragY=0;
-        if(moved){if(dx!=0||dz!=0)pan.accept(dx,dz);return true;}
+        // The rounded camera was already moved during the gesture. Releasing only
+        // ends the fractional preview and updates header controls, never pans twice.
+        if(drag.moved()){pan.accept(0,0);return true;}
         if(x>=getX()&&x<getX()+GRID&&y>=getY()&&y<getY()+GRID){
             int side=radius*2+1;
             var cell=cell(view.centerX()-radius+(int)((x-getX())*side/GRID),view.centerZ()-radius+(int)((y-getY())*side/GRID));

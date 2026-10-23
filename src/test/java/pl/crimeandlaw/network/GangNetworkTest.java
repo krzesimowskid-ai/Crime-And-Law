@@ -74,12 +74,12 @@ class GangNetworkTest {
     @Test void fullSurfaceRasterWithAllTraitsAndOwnersFitsTerrainCodec(){
         var atlas=new pl.crimeandlaw.territory.TerrainAtlas();UUID owner=UUID.randomUUID();byte[] pixels=new byte[256];new Random(42).nextBytes(pixels);
         var tile=pl.crimeandlaw.territory.TerrainMapTile.of(pixels);
-        for(int z=-5;z<=5;z++)for(int x=-5;x<=5;x++){
+        for(int z=-pl.crimeandlaw.territory.TerrainView.BUFFER_RADIUS;z<=pl.crimeandlaw.territory.TerrainView.BUFFER_RADIUS;z++)for(int x=-pl.crimeandlaw.territory.TerrainView.BUFFER_RADIUS;x<=pl.crimeandlaw.territory.TerrainView.BUFFER_RADIUS;x++){
             var key=new pl.crimeandlaw.territory.TerrainKey("minecraft:overworld",x,z);
             atlas.remember(new pl.crimeandlaw.territory.TerrainProfile(key,1,16,1,256,Map.of(pl.crimeandlaw.territory.TerrainProfile.Surface.SOIL,16),16,List.of("minecraft:plains"),List.of(),EnumSet.allOf(pl.crimeandlaw.territory.TerrainProfile.Trait.class),pl.crimeandlaw.territory.TerrainProfile.Source.GENERATED_SNAPSHOT,1));atlas.setOwner(key,owner);
         }
-        var view=pl.crimeandlaw.territory.TerrainView.snapshot(atlas,"minecraft:overworld",0,0,k->true,id->"Ż".repeat(32),key->tile);
-        String json=new Gson().toJson(view);assertTrue(json.length()<pl.crimeandlaw.territory.TerrainView.MAX_JSON);assertEquals(121,view.cells().size());
+        var view=pl.crimeandlaw.territory.TerrainView.snapshot(atlas,"minecraft:overworld",0,0,k->true,id->"Ż".repeat(32),key->tile,pl.crimeandlaw.territory.TerrainView.BUFFER_RADIUS);
+        String json=new Gson().toJson(view);assertTrue(json.length()<pl.crimeandlaw.territory.TerrainView.MAX_JSON);assertEquals(225,view.cells().size());
         var buffer=new RegistryFriendlyByteBuf(Unpooled.buffer(),RegistryAccess.EMPTY);
         try{GangNetwork.Terrain.CODEC.encode(buffer,new GangNetwork.Terrain(json));assertEquals(view,new Gson().fromJson(GangNetwork.Terrain.CODEC.decode(buffer).json(),pl.crimeandlaw.territory.TerrainView.class));assertFalse(buffer.isReadable());}
         finally{buffer.release();}

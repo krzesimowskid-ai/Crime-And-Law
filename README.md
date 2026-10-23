@@ -1,19 +1,19 @@
 # Crime And Law
 
 Autorski mod gangsterski: panel gangów, członkostwo i własny wygląd menu.
-Wersja **0.1.19**.
+Wersja **0.1.20**.
 
 Pierwsza propozycja własnej ekonomii w dolarach i rozwoju terenów:
 [Balans terytoriów](docs/BALANS_TERYTORIOW.md) oraz
 [symulacja](docs/SYMULACJA_BALANSU.md). To projekt do dalszej implementacji;
-JAR 0.1.19 nie odczytuje tych reguł i nie wypłaca jeszcze pieniędzy.
+JAR 0.1.20 nie odczytuje tych reguł i nie wypłaca jeszcze pieniędzy.
 
 ## Uruchomienie
 
 - Minecraft **1.21.1**, Java **21**, NeoForge **21.1.248**.
-- Włóż `crimeandlaw-0.1.19.jar` do `mods`, zastępując poprzedni JAR tego moda.
+- Włóż `crimeandlaw-0.1.20.jar` do `mods`, zastępując poprzedni JAR tego moda.
 - W rozgrywce sieciowej mod musi być **u graczy i na serwerze**.
-  Zaktualizuj serwer i wszystkich klientów do 0.1.19. Sieć moda używa protokołu 11.
+  Zaktualizuj serwer i wszystkich klientów do 0.1.20. Sieć moda używa protokołu 12.
 - W świecie jednoosobowym część serwerowa działa razem ze światem.
 - **G** otwiera panel; skrót można zmienić w sterowaniu. Esc lub X zamyka okno.
 
@@ -253,7 +253,11 @@ To mapa barwna z cieniowaniem rzeźby, nie zdjęcie tekstur z góry.
 
 Domyślnie widoczny jest obszar 11×11 chunków (176×176 bloków) wokół gracza.
 Przyciski +/− oraz kółko nad mapą zmieniają przybliżenie.
-Przeciąganie lewym przyciskiem przesuwa widok;
+Przeciąganie lewym przyciskiem przesuwa widok już przy wciśniętej myszy.
+Klient pobiera obszar 15×15 chunków, z zapasem wokół widocznych 11×11,
+i rysuje również ten zapas. Odbiór danych nie przerywa trzymanego przeciągnięcia;
+spóźnione odpowiedzi uzupełniają pamięć kafli, zachowując bieżące położenie kamery.
+Przesuwanie nie zmienia osobno wybranego chunka;
 ikona postaci u góry („Wróć do gracza”) lub Home przywraca śledzenie gracza. Działają też strzałki klawiatury
 poza zaznaczonym paskiem przewijania. Przycisk „Siatka” włącza granice chunków.
 Siatka domyślnie jest wyłączona. Rzeczywista pozycja i kierunek gracza,
@@ -261,14 +265,17 @@ północ, podziałka i zaznaczenie chunka są nakładką na krajobraz.
 Kliknięcie wybiera chunk; opis po prawej przewija się niezależnie.
 Zmiana skali GUI zachowuje wybór i przybliżenie.
 
-Rysunek mapy powstaje z wczytanych bloków, bez generowania odległego świata.
-Brakujące fragmenty pozostają zasłonięte, także jeśli mają już profil cech
-z wcześniejszej wersji. Odczytany obraz zapisuje się ze światem osobno dla
+Rysunek mapy powstaje z załadowanych bloków przy oglądanym miejscu oraz
+z zapisanych na dysku, w pełni wygenerowanych chunków. Odczyt dysku obejmuje
+palety bloków i wysokość powierzchni; nie tworzy żywych chunków, encji ani biletów
+utrzymujących teren w pamięci. Nie generuje nowych terenów ani pustych plików
+regionów. Niewygenerowane lub nieczytelne obszary pozostają zasłonięte. Odczytany obraz zapisuje się ze światem osobno dla
 każdego wymiaru i chunka, przeżywa restart i odświeża się po przebudowie
 wczytanego terenu. Dane są wspólne dla serwera; nie dodano jeszcze osobistej
 mgły odkrycia ani przeglądu całego świata naraz. Można przeglądać zapisane
-wcześniej fragmenty po odsunięciu widoku od gracza. Przesunięcie nie wczytuje
-odległych chunków; nowy obraz jest zbierany tylko wokół gracza.
+wcześniej fragmenty i istniejące pełne chunki ze świata po odsunięciu widoku
+od gracza. Odczyt palet z pliku jest niezależny od utrzymywania chunków w świecie.
+Nie analizuje się przez to automatycznie cech naturalnych odległych chunków.
 Mapa jest odświeżana tylko podczas jej przeglądania, a nie w tle dla wszystkich
 chunków. Dane powierzchni przychodzą stopniowo, niezależnie od analizy cech.
 
@@ -325,8 +332,10 @@ w tym katalogu). Drugi start tego samego świata sprawdza ponowny odczyt danych.
 Kod testów serwera i klienta jest wyłączony z JAR-a wydania.
 Opcja `-PserverSmokeId=nazwa` wybiera osobny świat i katalog raportu dla danego testu.
 
-Rysowanie powierzchni ma osobną kolejkę do 256 zadań, najwyżej 128 kolumn na
-tick i miękki limit 2 ms; pojedynczy krok może przekroczyć ten budżet. Tylko
+Rysowanie powierzchni ma osobną kolejkę do 256 zadań, najwyżej 1024 kolumny na
+tick i miękki limit 2 ms; pojedynczy krok może przekroczyć ten budżet. Brakujące
+kafle mają pierwszeństwo przed odświeżaniem starych. Odczyt plików: najwyżej
+dwa nowe żądania na tick i cztery w toku; dekodowanie palet działa w tle. Tylko
 gotowe kafle są zapisywane. Ponowny odczyt tego samego wczytanego chunka
 następuje najwcześniej po 100 tickach. Klient utrzymuje jedną teksturę mapy,
 aktualizowaną przy zmianie pikseli, a nie przebudowywaną w każdej klatce.
@@ -383,3 +392,17 @@ przyszłych systemów. Blokada jest sprawdzana także na serwerze.
 Duże obrazy są przesyłane w małych częściach i składane w całość przed użyciem,
 aby nie przekraczać granic pojedynczej wiadomości Minecrafta. Serwer sprawdza
 kompletność, kolejność, rozmiar oraz czas oczekiwania. Zapisane PNG pozostają całe.
+
+
+## Przeciąganie mapy — 0.1.20
+
+Poprawiono cały gest, w tym ruch w wielu kierunkach z trzymaną myszą.
+Kamera jest liczona w przestrzeni świata, zamiast przesuwać ograniczony stary
+prostokąt obrazu. Zapas obrazu i znane sąsiednie kafle wypełniają brzegi podczas
+ruchu. Odpowiedzi aktualizują istniejący panel; nie niszczą fokusu ani gestu.
+Puszczenie myszy kończy podgląd bez ponownego przesunięcia i bez wyboru chunka.
+
+Serwer zbiera dane przy oglądanym miejscu i czyta istniejący zapis pełnych
+chunków również poza załadowaną okolicą gracza. Brakujące, dostępne fragmenty
+są dopytywane do czterech razy na sekundę; mapa nie przesyła ponownie logo/baneru.
+Nieczytelne starsze formaty zapisu nie są zgadywane ani automatycznie generowane.

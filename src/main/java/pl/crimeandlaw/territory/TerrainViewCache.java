@@ -23,14 +23,18 @@ public final class TerrainViewCache {
         return new TerrainView(incoming.dimension(),incoming.centerX(),incoming.centerZ(),incoming.radius(),incoming.playerX(),incoming.playerZ(),incoming.yaw(),merged);
     }
     public TerrainView viewport(TerrainView current,TerrainViewport target){
+        return viewport(current,target,current.radius());
+    }
+    public TerrainView viewport(TerrainView current,TerrainViewport target,int radius){
+        if(radius<1||radius>TerrainView.BUFFER_RADIUS)throw new IllegalArgumentException("Nieprawidłowy zasięg mapy.");
         if(!dimension.equals(current.dimension()))remember(current);
         List<TerrainView.Cell> visible=new ArrayList<>();
-        for(int z=-TerrainView.RADIUS;z<=TerrainView.RADIUS;z++)for(int x=-TerrainView.RADIUS;x<=TerrainView.RADIUS;x++){
+        for(int z=-radius;z<=radius;z++)for(int x=-radius;x<=radius;x++){
             int cx=target.x()+x,cz=target.z()+z;
             var cell=Math.abs((long)cx)>TerrainViewport.LIMIT||Math.abs((long)cz)>TerrainViewport.LIMIT?null:cells.get(new TerrainKey(dimension,cx,cz));
             visible.add(cell==null?new TerrainView.Cell(cx,cz,TerrainView.Status.UNAVAILABLE,0,0,0,0,"",Set.of(),null,null,"",""):cell);
         }
-        return new TerrainView(dimension,target.x(),target.z(),TerrainView.RADIUS,current.playerX(),current.playerZ(),current.yaw(),visible);
+        return new TerrainView(dimension,target.x(),target.z(),radius,current.playerX(),current.playerZ(),current.yaw(),visible);
     }
     public int size(){return cells.size();}
     public void clear(){cells.clear();dimension="";}

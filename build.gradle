@@ -2,7 +2,7 @@ plugins {
     id 'java-library'
     id 'net.neoforged.moddev' version '2.0.148'
 }
-version = '0.1.19'
+version = '0.1.20'
 group = 'pl.crimeandlaw'
 base { archivesName = 'crimeandlaw' }
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
@@ -26,7 +26,7 @@ neoForge {
                 systemProperty 'crimeandlaw.uiSmoke', 'true'
                 systemProperty 'crimeandlaw.logoFixtures', file('src/test/resources/logo-formats.json').absolutePath
                 systemProperty 'crimeandlaw.uiSmokeOutput', file('build/ui-smoke-'+uiSmokeId).absolutePath
-                systemProperty 'crimeandlaw.actualTerrainView', file('build/server-smoke-terrain16a/view.json').absolutePath
+                systemProperty 'crimeandlaw.actualTerrainView', file('build/server-smoke-'+providers.gradleProperty('terrainFixtureId').getOrElse('terrain16a')+'/view.json').absolutePath
                 programArguments.addAll '--width', providers.gradleProperty('uiWidth').getOrElse('1920'), '--height', providers.gradleProperty('uiHeight').getOrElse('1080')
             }
         }

@@ -1,80 +1,65 @@
-# Weryfikacja 0.1.19
+# Weryfikacja 0.1.20
 
-Minecraft 1.21.1, NeoForge 21.1.248, JDK 21.
+Minecraft 1.21.1, NeoForge 21.1.248, Java 21, protokół 12.
 
-## Zakres
+## Poprawiony przypadek
 
-- Logo 2048×2048, baner do 4096×1024 (pas 4096×951), PNG do 17 MB.
-- Oddzielny obraz roboczy do 8192 px / 16 777 216 pikseli i podgląd do 2048 px.
-- Pełne mipmapy i filtrowanie trójliniowe dla logo, baneru i podglądu.
-- Przygotowanie końcowego PNG w tle; blokada podwójnego zatwierdzania
-  i odrzucanie wyniku po anulowaniu okna.
-- Protokół 11 oraz dotychczasowy przesył w kompletnych logicznych wiadomościach
-  podzielonych na pakiety do 24 KiB; większy limit całego obrazu.
+Nagranie użytkownika pokazuje przesuwanie gotowego małego prostokąta i puste
+pasy przy kolejnych zmianach kierunku. Weryfikacja obejmuje cały gest, także
+z nadal wciśniętą myszą oraz odpowiedziami serwera w trakcie ruchu.
 
-## Wyniki
+## Testy
 
-93 testy JUnit: 0 niepowodzeń, 0 błędów, 0 pominiętych.
-Końcowe `--offline build`: BUILD SUCCESSFUL (45 sekund).
+- `build --offline`: **BUILD SUCCESSFUL**; **97 testów**, bez błędów,
+  niepowodzeń i pominięć. Obejmują przeliczenie ruchu myszy na współrzędne
+  świata, zmianę kierunku, granice świata, niezależne zaznaczenie i pamięć
+  sąsiednich odpowiedzi. Pełna wiadomość 225 kafli mieści się w limicie kodeka.
+- `map20a`: prawdziwy renderer Minecrafta, 1920 × 1080, skale GUI 2 i 4,
+  78 zrzutów. Dodatkowy przypadek obejmuje trzy przybliżenia i **18 kroków
+  przeciągania ze zmianami kierunku**. Opóźnione odpowiedzi dla sąsiednich
+  widoków docierają przy wciśniętej myszy. Kontrola pikseli potwierdza brak
+  tła i mgły na całym widocznym, wcześniej rozpoznanym terenie. Fokus,
+  zaznaczenie chunka, powrót i puszczenie myszy pozostają poprawne.
+- `terrain20b`: prawdziwy serwer dedykowany, pierwszy start i restart tego
+  samego świata. Zachowano próby wioski, stałych cech, kolorów wszystkich
+  kolumn, granic kafli, odświeżenia zmian i skrajnych współrzędnych.
+  Sprawdzono kafel przy kamerze poza dawnym zasięgiem gracza oraz zimny odczyt
+  rzeczywistego zapisu chunka FULL po restarcie. Paleta i heightmapa odtwarzają
+  przygotowaną powierzchnię. Odczyt nie ładuje tego chunka do świata, nie
+  zwiększa liczby załadowanych chunków i nie tworzy odległego pustego regionu.
+- `net20b`: serwer dedykowany i **dwa oddzielne klienty przez TCP**. Na
+  rzeczywistym terenie wykonano sześć zmian kierunku z trzymaną myszą;
+  **29 odpowiedzi serwera** nie przerwało gestu, nie zmieniło zaznaczenia
+  i nie zostawiło uciętych brzegów. Sprawdzenie obejmuje piksele całego
+  znanego widoku, powrót kamery oraz puszczenie przycisku. Zachowano próby
+  członkostwa, uprawnień, prywatności zgłoszeń i identycznych szczegółowych
+  obrazów na obu klientach. Logo (19 196 396 znaków Base64) i baner
+  (17 687 236 znaków) przeszły transmisję i porównanie skrótów; restart
+  zachował obrazy, członków, rangi, uprawnienia, daty i wspólny wygląd.
 
-Sprawdzono końcowy JAR: 92 klasy produkcyjne zgodne z kompilacją,
-15 dołączonych bibliotek, brak klas automatyzacji i powtórzonych wpisów ZIP.
-SHA-256 JAR: `dc9a8d04426f329d801a9a88b5a35ae81446383c56d23104b7b65b63a5eb2cb8`.
+Wyniki lokalne: `build/ui-smoke-map20a/result.txt`,
+`build/server-smoke-terrain20b/result.txt` oraz trzy pliki `*.PASS` w
+`build/network-smoke-net20b/`. Próby klienta i sieci uruchamiają prawdziwą
+grę; nie zastępują długotrwałego pomiaru wydajności na komputerze gracza.
 
-### Zachowanie szczegółów
+## Gotowy JAR
 
-- Test porównuje każdy piksel źródła 4096×1024 po odczycie z pliku i zapisie
-  baneru; naprzemienny wzór o szerokości 1 px pozostaje identyczny.
-- Logo zachowuje pikselowy wzór w natywnej rozdzielczości 2048×2048.
-- Roboczy poziomy SVG 8192×1024 pozostaje w tej rozdzielczości, a kwadrat
-  8192×8192 mieści się w budżecie jako 4096×4096.
-- Mniejszy podgląd 2048 px nie zastępuje szczegółowego źródła przy zapisie.
+`crimeandlaw-0.1.20.jar`: 1 840 411 bajtów. Archiwum bez błędów CRC i
+powtórzonych wpisów; 97 klas produkcyjnych zgodnych bajt w bajt z kompilacją,
+15 bibliotek JarJar, poprawna wersja metadanych, bez klas automatyzacji prób.
 
-### Prawdziwy renderer Minecrafta
+SHA-256: `37d8ed9743c963d482431ac0b2568feb2ea0fc5bcde0b4e322777dc17437994e`.
 
-Próba `res19c`: 1920×1080, GUI 2 i 4, 60 zrzutów 00–59.
-Raport `build/ui-smoke-res19c/result.txt`: PASS.
+Protokół 12 wymaga tej wersji na serwerze i u wszystkich graczy.
 
-- Rzeczywiste tekstury logo 2048×2048 i baneru 4096×951, starsze PNG 64×64.
-- Odczyt parametrów OpenGL potwierdza filtrowanie trójliniowe przy pomniejszaniu
-  i liniowe przy powiększaniu. Sprawdzono rozmiary każdego poziomu mipmap,
-  także niesymetrycznych i niebędących potęgą dwójki wymiarów baneru.
-- Drobna czarno-biała kratka źródłowa po wyświetleniu w mniejszym polu daje
-  stabilną szarość: sprawdzono rzeczywiste piksele z bufora ekranu.
-- Import, przesuwanie, scroll i zatwierdzenie PNG w tle; blokada drugiego
-  zatwierdzenia i brak zastosowania porzuconego kadru po anulowaniu.
-- Zachowano wcześniejsze sprawdzenia formularza, rang, uprawnień, rejestru,
-  nawigacji mapy, pełnego pasa baneru, portretu i nakładek skina.
-- Przed próbą odtworzono brakującą po wyczyszczeniu środowiska mapę testową
-  na prawdziwym serwerze: seed 1, wieś/farma, chunk 38,51, 49 kafli.
-  To pierwsze uruchomienie testu terenu; nie powtarzano jego osobnego restartu.
-- Wcześniejsze próby: `res19a` wymagała brakującego pliku mapy; `res19b`
-  wykazała zależne od FPS oczekiwanie w teście przeciągania rang. Test czeka
-  teraz do końca przewijania, maksymalnie 3 sekundy czasu rzeczywistego.
-  Nie zmieniano mechanizmu przeciągania rang. Końcowa próba `res19c`: PASS.
+## Granice zachowania
 
-### Dwa klienty i zapis świata
+Mapa używa prawdziwych danych: załadowanych bloków, gotowych kafli i istniejących
+pełnych chunków NBT. Dane są zbierane stopniowo. Niewygenerowany teren i zapis
+w nieobsługiwanym lub uszkodzonym formacie pozostają zasłonięte. Mod nie generuje
+świata dla mapy, nie tworzy pustych regionów i nie utrzymuje odległych chunków
+w pamięci świata. Cieniowanie przy granicy pojedynczego pliku korzysta z
+lokalnej wysokości; analiza stałych cech terenu pozostaje oddzielna.
 
-Próba `net19a`: własny serwer na 127.0.0.1:25597 oraz dwa prawdziwe
-klienty 960×540, osobne katalogi gry. `owner.PASS`, `member.PASS`,
-`restart.PASS` w `build/network-smoke-net19a`. Procesy zakończone poprawnie.
-
-- Utworzenie gangu, zgłoszenie, przyjęcie i przypisanie prawa wyglądu przez UI.
-- Szczegółowe losowe logo 2048×2048: 19 196 396 znaków Base64.
-- Szczegółowy losowy baner 4096×951: 17 687 236 znaków Base64.
-- Oba obrazy jednocześnie w stanie gangu, zgodne SHA-256 u obu klientów,
-  właściwe rozmiary tekstur, wspólny motyw i zachowane uprawnienia.
-- Odrzucone niedozwolone zmiany wyglądu/baneru i usunięcie lidera.
-- Restart tego samego świata zachował oba obrazy, członków, właściciela,
-  rangę, prawa, motyw oraz rzeczywiste daty dołączenia.
-
-Nie potwierdza to pobrania konkretnego skina z Mojang ani jakości dowolnego
-obrazu użytkownika; jakość źródła jest niezależnym ograniczeniem.
-Wcześniejsze sprawdzenie 0.1.18: [raport](docs/VALIDATION_0.1.18.md).
-
-## Ograniczenia
-
-Większa tekstura nie odtworzy szczegółów, których nie ma w źródle.
-Starsze zapisy działają; dla większej szczegółowości trzeba ponownie wczytać oryginał.
-Przechowywany jest zatwierdzony PNG, nie pełny plik sprzed kadrowania.
-Nie zmieniano obsługiwanych formatów ani pozostałych mechanik moda.
+Wcześniejsze sprawdzenia: [0.1.19](docs/VALIDATION_0.1.19.md),
+[0.1.18](docs/VALIDATION_0.1.18.md).

@@ -516,3 +516,28 @@ gdy właściwe systemy własności oraz mapy będą rozwijane.
   cały obraz i kolor tła. Dopiero wybrany kadr jest zapisywany; oryginalny plik
   nie jest przechowywany na serwerze. Dodatkowe detale starszego małego zapisu
   wymagają ponownego wczytania oryginalnego pliku.
+
+
+## Ucinanie mapy przy przeciąganiu — 0.1.20
+
+- Uwagi z nagrania obejmują cały gest i zmiany kierunku, nie tylko powrót
+  po puszczeniu przycisku. Wcześniejsza korekta 0.1.18 obejmowała zbyt wąski przypadek.
+- Kamera przelicza ruch myszy na położenie świata w trakcie przeciągania,
+  z ułamkowym przesunięciem względem najbliższego chunka. Zapas pobieranych danych
+  15×15 przy widocznym maksymalnie 11×11; rysowany jest też zapas poza ramką.
+- Aktualizacja danych zachowuje ten sam panel podczas gestu. Spóźniona odpowiedź
+  dostarcza kafle do pamięci, zamiast być odrzucana. Nie przestawia kamery.
+- Zaznaczenie chunka jest oddzielne; puszczenie przeciągania nie zaznacza i nie
+  wykonuje drugiego przesunięcia. Pamięć klienta nadal ograniczona do 1024 kafli.
+- Zbieranie powierzchni dotyczy oglądanego miejsca. Dla niezaładowanych chunków
+  można odczytać istniejące pełne dane NBT z regionu i zrekonstruować barwy
+  z palet bloków i wysokości. Nie tworzyć żywych chunków, encji, biletów,
+  nowego świata ani pustych plików regionów. Nie odtwarzać brakujących danych na oko.
+- Kolory/cieniowanie są wspólne dla odczytu żywego i zapisanego. Przy odczycie
+  pojedynczego zapisanego chunka cieniowanie na granicy używa lokalnej wysokości
+  zamiast odczytywać kolejne sąsiednie regiony wyłącznie dla cienia.
+- Priorytet brakujących kafli; miękkie 2 ms i maks. 1024 kolumny/tick,
+  maks. 256 zadań, 2 nowe odczyty plików/tick i 4 w toku. Czytanie i dekodowanie
+  zapisu są asynchroniczne; tylko skończony kafel trafia do zapisu świata.
+- Protokół 12 po obu stronach; nie dodawano przejmowania terenu, bonusów,
+  produkcji ani innych mechanik. Wcześniejsze szczegółowe obrazy pozostają.

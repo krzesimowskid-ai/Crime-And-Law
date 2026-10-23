@@ -32,6 +32,10 @@ public final class GangUiSmokeTest {
     private static pl.crimeandlaw.territory.TerrainView unshiftedMap;
     private static int chosenX,chosenZ;
     private static long roleEdgeDeadline;
+    private static TerrainPanel heldMap;
+    private static int mapRound,mapStep,heldSelectionX,heldSelectionZ;
+    private static double mapPointerX,mapPointerY;
+    private static final double[][] MAP_PATH={{1.7,-1.4},{-2.1,2.2},{.35,.45},{2.4,1.1},{-2,-2},{0,0}};
     private static final StringBuilder REPORT=new StringBuilder();
 
     @SubscribeEvent public static void frame(RenderFrameEvent.Post event) {
@@ -522,15 +526,73 @@ public final class GangUiSmokeTest {
                 }
                 case 60 -> {
                     require(mc.screen==screen,"Cancelled asynchronous encoding leaves the parent open");
+                    TerrainClient.clear();
+                    for(int z:new int[]{-7,0,7})for(int x:new int[]{-7,0,7})TerrainClient.receive(ClientState.JSON.toJson(wideMap(x,z,0)));
+                    TerrainClient.receive(ClientState.JSON.toJson(wideMap(0,0,0)));mapRound=0;startHeldMap(mc);
+                }
+                case 61 -> {
+                    require(widget(screen,"Mapa terenu")==heldMap&&heldMap.dragging(),"The same focused map survives camera changes and server replies");
+                    checkMapCanvas(mc,heldMap);
+                    if(mapStep>0)capture(mc,"60-map-held-r"+mapRound+"-step"+mapStep);
+                    var before=TerrainClient.view;
+                    // Delayed response from another viewport, containing a newer player heading.
+                    TerrainClient.receive(ClientState.JSON.toJson(wideMap(-7,0,mapStep*7+mapRound+1)));
+                    require(TerrainClient.view.centerX()==before.centerX()&&TerrainClient.view.centerZ()==before.centerZ(),"A delayed neighboring response cannot move the held camera");
+                    require(widget(screen,"Mapa terenu")==heldMap&&heldMap.dragging(),"Receiving new data keeps the gesture and focus");
+                    if(mapStep<MAP_PATH.length){
+                        var l=GangLayout.of(screen.width,screen.height);var field=GangScreen.class.getDeclaredField("terrainRadius");field.setAccessible(true);
+                        double cell=TerrainPanel.GRID/(double)(field.getInt(screen)*2+1);
+                        double dx=MAP_PATH[mapStep][0]*cell,dy=MAP_PATH[mapStep][1]*cell;
+                        require(screen.mouseDragged(mapPointerX+dx*l.scale(),mapPointerY+dy*l.scale(),0,dx*l.scale(),dy*l.scale()),"Continuous held drag handled");
+                        require(TerrainClient.view.centerX()==Math.round(-MAP_PATH[mapStep][0])&&TerrainClient.view.centerZ()==Math.round(-MAP_PATH[mapStep][1]),"Camera moves while the mouse is held");
+                        mapStep++;stage=61;
+                    }else screen.mouseReleased(mapPointerX,mapPointerY,0);
+                }
+                case 62 -> {
+                    checkMapCanvas(mc,(TerrainPanel)widget(screen,"Mapa terenu"));
+                    var x=GangScreen.class.getDeclaredField("terrainX");x.setAccessible(true);var z=GangScreen.class.getDeclaredField("terrainZ");z.setAccessible(true);
+                    require(x.getInt(screen)==heldSelectionX&&z.getInt(screen)==heldSelectionZ,"Neither panning nor replies select a different chunk");
+                    require(TerrainClient.view.centerX()==0&&TerrainClient.view.centerZ()==0,"Full multi-direction loop returns to its world origin");
+                    if(++mapRound<3){startHeldMap(mc);stage=61;}
+                    else {
+                        REPORT.append("PASS held map pan: three zoom levels, eighteen direction/reversal steps, delayed neighboring replies during a held gesture, stable focus/selection, no background or fog pixels across fully known visible terrain, and round-trip release.\n");
                     REPORT.append("PASS high-resolution images: actual 2048-square/4096-wide textures, full GPU mip chains, neutral checkerboard minification without coarse aliasing, asynchronous apply and cancellation.\n");
                     REPORT.append("PASS: actual Minecraft renderer; earlier map, list, roles, register and logo checks retained; centered actions, accented creation form, member skin card/dismissal, banner color/image/crop, Enter focus, stationary rank-drag autoscroll, persistent chunk selection and top player icon; loading gate, full strip edges, cached drag round-trip, searchable locked future permissions; actual alpha-blended hat, jacket and both sleeves for wide and slim skins.\n");
                     Files.writeString(OUT.resolve("result.txt"),REPORT.toString());System.out.println("CRIME_UI_SMOKE_PASS");mc.stop();
+                    }
                 }
             }
         } catch(Throwable error) {
             error.printStackTrace();
             try{Files.createDirectories(OUT);Files.writeString(OUT.resolve("result.txt"),"FAIL: "+error);}catch(Exception ignored){}
             stage=1000;mc.stop();
+        }
+    }
+    private static pl.crimeandlaw.territory.TerrainView wideMap(int x,int z,float yaw){
+        return pl.crimeandlaw.territory.TerrainView.snapshot(new pl.crimeandlaw.territory.TerrainAtlas(),"minecraft:overworld",x,z,key->true,id->"",key->{
+            byte[] colors=new byte[256];
+            var color=((key.x()+key.z())&1)==0?net.minecraft.world.level.material.MapColor.GRASS:net.minecraft.world.level.material.MapColor.SAND;
+            java.util.Arrays.fill(colors,color.getPackedId(net.minecraft.world.level.material.MapColor.Brightness.NORMAL));
+            return pl.crimeandlaw.territory.TerrainMapTile.of(colors);
+        },pl.crimeandlaw.territory.TerrainView.BUFFER_RADIUS).withPosition(8,8,yaw);
+    }
+    private static void startHeldMap(Minecraft mc)throws Exception{
+        TerrainClient.pan(-TerrainClient.view.centerX(),-TerrainClient.view.centerZ());
+        var radius=GangScreen.class.getDeclaredField("terrainRadius");radius.setAccessible(true);radius.setInt(screen,new int[]{5,3,2}[mapRound]);
+        selectTab(2);heldMap=(TerrainPanel)widget(screen,"Mapa terenu");
+        var x=GangScreen.class.getDeclaredField("terrainX");x.setAccessible(true);heldSelectionX=x.getInt(screen);
+        var z=GangScreen.class.getDeclaredField("terrainZ");z.setAccessible(true);heldSelectionZ=z.getInt(screen);
+        var l=GangLayout.of(screen.width,screen.height);mapPointerX=(heldMap.getX()+98)*l.scale();mapPointerY=(heldMap.getY()+98)*l.scale();
+        require(screen.mouseClicked(mapPointerX,mapPointerY,0),"Start held map gesture");mapStep=0;
+    }
+    private static void checkMapCanvas(Minecraft mc,TerrainPanel panel){
+        double scale=GangLayout.of(mc.screen.width,mc.screen.height).scale()*mc.getWindow().getGuiScale();
+        try(var image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){
+            for(int y=2;y<TerrainPanel.GRID-2;y+=4)for(int x=2;x<TerrainPanel.GRID-2;x+=4){
+                if(x<19&&y<19||x<82&&y>TerrainPanel.GRID-21)continue;
+                int pixel=image.getPixelRGBA((int)((panel.getX()+x+.5)*scale),(int)((panel.getY()+y+.5)*scale));
+                require(pixel!=0xFF2B2629&&pixel!=0xFF292626&&pixel!=0xFF2D2A2A,"Known map pixels cover every visible edge during a held drag at "+x+","+y);
+            }
         }
     }
     private static final class ImageQualityProbe extends Screen {

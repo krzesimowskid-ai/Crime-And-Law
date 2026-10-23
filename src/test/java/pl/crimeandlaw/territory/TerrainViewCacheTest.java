@@ -31,4 +31,13 @@ class TerrainViewCacheTest {
             var result=cache.viewport(corner,new TerrainViewport(x,z));assertEquals(121,result.cells().size());
         }
     }
+    @Test void neighboringRepliesFillTheCurrentViewAndAllReversalsKeepKnownTiles(){
+        var cache=new TerrainViewCache();var initial=cache.remember(view("minecraft:overworld",0,0,true));
+        for(int z:new int[]{-6,0,6})for(int x:new int[]{-6,0,6})cache.remember(view("minecraft:overworld",x,z,true));
+        for(int[] point:new int[][]{{4,3},{-3,-4},{5,-2},{-5,4},{0,0}}){
+            var camera=cache.viewport(initial,new TerrainViewport(point[0],point[1]),TerrainView.BUFFER_RADIUS);
+            assertTrue(camera.cells().stream().filter(c->Math.abs(c.x()-point[0])<=5&&Math.abs(c.z()-point[1])<=5).allMatch(c->!c.mapPixels().isEmpty()));
+            cache.remember(view("minecraft:overworld",point[0],point[1],false));
+        }
+    }
 }

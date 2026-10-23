@@ -16,13 +16,17 @@ final class TerrainClient {
     static void request(){
         pending=true;flush();
     }
-    static void tick(){flush();}
+    static void tick(){
+        // Complete visible/prefetched loaded tiles promptly instead of waiting two seconds.
+        if(view!=null&&view.cells().stream().anyMatch(c->c.mapPixels().isEmpty()&&c.status()!=TerrainView.Status.UNAVAILABLE))pending=true;
+        flush();
+    }
     static boolean following(){return target==null;}
     static void pan(int dx,int dz){
         if(target==null&&view==null)return;
         var base=target==null?new TerrainViewport(view.centerX(),view.centerZ()):target;
         target=base.move(dx,dz);
-        if(view!=null){cache.remember(view);view=cache.viewport(view,target);updated();}
+        if(view!=null){cache.remember(view);view=cache.viewport(view,target,TerrainView.BUFFER_RADIUS);updated();}
         request();
     }
     static void home(){target=null;request();}
@@ -37,13 +41,14 @@ final class TerrainClient {
     }
     static void receive(String json){
         TerrainView next=ClientState.JSON.fromJson(json,TerrainView.class);
-        if(target!=null&&(next.centerX()!=target.x()||next.centerZ()!=target.z()))return;
         var player=Minecraft.getInstance().player;
         if(player!=null){
             if(!next.dimension().equals(player.level().dimension().location().toString()))return;
-            if(target==null&&(next.centerX()!=player.chunkPosition().x||next.centerZ()!=player.chunkPosition().z))return;
         }
+        // A reply for an earlier camera position still contains useful neighboring tiles.
         next=cache.remember(next);
+        TerrainViewport wanted=target!=null?target:player==null?new TerrainViewport(next.centerX(),next.centerZ()):new TerrainViewport(player.chunkPosition().x,player.chunkPosition().z);
+        if(next.centerX()!=wanted.x()||next.centerZ()!=wanted.z())next=cache.viewport(next,wanted,TerrainView.BUFFER_RADIUS);
         if(next.equals(view))return;view=next;updated();
     }
     private static void updated(){if(Minecraft.getInstance().screen instanceof GangScreen screen)screen.terrainUpdated();}

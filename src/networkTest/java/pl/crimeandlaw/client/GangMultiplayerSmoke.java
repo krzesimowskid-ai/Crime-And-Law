@@ -31,6 +31,11 @@ public final class GangMultiplayerSmoke {
     private static JsonObject lastState;
     private static String capturePending="";
     private static boolean finished;
+    private static TerrainPanel mapPanel;
+    private static int mapStep,mapOriginX,mapOriginZ,mapReplies,replyBefore,selectedMapX,selectedMapZ;
+    private static boolean awaitingMap;
+    private static double mapPointerX,mapPointerY;
+    private static final double[][] MAP_PATH={{.4,0},{1.7,.5},{-1.6,1.7},{1.8,-1.7},{.3,.2},{0,0}};
 
     @SubscribeEvent public static void frame(RenderFrameEvent.Post event){
         if(ROLE.isEmpty()||finished)return;
@@ -122,7 +127,39 @@ public final class GangMultiplayerSmoke {
             case 15 -> {
                 if(!Files.exists(OUT.resolve("member.PASS")))return;
                 require(gang.owner.equals(mc.player.getUUID())&&ClientState.memberCount()==2,"Unauthorized member operation did not change membership");
-                pass(mc,"Owner created/accepted membership and assigned appearance rights through UI, saved 2048x2048 logo + 4096x951 banner and shared theme; logo chars="+gang.logo.length()+", banner chars="+gang.banner.image().length());
+                pl.crimeandlaw.network.GangNetwork.terrainReceiver=json->{mapReplies++;TerrainClient.receive(json);};
+                press(mc,"Mapa");next("wait for full prefetched real world map");
+            }
+            case 16 -> {
+                if(!mappedBuffer())return;
+                mapOriginX=TerrainClient.view.centerX();mapOriginZ=TerrainClient.view.centerZ();
+                mapPanel=(TerrainPanel)widget(mc,"Mapa terenu");var l=GangLayout.of(mc.screen.width,mc.screen.height);
+                var x=GangScreen.class.getDeclaredField("terrainX");x.setAccessible(true);selectedMapX=x.getInt(mc.screen);
+                var z=GangScreen.class.getDeclaredField("terrainZ");z.setAccessible(true);selectedMapZ=z.getInt(mc.screen);
+                mapPointerX=(mapPanel.getX()+98)*l.scale();mapPointerY=(mapPanel.getY()+98)*l.scale();
+                require(mc.screen.mouseClicked(mapPointerX,mapPointerY,0),"Start actual held map drag");
+                next("hold mouse while panning and receiving real server replies");
+            }
+            case 17 -> {
+                require(widget(mc,"Mapa terenu")==mapPanel&&mapPanel.dragging(),"Real packets do not replace the focused map during a held drag");
+                if(awaitingMap){
+                    if(mapReplies<=replyBefore||!mappedBuffer())return;
+                    checkMapCanvas(mc,mapPanel);capture(mc,"owner-map-held-"+mapStep+".png");mapStep++;awaitingMap=false;
+                }
+                if(mapStep==MAP_PATH.length){mc.screen.mouseReleased(mapPointerX,mapPointerY,0);next("release map after repeated reversals");return;}
+                var l=GangLayout.of(mc.screen.width,mc.screen.height);double cell=TerrainPanel.GRID/11.0;
+                double dx=MAP_PATH[mapStep][0]*cell,dy=MAP_PATH[mapStep][1]*cell;
+                require(mc.screen.mouseDragged(mapPointerX+dx*l.scale(),mapPointerY+dy*l.scale(),0,dx*l.scale(),dy*l.scale()),"Real held camera motion handled");
+                require(TerrainClient.view.centerX()==mapOriginX+Math.round(-MAP_PATH[mapStep][0])&&TerrainClient.view.centerZ()==mapOriginZ+Math.round(-MAP_PATH[mapStep][1]),"Held camera rebases before release");
+                replyBefore=mapReplies;TerrainClient.request();awaitingMap=true;
+            }
+            case 18 -> {
+                require(!((TerrainPanel)widget(mc,"Mapa terenu")).dragging(),"Release ends the held camera preview");
+                require(TerrainClient.view.centerX()==mapOriginX&&TerrainClient.view.centerZ()==mapOriginZ,"Actual multi-direction drag returns to its original chunk");
+                var x=GangScreen.class.getDeclaredField("terrainX");x.setAccessible(true);var z=GangScreen.class.getDeclaredField("terrainZ");z.setAccessible(true);
+                require(x.getInt(mc.screen)==selectedMapX&&z.getInt(mc.screen)==selectedMapZ,"Dragging and real replies preserve the separate selection");
+                checkMapCanvas(mc,(TerrainPanel)widget(mc,"Mapa terenu"));
+                pass(mc,"Owner membership/permissions and identical detailed images passed; logo chars="+gang.logo.length()+", banner chars="+gang.banner.image().length()+". Actual loaded-world map: full prefetched buffer, six held direction changes, real TCP replies without losing focus, no clipping pixels, stable selection and release/return; replies="+mapReplies);
             }
         }
     }
@@ -179,6 +216,17 @@ public final class GangMultiplayerSmoke {
                 if(ClientState.message.isBlank()||ClientState.message.equals("Zapisano."))return;
                 require(ClientState.memberCount()==2&&gang.members.containsKey(gang.owner),"Server rejects unauthorized membership change");
                 pass(mc,"Member joined via the panel, received delegated permission, identical detailed logo/banner and shared theme; rejected unauthorized theme/banner/kick; private applications remained hidden.");
+            }
+        }
+    }
+    private static boolean mappedBuffer(){return TerrainClient.view!=null&&TerrainClient.view.cells().size()==225&&TerrainClient.view.cells().stream().allMatch(c->!c.mapPixels().isEmpty());}
+    private static void checkMapCanvas(Minecraft mc,TerrainPanel panel){
+        double scale=GangLayout.of(mc.screen.width,mc.screen.height).scale()*mc.getWindow().getGuiScale();
+        try(var image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){
+            for(int y=2;y<TerrainPanel.GRID-2;y+=4)for(int x=2;x<TerrainPanel.GRID-2;x+=4){
+                if(x<19&&y<19||x<82&&y>TerrainPanel.GRID-21)continue;
+                int pixel=image.getPixelRGBA((int)((panel.getX()+x+.5)*scale),(int)((panel.getY()+y+.5)*scale));
+                require(pixel!=0xFF2B2629&&pixel!=0xFF292626&&pixel!=0xFF2D2A2A,"Loaded world covers the map at "+x+","+y);
             }
         }
     }
