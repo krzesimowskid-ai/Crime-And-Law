@@ -8,6 +8,26 @@ import net.neoforged.neoforge.event.server.ServerStartedEvent;
 /** Reads the world saved by two real clients after restarting the dedicated server. */
 @EventBusSubscriber(modid="crimeandlaw")
 public final class GangNetworkPersistenceSmoke {
+    private static int peakJobs,peakReads,peakViewers;
+    @SubscribeEvent public static void budgets(net.neoforged.neoforge.event.tick.ServerTickEvent.Post event){
+        String path=System.getProperty("crimeandlaw.networkSmokeOutput");
+        if(path==null||Boolean.getBoolean("crimeandlaw.networkSmokePersistence"))return;
+        try{
+            var queues=pl.crimeandlaw.territory.TerrainCartography.class.getDeclaredField("QUEUES");queues.setAccessible(true);
+            var queue=((java.util.Map<?,?>)queues.get(null)).get(event.getServer());if(queue==null)return;
+            var jobs=queue.getClass().getDeclaredField("jobs");jobs.setAccessible(true);
+            var flights=queue.getClass().getDeclaredField("flights");flights.setAccessible(true);
+            var demand=queue.getClass().getDeclaredField("demand");demand.setAccessible(true);
+            int jobCount=((java.util.Map<?,?>)jobs.get(queue)).size(),readCount=((java.util.List<?>)flights.get(queue)).size();
+            int viewerCount=((pl.crimeandlaw.territory.TerrainDemand)demand.get(queue)).size();
+            if(jobCount>pl.crimeandlaw.territory.TerrainDemand.MAX_JOBS||readCount>pl.crimeandlaw.territory.TerrainCartography.MAX_IN_FLIGHT||viewerCount>pl.crimeandlaw.territory.TerrainDemand.MAX_VIEWERS)throw new AssertionError("Map work bounds exceeded");
+            peakJobs=Math.max(peakJobs,jobCount);peakReads=Math.max(peakReads,readCount);peakViewers=Math.max(peakViewers,viewerCount);
+            if(event.getServer().getTickCount()%20==0)Files.writeString(Path.of(path,"budget.txt"),"peak jobs="+peakJobs+", actual read slots="+peakReads+", viewers="+peakViewers+"\n");
+        }catch(Throwable error){
+            error.printStackTrace();try{Files.createDirectories(Path.of(path));Files.writeString(Path.of(path,"budget.FAIL"),error.toString());}catch(Exception ignored){}
+            event.getServer().halt(false);
+        }
+    }
     @SubscribeEvent public static void started(ServerStartedEvent event){
         if(!Boolean.getBoolean("crimeandlaw.networkSmokePersistence"))return;
         Path out=Path.of(System.getProperty("crimeandlaw.networkSmokeOutput"));

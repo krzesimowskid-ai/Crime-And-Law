@@ -144,7 +144,7 @@ public final class TerrainServerSmoke {
             require(remoteView.playerX()==viewer.getX()&&remoteView.playerZ()==viewer.getZ(),"Remote viewport keeps the real player position");
             for(int edgeX:new int[]{-TerrainViewport.LIMIT,TerrainViewport.LIMIT})for(int edgeZ:new int[]{-TerrainViewport.LIMIT,TerrainViewport.LIMIT}){
                 var edgeView=TerrainAnalysis.view(viewer,new TerrainViewport(edgeX,edgeZ));
-                require(edgeView.centerX()==edgeX&&edgeView.centerZ()==edgeZ&&edgeView.cells().size()==225,"Views at all four world corners remain valid");
+                require(edgeView.centerX()==edgeX&&edgeView.centerZ()==edgeZ&&edgeView.cells().size()==(TerrainView.BUFFER_RADIUS*2+1)*(TerrainView.BUFFER_RADIUS*2+1),"Views at all four world corners remain valid");
             }
             require(level.getChunkSource().getLoadedChunksCount()==loaded,"World-corner views do not load terrain");
             if(cameraOnly==null){
@@ -177,15 +177,16 @@ public final class TerrainServerSmoke {
             }
             require(level.getChunkSource().getChunkNow(diskOnly.x(),diskOnly.z())==null,"Disk fixture stays unloaded");
             int beforeDisk=level.getChunkSource().getLoadedChunksCount();
-            var diskView=TerrainAnalysis.view(viewer,new TerrainViewport(diskOnly.x(),diskOnly.z()));
+            var diskView=TerrainAnalysis.view(viewer,new TerrainViewport(diskOnly.x()-8,diskOnly.z()));
             require(level.getChunkSource().getLoadedChunksCount()==beforeDisk,"Saved-region map request does not load any live chunks");
             if(saved.map(diskOnly)==null){if(++waited>1600)throw new AssertionError("Saved full chunk did not produce a map tile");return;}
             require((saved.map(diskOnly).colors()[17]&255)>>2==net.minecraft.world.level.material.MapColor.GOLD.id,"Saved palette and heightmap preserve the real gold surface column");
             require(diskView.cells().stream().anyMatch(c->c.x()==diskOnly.x()&&c.z()==diskOnly.z()&&!c.mapPixels().isEmpty()),"Unloaded generated terrain is visible through the actual viewport");
             require(level.getChunkSource().getChunkNow(diskOnly.x(),diskOnly.z())==null,"Disk mapping creates no chunk ticket");
+            require(Math.abs(diskView.centerX()-diskOnly.x())>TerrainView.RADIUS,"Saved FULL chunk was prefetched beyond the visible map");
             var farRegion=net.minecraft.world.level.dimension.DimensionType.getStorageFolder(level.dimension(),server.getWorldPath(net.minecraft.world.level.storage.LevelResource.ROOT)).resolve("region/r.12500.-12500.mca");
             require(!Files.exists(farRegion),"Browsing missing distant terrain does not create an empty region file");
-            String result=(restart?"RESTART":"FIRST_RUN")+" PASS: real village "+target+", generated "+expected+", original traits, old-chunk reconstruction, 49 surface tiles, all-column colors, seam/live update, remote/world-corner views without generation; camera-only loaded chunk outside player radius; real FULL chunk NBT palette/heightmap read at an unloaded location without tickets, cold region-file read after restart, no empty distant region file.\n";
+            String result=(restart?"RESTART":"FIRST_RUN")+" PASS: real village "+target+", generated "+expected+", original traits, old-chunk reconstruction, surface tiles, all-column colors, seam/live update, remote/world-corner views without generation; camera-only loaded chunk outside player radius; real FULL chunk NBT palette/heightmap prefetched eight chunks from the camera, beyond the visible map, without tickets; cold region-file read after restart, no empty distant region file.\n";
             Files.writeString(OUT.resolve("result.txt"),result,StandardOpenOption.CREATE,StandardOpenOption.APPEND);
             System.out.println("CRIME_TERRAIN_SERVER_PASS "+result);done=true;server.halt(false);
         }catch(Throwable error){fail(server,error);}

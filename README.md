@@ -1,19 +1,19 @@
 # Crime And Law
 
 Autorski mod gangsterski: panel gangów, członkostwo i własny wygląd menu.
-Wersja **0.1.23**.
+Wersja **0.1.24**.
 
 Pierwsza propozycja własnej ekonomii w dolarach i rozwoju terenów:
 [Balans terytoriów](docs/BALANS_TERYTORIOW.md) oraz
 [symulacja](docs/SYMULACJA_BALANSU.md). To projekt do dalszej implementacji;
-JAR 0.1.23 nie odczytuje tych reguł i nie wypłaca jeszcze pieniędzy.
+JAR 0.1.24 nie odczytuje tych reguł i nie wypłaca jeszcze pieniędzy.
 
 ## Uruchomienie
 
 - Minecraft **1.21.1**, Java **21**, NeoForge **21.1.248**.
-- Włóż `crimeandlaw-0.1.23.jar` do `mods`, zastępując poprzedni JAR tego moda.
+- Włóż `crimeandlaw-0.1.24.jar` do `mods`, zastępując poprzedni JAR tego moda.
 - W rozgrywce sieciowej mod musi być **u graczy i na serwerze**.
-  Zaktualizuj serwer i wszystkich klientów do 0.1.23. Sieć moda używa protokołu 13.
+  Zaktualizuj serwer i wszystkich klientów do 0.1.24. Sieć moda używa protokołu 14.
 - W świecie jednoosobowym część serwerowa działa razem ze światem.
 - **G** otwiera panel; skrót można zmienić w sterowaniu. Esc lub X zamyka okno.
 
@@ -155,9 +155,9 @@ wyświetlanie zachowuje proporcje i dopasowuje kadr do szerokości pasa.
 Logo pozostaje osobnym PNG 2048×2048.
 Starsze banery 4K/8K są przy wczytywaniu świata automatycznie zmniejszane
 do 2K z zachowaniem proporcji, marginesów, koloru i krycia. Zmiana zapisuje się
-ze światem. Klient zmniejsza też starszą teksturę odebraną od serwera 0.1.22.
+ze światem. Klient potrafi również wyświetlić starszą teksturę po zmniejszeniu jej do 2K.
 Odczyt zachowuje dawny limit 8192×2048 / 68 MB dla zgodności; nowe zapisy
-i tekstury są ograniczone do 2K. Protokół 13 pozostaje zgodny z 0.1.22.
+i tekstury są ograniczone do 2K. Protokół 14 wymaga aktualizacji serwera i klientów do 0.1.24.
 Przygotowanie końcowego PNG działa w tle; anulowanie nie zapisuje porzuconego kadru.
 
 Baner zapisuje lider lub osoba z dotychczasowym uprawnieniem do wyglądu/logo.
@@ -186,7 +186,7 @@ Windows: gradlew.bat build
 Linux/macOS: ./gradlew build
 ```
 
-Wynik: `build/libs/crimeandlaw-0.1.23.jar`.
+Wynik: `build/libs/crimeandlaw-0.1.24.jar`.
 Gradle Wrapper 9.2.1, ModDevGradle 2.0.148, NeoForge 21.1.248.
 `./gradlew test` sprawdza model, migrację zapisów, duże listy i prywatność
 zgłoszeń, walidację/edycję logo, kolory oraz skalowanie menu.
@@ -265,11 +265,13 @@ kolejnym naciśnięciu, przełączeniu siatki, zmianie przybliżenia i odbiorze 
 Kliknięcia na częściowo widocznych chunkach uwzględniają to przesunięcie.
 Zaokrąglenie dotyczy wyłącznie obszaru pobieranych danych. Ruch wewnątrz
 tego samego obszaru nie przebudowuje listy opisów ani tekstury mapy.
-Klient pobiera obszar 15×15 chunków, z zapasem wokół widocznych 11×11,
-i rysuje również ten zapas. Odbiór danych nie przerywa trzymanego przeciągnięcia;
+Klient pobiera obszar 21×21 chunków, z zapasem wokół widocznych 11×11,
+i rysuje również ten zapas. Przy przesuwaniu środek pobierania wyprzedza
+kierunek ruchu o maksymalnie trzy chunki. Odbiór danych nie przerywa trzymanego przeciągnięcia;
 spóźnione odpowiedzi uzupełniają pamięć kafli, zachowując bieżące położenie kamery.
 Przesuwanie nie zmienia osobno wybranego chunka;
-ikona postaci u góry („Wróć do gracza”) lub Home przywraca śledzenie gracza. Działają też strzałki klawiatury
+ikona postaci u góry („Wróć do gracza”) lub Home natychmiast przełącza
+na zapamiętaną okolicę postaci i przywraca śledzenie gracza. Działają też strzałki klawiatury
 poza zaznaczonym paskiem przewijania. Przycisk „Siatka” włącza granice chunków.
 Siatka domyślnie jest wyłączona. Rzeczywista pozycja i kierunek gracza,
 północ, podziałka i zaznaczenie chunka są nakładką na krajobraz.
@@ -343,10 +345,14 @@ w tym katalogu). Drugi start tego samego świata sprawdza ponowny odczyt danych.
 Kod testów serwera i klienta jest wyłączony z JAR-a wydania.
 Opcja `-PserverSmokeId=nazwa` wybiera osobny świat i katalog raportu dla danego testu.
 
-Rysowanie powierzchni ma osobną kolejkę do 256 zadań, najwyżej 1024 kolumny na
+Rysowanie powierzchni ma osobną kolejkę do 1024 zadań, najwyżej 2048 kolumn na
 tick i miękki limit 2 ms; pojedynczy krok może przekroczyć ten budżet. Brakujące
-kafle mają pierwszeństwo przed odświeżaniem starych. Odczyt plików: najwyżej
-dwa nowe żądania na tick i cztery w toku; dekodowanie palet działa w tle. Tylko
+fragmenty widocznej okolicy mają pierwszeństwo przed pobieraniem zapasu i odświeżaniem.
+Kolejka śledzi aktualne obszary najwyżej 64 oglądających; starsze pozycje tej samej
+osoby zastępuje najnowsza. Nieaktywne żądania wygasają po 100 tickach. Odczyt
+plików: najwyżej cztery nowe operacje na tick i osiem w toku. Porzucenie starego
+widoku nie zwalnia miejsca I/O przed rzeczywistym zakończeniem jego odczytu.
+Dekodowanie palet działa w tle. Tylko
 gotowe kafle są zapisywane. Ponowny odczyt tego samego wczytanego chunka
 następuje najwcześniej po 100 tickach. Klient utrzymuje jedną teksturę mapy,
 aktualizowaną przy zmianie pikseli, a nie przebudowywaną w każdej klatce.
@@ -417,3 +423,22 @@ Serwer zbiera dane przy oglądanym miejscu i czyta istniejący zapis pełnych
 chunków również poza załadowaną okolicą gracza. Brakujące, dostępne fragmenty
 są dopytywane do czterech razy na sekundę; mapa nie przesyła ponownie logo/baneru.
 Nieczytelne starsze formaty zapisu nie są zgadywane ani automatycznie generowane.
+
+
+## Szybsza mapa — 0.1.24
+
+Klient przechowuje do 8192 fragmentów mapy. Zapamiętana okolica gracza ma
+pierwszeństwo przy usuwaniu starych danych, dzięki czemu Home może pokazać ją
+bez oczekiwania na nową odpowiedź. Rozkodowane kolory mają osobną pamięć
+do 1024 różnych obrazów; nie są odczytywane ponownie przy każdym przesunięciu.
+
+Jedno aktualne żądanie mapy czeka na odpowiedź, a kolejne ruchy aktualizują
+jego następny cel. Minimalny odstęp wysyłania to 150 ms; po dwóch sekundach
+bez odpowiedzi można ponowić pobieranie. Numery żądań zapobiegają odblokowaniu
+nowego pobierania przez starą odpowiedź. Kamera porusza się niezależnie od sieci.
+Spóźnione dane nadal mogą uzupełnić pamięć obrazów.
+
+Pełna kolejka pomija nadmiar pracy; kamera zachowuje swój cel i następne
+żądania mogą uzupełnić brakujące dane. Obrazy spoza pamięci są pobierane
+ponownie. Nie obiecuje to natychmiastowego pierwszego odczytu każdego terenu:
+niewygenerowane obszary pozostają zasłonięte, a mapa nie generuje świata.

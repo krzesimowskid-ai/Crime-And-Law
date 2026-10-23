@@ -19,10 +19,18 @@ class TerrainViewCacheTest {
         assertEquals(initial.cells(),partial.cells(),"An incomplete refresh must not erase known tiles");
     }
     @Test void cacheIsBoundedAndDimensionsNeverShareTiles(){
-        var cache=new TerrainViewCache();for(int x=0;x<200;x+=8)cache.remember(view("minecraft:overworld",x,0,true));
+        var cache=new TerrainViewCache();for(int x=0;x<2000;x+=8)cache.remember(view("minecraft:overworld",x,0,true));
         assertEquals(TerrainViewCache.LIMIT,cache.size());
         var nether=cache.remember(view("minecraft:the_nether",0,0,false));assertEquals(0,cache.size());
         assertTrue(nether.cells().stream().allMatch(c->c.mapPixels().isEmpty()));
+    }
+    @Test void playerNeighborhoodSurvivesAFullCacheAndACompleteReversePan(){
+        var cache=new TerrainViewCache();var home=cache.remember(view("minecraft:overworld",-2,-3,true));cache.protect(new TerrainViewport(-2,-3));
+        TerrainView far=home;
+        for(int x=32;x<3000;x+=8)far=cache.remember(view("minecraft:overworld",x,30,true));
+        assertEquals(TerrainViewCache.LIMIT,cache.size());
+        assertEquals(home.cells(),cache.viewport(far,new TerrainViewport(-2,-3)).cells());
+        assertTrue(cache.viewport(far,new TerrainViewport(2984,30)).cells().stream().anyMatch(c->!c.mapPixels().isEmpty()));
     }
     @Test void worldCornersDoNotCreateInvalidCacheKeys(){
         var cache=new TerrainViewCache();int edge=TerrainViewport.LIMIT;

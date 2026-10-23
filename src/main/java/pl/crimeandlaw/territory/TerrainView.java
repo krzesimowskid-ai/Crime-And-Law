@@ -4,15 +4,18 @@ import java.util.*;
 import java.util.function.*;
 
 /** Bounded summaries; raw structure NBT and full template lists stay on the server. */
-public record TerrainView(String dimension,int centerX,int centerZ,int radius,double playerX,double playerZ,float yaw,List<Cell> cells) {
-    public static final int RADIUS=5,SIDE=RADIUS*2+1,BUFFER_RADIUS=RADIUS+2,MAX_JSON=384_000;
+public record TerrainView(String dimension,int centerX,int centerZ,int radius,double playerX,double playerZ,float yaw,List<Cell> cells,int requestId) {
+    public static final int RADIUS=5,SIDE=RADIUS*2+1,BUFFER_RADIUS=RADIUS+5,MAX_JSON=768_000;
+    public static final int MAX_LEAD=3;
+    public TerrainView(String dimension,int centerX,int centerZ,int radius,double playerX,double playerZ,float yaw,List<Cell> cells){this(dimension,centerX,centerZ,radius,playerX,playerZ,yaw,cells,0);}
     public enum Status { READY, PENDING, UNAVAILABLE }
     public record Cell(int x,int z,Status status,int minHeight,int maxHeight,
             int samples,int buildingPieces,String biome,Set<TerrainProfile.Trait> traits,TerrainProfile.Source source,UUID owner,String ownerName,String mapPixels) {
         public Cell {traits=Set.copyOf(traits);if(mapPixels==null)mapPixels="";if(!mapPixels.isEmpty())new TerrainMapTile(mapPixels);}
     }
     public TerrainView {cells=List.copyOf(cells);}
-    public TerrainView withPosition(double x,double z,float yaw){return new TerrainView(dimension,centerX,centerZ,radius,x,z,yaw,cells);}
+    public TerrainView withPosition(double x,double z,float yaw){return new TerrainView(dimension,centerX,centerZ,radius,x,z,yaw,cells,requestId);}
+    public TerrainView withRequestId(int id){return new TerrainView(dimension,centerX,centerZ,radius,playerX,playerZ,yaw,cells,id);}
     public static TerrainView snapshot(TerrainAtlas atlas,String dimension,int x,int z,Predicate<TerrainKey> loaded,Function<UUID,String> gangName){
         return snapshot(atlas,dimension,x,z,loaded,gangName,key->null);
     }

@@ -166,7 +166,16 @@ public final class GangMultiplayerSmoke {
             }
             case 20 -> {
                 checkFractionalMap();checkMapCanvas(mc,(TerrainPanel)widget(mc,"Mapa terenu"));
-                pass(mc,"Owner membership/permissions and identical detailed 2K banner passed; logo chars="+gang.logo.length()+", banner chars="+gang.banner.image().length()+". Actual loaded-world map: six held direction changes, real TCP replies without losing focus, no clipping pixels, stable selection, fractional release and grid toggles; replies="+mapReplies);
+                for(int i=0;i<80;i++)TerrainClient.moveTo((i%2==0?1:-1)*1e18,(i%4<2?1:-1)*1e18);
+                TerrainClient.home();
+                require(TerrainClient.view.centerX()==mc.player.chunkPosition().x&&TerrainClient.view.centerZ()==mc.player.chunkPosition().z,"Home switches to cached player tiles in the same frame");
+                replyBefore=mapReplies;next("wait for fresh reply after 80 rapid world-corner jumps and immediate home");
+            }
+            case 21 -> {
+                if(mapReplies<=replyBefore||!mappedBuffer())return;
+                checkMapCanvas(mc,(TerrainPanel)widget(mc,"Mapa terenu"));
+                require(TerrainClient.following()&&TerrainClient.view.centerX()==mc.player.chunkPosition().x&&TerrainClient.view.centerZ()==mc.player.chunkPosition().z,"Delayed replies preserve Home tracking");
+                pass(mc,"Owner membership/permissions and identical detailed 2K banner passed; logo chars="+gang.logo.length()+", banner chars="+gang.banner.image().length()+". Actual loaded-world map: 21x21 prefetch buffer, six held direction changes, real TCP replies without losing focus, no clipping pixels, stable selection, fractional release and grid toggles; 80 rapid world-corner jumps, immediate cached Home and safe recovery; replies="+mapReplies);
             }
         }
     }
@@ -229,7 +238,7 @@ public final class GangMultiplayerSmoke {
             }
         }
     }
-    private static boolean mappedBuffer(){return TerrainClient.view!=null&&TerrainClient.view.cells().size()==225&&TerrainClient.view.cells().stream().allMatch(c->!c.mapPixels().isEmpty());}
+    private static boolean mappedBuffer(){return TerrainClient.view!=null&&TerrainClient.view.cells().size()==441&&TerrainClient.view.cells().stream().filter(c->Math.abs(c.x()-TerrainClient.view.centerX())<=7&&Math.abs(c.z()-TerrainClient.view.centerZ())<=7).allMatch(c->!c.mapPixels().isEmpty());}
     private static void checkMapCanvas(Minecraft mc,TerrainPanel panel){
         double scale=GangLayout.of(mc.screen.width,mc.screen.height).scale()*mc.getWindow().getGuiScale();
         try(var image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){

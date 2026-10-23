@@ -4,9 +4,10 @@ import java.util.*;
 
 /** Small client cache of server-supplied tiles; never generates missing terrain. */
 public final class TerrainViewCache {
-    public static final int LIMIT=1024;
+    public static final int LIMIT=8192;
     private String dimension="";
-    private final Map<TerrainKey,TerrainView.Cell> cells=new LinkedHashMap<>(128,.75f,true);
+    private TerrainViewport protectedCenter;
+    private final LinkedHashMap<TerrainKey,TerrainView.Cell> cells=new LinkedHashMap<>(128,.75f,true);
     public TerrainView remember(TerrainView incoming){
         if(!dimension.equals(incoming.dimension())){clear();dimension=incoming.dimension();}
         List<TerrainView.Cell> merged=new ArrayList<>();
@@ -19,7 +20,14 @@ public final class TerrainViewCache {
             if(!cell.mapPixels().isEmpty()||cell.status()==TerrainView.Status.READY)cells.put(key,cell);
             merged.add(cell);
         }
-        while(cells.size()>LIMIT)cells.remove(cells.keySet().iterator().next());
+        if(cells.size()>LIMIT){
+            var iterator=cells.entrySet().iterator();
+            while(cells.size()>LIMIT&&iterator.hasNext()){
+                var entry=iterator.next();
+                if(protectedCenter==null||!protectedCenter.near(entry.getKey().x(),entry.getKey().z(),TerrainView.BUFFER_RADIUS))iterator.remove();
+            }
+        }
+        while(cells.size()>LIMIT)cells.pollFirstEntry();
         return new TerrainView(incoming.dimension(),incoming.centerX(),incoming.centerZ(),incoming.radius(),incoming.playerX(),incoming.playerZ(),incoming.yaw(),merged);
     }
     public TerrainView viewport(TerrainView current,TerrainViewport target){
@@ -37,5 +45,6 @@ public final class TerrainViewCache {
         return new TerrainView(dimension,target.x(),target.z(),radius,current.playerX(),current.playerZ(),current.yaw(),visible);
     }
     public int size(){return cells.size();}
-    public void clear(){cells.clear();dimension="";}
+    public void protect(TerrainViewport center){protectedCenter=center;}
+    public void clear(){cells.clear();dimension="";protectedCenter=null;}
 }

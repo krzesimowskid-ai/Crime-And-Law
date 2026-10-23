@@ -15,6 +15,7 @@ final class TerrainMapTexture {
     private static List<String> signature=List.of();
     private static boolean valid;
     private static int imageSide,bufferRadius;
+    private static final LinkedHashMap<String,int[]> decoded=new LinkedHashMap<>(512,.75f,true);
     private TerrainMapTexture(){}
     static void update(TerrainView view){
         if(view==null){clear();return;}
@@ -29,14 +30,20 @@ final class TerrainMapTexture {
             if(cell.mapPixels().isEmpty())continue;
             int dx=cell.x()-view.centerX()+view.radius(),dz=cell.z()-view.centerZ()+view.radius();
             if(dx<0||dz<0||dx>=cells||dz>=cells)continue;
-            byte[] colors=new TerrainMapTile(cell.mapPixels()).colors();
+            int[] colors=colors(cell.mapPixels());
             for(int z=0;z<16;z++)for(int x=0;x<16;x++){
-                int color=MapColor.getColorFromPackedId(colors[z*16+x]);
+                int color=colors[z*16+x];
                 if((color>>>24)!=0)image.setPixelRGBA(dx*16+x,dz*16+z,color);
             }
         }
-        clear();var texture=new DynamicTexture(image);texture.setFilter(false,false);
+        releaseTexture();var texture=new DynamicTexture(image);texture.setFilter(false,false);
         Minecraft.getInstance().getTextureManager().register(ID,texture);signature=List.copyOf(next);imageSide=side;bufferRadius=view.radius();valid=true;
+    }
+    private static int[] colors(String pixels){
+        var result=decoded.get(pixels);if(result!=null)return result;
+        byte[] packed=new TerrainMapTile(pixels).colors();result=new int[256];
+        for(int i=0;i<256;i++)result[i]=MapColor.getColorFromPackedId(packed[i]);
+        decoded.put(pixels,result);while(decoded.size()>1024)decoded.pollFirstEntry();return result;
     }
     static void draw(GuiGraphics g,int x,int y,int size,int radius){
         if(!valid)return;
@@ -46,5 +53,6 @@ final class TerrainMapTexture {
         g.pose().pushPose();g.pose().translate(x-margin,y-margin,0);g.pose().scale((float)scale,(float)scale,1);
         g.blit(ID,0,0,0f,0f,imageSide,imageSide,imageSide,imageSide);g.pose().popPose();
     }
-    static void clear(){if(valid)Minecraft.getInstance().getTextureManager().release(ID);valid=false;signature=List.of();imageSide=bufferRadius=0;}
+    private static void releaseTexture(){if(valid)Minecraft.getInstance().getTextureManager().release(ID);valid=false;signature=List.of();imageSide=bufferRadius=0;}
+    static void clear(){releaseTexture();decoded.clear();}
 }

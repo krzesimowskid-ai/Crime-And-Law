@@ -587,3 +587,23 @@ gdy właściwe systemy własności oraz mapy będą rozwijane.
 - Swobodna kamera mapy, jej przesunięcie między chunkami i trafianie kursorem
   pozostają bez zmian. Rozdzielczość źródła do kadrowania pozostaje większa
   od wyniku, aby przybliżenie nadal korzystało z oryginalnych szczegółów.
+
+
+## Pobieranie mapy z wyprzedzeniem i przeciążenie — 0.1.24
+
+- Użytkownik chce szybkiej mapy i pobierania poza widocznym prostokątem,
+  bez ograniczania przesuwania myszą, z bezpiecznym zachowaniem po przekroczeniu
+  możliwości pobierania. Dotychczasowy zapis banera 2K pozostaje.
+- Widok 11×11; bufor danych/rysowania 21×21, przy ruchu do trzech chunków
+  wyprzedzenia. Dane nadal wyłącznie z już wygenerowanego świata.
+- Pamięć klienta: maks. 8192 kafle; okolica gracza chroniona przed eksmisją,
+  Home korzysta z niej natychmiast. Osobna pamięć 1024 rozkodowanych obrazów.
+- Aktualizacje kamery łączą się w najnowszy cel pobierania; kamera nie czeka
+  na sieć. Jedno aktualne żądanie, co najmniej 150 ms między wysyłkami,
+  ponowienie po dwóch sekundach, numery odpowiedzi i tolerowanie spóźnionych danych.
+- Serwer: maks. 1024 zadania, 64 aktualne obszary oglądania, wygasanie 100 ticków;
+  widoczne brakujące dane pierwsze. Do 2048 kolumn/tick, miękkie 2 ms,
+  cztery nowe odczyty/tick, osiem rzeczywiście trwających. Porzucenie widoku
+  nie zeruje zajętego slotu przed końcem operacji. Nadmiar zadań jest pomijany.
+- Protokół 14: numer żądania oraz większy bufor/limit JSON. Aktualizacja
+  jest wymagana po stronie serwera i wszystkich klientów.

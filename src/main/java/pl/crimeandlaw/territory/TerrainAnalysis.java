@@ -37,12 +37,15 @@ public final class TerrainAnalysis {
         return view(player,new TerrainViewport(player.chunkPosition().x,player.chunkPosition().z));
     }
     public static TerrainView view(ServerPlayer player,TerrainViewport viewport){
+        return view(player,viewport,viewport);
+    }
+    public static TerrainView view(ServerPlayer player,TerrainViewport viewport,TerrainViewport ahead){
         // Sample already loaded chunks at the camera, not only at the player.
         // Both queues use getChunkNow: moving the camera creates no chunk tickets.
         ServerLevel level=player.serverLevel();enqueue(level,viewport.x(),viewport.z());
-        TerrainCartography.enqueue(level,viewport.x(),viewport.z(),TerrainView.BUFFER_RADIUS);
+        TerrainCartography.enqueue(level,player.getUUID(),viewport,ahead,TerrainView.BUFFER_RADIUS);
         var gangs=GangSavedData.get(player.server).directory;
-        return TerrainView.snapshot(TerrainSavedData.get(level).atlas,level.dimension().location().toString(),viewport.x(),viewport.z(),
+        return TerrainView.snapshot(TerrainSavedData.get(level).atlas,level.dimension().location().toString(),ahead.x(),ahead.z(),
             key->level.getChunkSource().getChunkNow(key.x(),key.z())!=null||TerrainCartography.pending(level,key),
             id->{var gang=gangs.get(id);return gang==null?null:gang.name;},TerrainSavedData.get(level)::map,TerrainView.BUFFER_RADIUS)
             .withPosition(player.getX(),player.getZ(),player.getYRot());

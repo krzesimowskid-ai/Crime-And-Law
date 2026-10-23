@@ -71,7 +71,7 @@ public final class GangNetwork {
         @Override public Type<? extends CustomPacketPayload> type(){return TYPE;}
     }
     public static void register(RegisterPayloadHandlersEvent event){
-        var registrar=event.registrar("13");
+        var registrar=event.registrar("14");
         registrar.playToServer(Action.TYPE,Action.CODEC,GangNetwork::handle);
         registrar.playToClient(State.TYPE,State.CODEC,(p,c)->clientReceiver.accept(p.json));
         registrar.playToClient(Terrain.TYPE,Terrain.CODEC,(p,c)->terrainReceiver.accept(p.json));
@@ -120,7 +120,10 @@ public final class GangNetwork {
                 boolean remote=a.has("centerX")||a.has("centerZ");
                 var viewport=remote?new pl.crimeandlaw.territory.TerrainViewport(exactInteger(a,"centerX"),exactInteger(a,"centerZ")):
                     new pl.crimeandlaw.territory.TerrainViewport(player.chunkPosition().x,player.chunkPosition().z);
-                PacketDistributor.sendToPlayer(player,new Terrain(JSON.toJson(pl.crimeandlaw.territory.TerrainAnalysis.view(player,viewport))));return;
+                int leadX=a.has("leadX")?Math.clamp(exactInteger(a,"leadX"),-pl.crimeandlaw.territory.TerrainView.MAX_LEAD,pl.crimeandlaw.territory.TerrainView.MAX_LEAD):0;
+                int leadZ=a.has("leadZ")?Math.clamp(exactInteger(a,"leadZ"),-pl.crimeandlaw.territory.TerrainView.MAX_LEAD,pl.crimeandlaw.territory.TerrainView.MAX_LEAD):0;
+                int requestId=a.has("requestId")?Math.max(0,exactInteger(a,"requestId")):0;
+                PacketDistributor.sendToPlayer(player,new Terrain(JSON.toJson(pl.crimeandlaw.territory.TerrainAnalysis.view(player,viewport,viewport.move(leadX,leadZ)).withRequestId(requestId))));return;
             }
             if(action.equals("refresh")){
                 String query=text(a,"query");if(query.length()>32)query=query.substring(0,32);

@@ -584,7 +584,7 @@ public final class GangUiSmokeTest {
             fixturePage(PLAYER,0);screen=new GangScreen();mc.setScreen(screen);screen.updated();startFreeMap(mc);return;
         }
         if(++frames<24)return;frames=0;
-        TerrainPanel panel=freeStep<11?(TerrainPanel)widget(screen,"Mapa terenu"):null;
+        TerrainPanel panel=freeStep<14?(TerrainPanel)widget(screen,"Mapa terenu"):null;
         var layout=GangLayout.of(screen.width,screen.height);double unit=layout.scale();
         double cell=TerrainPanel.GRID/(double)(new int[]{5,3,2}[freeRound]*2+1);
         switch(freeStep++){
@@ -630,8 +630,26 @@ public final class GangUiSmokeTest {
                 REPORT.append("PASS free camera: radius ").append(new int[]{5,3,2}[freeRound]).append(", release, grid toggles, delayed replies, zoom, GUI resize, repeated gestures, partial-chunk selection, identical raster pixels.\n");
                 if(++freeRound<3)startFreeMap(mc);else freeRound=2;
             }
-            case 11->mc.setScreen(new ImageQualityProbe());
+            case 11->{
+                TerrainClient.moveTo(4000.37,-4000.23);
+                for(int i=1;i<=24;i++)TerrainClient.receive(ClientState.JSON.toJson(wideMap(i*32,100,0)));
+            }
             case 12->{
+                require(TerrainClient.cameraX()==4000.37&&TerrainClient.cameraZ()==-4000.23,"Off-screen replies cannot move the camera");
+                TerrainClient.home();require(TerrainClient.view.centerX()==0&&TerrainClient.view.centerZ()==0,"Home uses the player cache immediately without any connection");
+            }
+            case 13->{
+                checkMapCanvas(mc,(TerrainPanel)widget(screen,"Mapa terenu"));capture(mc,"instant-home-after-cache-pressure");
+                for(int i=0;i<80;i++)TerrainClient.moveTo((i%2==0?1:-1)*1e18,(i%4<2?1:-1)*1e18);
+                require(!TerrainClient.moveTo(Double.NaN,Double.POSITIVE_INFINITY),"Invalid motion is ignored safely");
+                TerrainClient.home();
+            }
+            case 14->{
+                checkMapCanvas(mc,(TerrainPanel)widget(screen,"Mapa terenu"));capture(mc,"home-after-rapid-world-corner-jumps");
+                REPORT.append("PASS: 24 distant replies exceed the tile cache capacity; the protected player area returns immediately without a connection. 80 world-corner jumps and invalid coordinates cause no exception; camera stays responsive and Home restores its raster.\n");
+                mc.setScreen(new ImageQualityProbe());
+            }
+            case 15->{
                 checkMinification(mc);capture(mc,"2k-banner-minification");REPORT.append("PASS: actual Minecraft framebuffer; no chunk snapping at any tested zoom. Legacy 8192x1901 banner reduced to a 2048x475 texture, all mip levels and smooth minification verified.\n");Files.writeString(OUT.resolve("result.txt"),REPORT.toString());System.out.println("CRIME_FREE_MAP_PASS");mc.stop();
             }
         }

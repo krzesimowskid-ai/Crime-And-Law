@@ -83,9 +83,9 @@ class GangNetworkTest {
             atlas.remember(new pl.crimeandlaw.territory.TerrainProfile(key,1,16,1,256,Map.of(pl.crimeandlaw.territory.TerrainProfile.Surface.SOIL,16),16,List.of("minecraft:plains"),List.of(),EnumSet.allOf(pl.crimeandlaw.territory.TerrainProfile.Trait.class),pl.crimeandlaw.territory.TerrainProfile.Source.GENERATED_SNAPSHOT,1));atlas.setOwner(key,owner);
         }
         var view=pl.crimeandlaw.territory.TerrainView.snapshot(atlas,"minecraft:overworld",0,0,k->true,id->"Ż".repeat(32),key->tile,pl.crimeandlaw.territory.TerrainView.BUFFER_RADIUS);
-        String json=new Gson().toJson(view);assertTrue(json.length()<pl.crimeandlaw.territory.TerrainView.MAX_JSON);assertEquals(225,view.cells().size());
+        view=view.withRequestId(37);String json=new Gson().toJson(view);assertTrue(json.length()<pl.crimeandlaw.territory.TerrainView.MAX_JSON);assertEquals(441,view.cells().size());
         var buffer=new RegistryFriendlyByteBuf(Unpooled.buffer(),RegistryAccess.EMPTY);
-        try{GangNetwork.Terrain.CODEC.encode(buffer,new GangNetwork.Terrain(json));assertEquals(view,new Gson().fromJson(GangNetwork.Terrain.CODEC.decode(buffer).json(),pl.crimeandlaw.territory.TerrainView.class));assertFalse(buffer.isReadable());}
+        try{GangNetwork.Terrain.CODEC.encode(buffer,new GangNetwork.Terrain(json));assertTrue(buffer.readableBytes()<1_048_576,"Full prefetch raster stays below the physical client packet budget");assertEquals(view,new Gson().fromJson(GangNetwork.Terrain.CODEC.decode(buffer).json(),pl.crimeandlaw.territory.TerrainView.class));assertFalse(buffer.isReadable());}
         finally{buffer.release();}
     }
 }
