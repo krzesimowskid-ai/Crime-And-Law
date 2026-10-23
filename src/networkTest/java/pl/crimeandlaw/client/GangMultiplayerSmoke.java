@@ -166,7 +166,7 @@ public final class GangMultiplayerSmoke {
             }
             case 20 -> {
                 checkFractionalMap();checkMapCanvas(mc,(TerrainPanel)widget(mc,"Mapa terenu"));
-                pass(mc,"Owner membership/permissions and identical detailed 8K banner passed; logo chars="+gang.logo.length()+", banner chars="+gang.banner.image().length()+". Actual loaded-world map: six held direction changes, real TCP replies without losing focus, no clipping pixels, stable selection, fractional release and grid toggles; replies="+mapReplies);
+                pass(mc,"Owner membership/permissions and identical detailed 2K banner passed; logo chars="+gang.logo.length()+", banner chars="+gang.banner.image().length()+". Actual loaded-world map: six held direction changes, real TCP replies without losing focus, no clipping pixels, stable selection, fractional release and grid toggles; replies="+mapReplies);
             }
         }
     }
@@ -215,7 +215,7 @@ public final class GangMultiplayerSmoke {
                 if(gang.logo.length()<=28_000||gang.banner.image().length()<=1_000_000||gang.theme.background()!=0x253047||!Files.exists(OUT.resolve("logo.sha256"))||!Files.exists(OUT.resolve("banner.sha256")))return;
                 require(hash(gang.banner.image()).equals(Files.readString(OUT.resolve("banner.sha256"))),"Both clients received the same detailed wide banner");
                 var bannerTexture=(net.minecraft.client.renderer.texture.DynamicTexture)mc.getTextureManager().getTexture(BannerTexture.get(gang.banner.image()));
-                require(bannerTexture.getPixels().getWidth()==8192&&bannerTexture.getPixels().getHeight()==1901,"Remote banner has its full independent resolution");
+                require(bannerTexture.getPixels().getWidth()==2048&&bannerTexture.getPixels().getHeight()==475,"Remote banner has its full independent resolution");
                 require(hash(gang.logo).equals(Files.readString(OUT.resolve("logo.sha256"))),"Both clients received identical detailed logo data");
                 var location=LogoTexture.get(gang.logo);var texture=(net.minecraft.client.renderer.texture.DynamicTexture)mc.getTextureManager().getTexture(location);
                 require(texture.getPixels().getWidth()==2048&&texture.getPixels().getHeight()==2048,"Remote logo renders at saved resolution");

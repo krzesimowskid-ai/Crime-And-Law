@@ -31,7 +31,8 @@ class GangNetworkTest {
         var wide=new BufferedImage(4096,1024,BufferedImage.TYPE_INT_ARGB);
         for(int y=0;y<1024;y++)for(int x=0;x<4096;x++)wide.setRGB(x,y,random.nextInt()|0xFF000000);
         String banner=LogoImages.encode(wide,new LogoCrop(4096,1024,4),true);
-        assertTrue(banner.length()>GangLogo.MAX_ENCODED_LENGTH,"Banner uses its own larger budget");
+        var bannerPixels=ImageIO.read(new ByteArrayInputStream(Base64.getDecoder().decode(banner)));
+        assertEquals(2048,bannerPixels.getWidth());assertEquals(512,bannerPixels.getHeight());
         directory.banner(owner,new GangBanner(banner,0x334455,180));
         GangDirectory restored=GangDirectory.fromJson(directory.toJson());
         assertEquals(logo,restored.of(owner).logo);
@@ -48,7 +49,7 @@ class GangNetworkTest {
             assertEquals(image.getRGB(128,128),displayed.getRGB(128,128));
             var receivedBanner=state.getAsJsonObject("gang").getAsJsonObject("banner");
             assertEquals(banner,receivedBanner.get("image").getAsString());assertEquals(180,receivedBanner.get("opacity").getAsInt());
-            assertTrue(snapshot.length()>30_000_000,"Both detailed assets share the same bounded state packet");
+            assertTrue(snapshot.length()>logo.length(),"Both detailed assets share the same bounded state packet");
         }finally{download.release();}
     }
     @Test void packetCodecsStillRejectOverBudgetStrings(){

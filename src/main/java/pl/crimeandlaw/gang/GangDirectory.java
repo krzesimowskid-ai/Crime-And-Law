@@ -204,6 +204,8 @@ public final class GangDirectory {
             require(g!=null && entry.getKey().equals(g.id) && g.owner!=null,"Uszkodzony identyfikator gangu.");
             validName(g.name,3,32);
             if(g.banner==null)g.banner=GangBanner.DEFAULT;
+            String banner=GangBanner.validateImage(g.banner.image());
+            if(!banner.equals(g.banner.image())){g.banner=new GangBanner(banner,g.banner.color(),g.banner.opacity());directory.migrated=true;}
             if(g.history==null)g.history=new ArrayList<>();
             for(Event event:g.history)require(event!=null&&event.timestamp()>=0&&event.text()!=null&&event.text().length()<=256,"Uszkodzony rejestr gangu.");
             if(g.history.size()>HISTORY_LIMIT)g.history.subList(0,g.history.size()-HISTORY_LIMIT).clear();

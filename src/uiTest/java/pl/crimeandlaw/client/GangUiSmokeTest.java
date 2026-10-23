@@ -477,11 +477,11 @@ public final class GangUiSmokeTest {
                     capture(mc,"51-banner-image-settings");var field=GangScreen.class.getDeclaredField("draftBanner");field.setAccessible(true);
                     var banner=(pl.crimeandlaw.gang.GangBanner)field.get(screen);
                     var decoded=javax.imageio.ImageIO.read(new java.io.ByteArrayInputStream(java.util.Base64.getDecoder().decode(banner.image())));
-                    require(decoded.getWidth()==8192&&decoded.getHeight()==1901,"Banner keeps its independent detailed strip texture");
+                    require(decoded.getWidth()==2048&&decoded.getHeight()==475,"Banner keeps its independent detailed strip texture");
                     directory.banner(PLAYER,banner);fixturePage(PLAYER,0);screen.updated();selectTab(0);
                 }
                 case 52 -> {
-                    capture(mc,"52-banner-image-overview");checkLogoTexture(mc,net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("crimeandlaw","gang_banner"),8192,1901);
+                    capture(mc,"52-banner-image-overview");checkLogoTexture(mc,net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("crimeandlaw","gang_banner"),2048,475);
                     fixture(false);screen=new GangScreen();mc.setScreen(screen);
                     var name=screen.children().stream().filter(c->c instanceof EditBox).map(c->(EditBox)c).findFirst().orElseThrow();name.setValue("Test");
                     screen.setFocused(widget(screen,"Zamknij"));screen.keyPressed(org.lwjgl.glfw.GLFW.GLFW_KEY_ENTER,0,0);
@@ -562,7 +562,7 @@ public final class GangUiSmokeTest {
                     if(++mapRound<3){startHeldMap(mc);stage=61;}
                     else {
                         REPORT.append("PASS held map pan: three zoom levels, eighteen direction/reversal steps, delayed neighboring replies during a held gesture, stable focus/selection, no background or fog pixels across fully known visible terrain, and round-trip release.\n");
-                    REPORT.append("PASS high-resolution images: actual 2048-square/8192-wide textures, full GPU mip chains, neutral checkerboard minification without coarse aliasing, asynchronous apply and cancellation.\n");
+                    REPORT.append("PASS high-resolution images: actual 2048-square/2048-wide textures, full GPU mip chains, neutral checkerboard minification without coarse aliasing, asynchronous apply and cancellation.\n");
                     REPORT.append("PASS: actual Minecraft renderer; earlier map, list, roles, register and logo checks retained; centered actions, accented creation form, member skin card/dismissal, banner color/image/crop, Enter focus, stationary rank-drag autoscroll, persistent chunk selection and top player icon; loading gate, full strip edges, cached drag round-trip, searchable locked future permissions; actual alpha-blended hat, jacket and both sleeves for wide and slim skins.\n");
                     Files.writeString(OUT.resolve("result.txt"),REPORT.toString());System.out.println("CRIME_UI_SMOKE_PASS");mc.stop();
                     }
@@ -632,7 +632,7 @@ public final class GangUiSmokeTest {
             }
             case 11->mc.setScreen(new ImageQualityProbe());
             case 12->{
-                checkMinification(mc);capture(mc,"8k-banner-minification");REPORT.append("PASS: actual Minecraft framebuffer; no chunk snapping at any tested zoom. 8192x1901 banner texture, all mip levels and smooth minification verified.\n");Files.writeString(OUT.resolve("result.txt"),REPORT.toString());System.out.println("CRIME_FREE_MAP_PASS");mc.stop();
+                checkMinification(mc);capture(mc,"2k-banner-minification");REPORT.append("PASS: actual Minecraft framebuffer; no chunk snapping at any tested zoom. Legacy 8192x1901 banner reduced to a 2048x475 texture, all mip levels and smooth minification verified.\n");Files.writeString(OUT.resolve("result.txt"),REPORT.toString());System.out.println("CRIME_FREE_MAP_PASS");mc.stop();
             }
         }
     }
@@ -753,9 +753,9 @@ public final class GangUiSmokeTest {
     private static void checkMinification(Minecraft mc){
         double scale=GangLayout.of(mc.screen.width,mc.screen.height).scale()*mc.getWindow().getGuiScale();
         checkLogoTexture(mc,net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("crimeandlaw","gang_logo"),2048,2048);
-        checkLogoTexture(mc,net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("crimeandlaw","gang_banner"),8192,1901);
-        for(int[] shape:new int[][]{{2048,2048},{8192,1901}}){
-            var texture=mc.getTextureManager().getTexture(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("crimeandlaw",shape[0]==2048?"gang_logo":"gang_banner"));texture.bind();
+        checkLogoTexture(mc,net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("crimeandlaw","gang_banner"),2048,475);
+        for(int[] shape:new int[][]{{2048,2048},{2048,475}}){
+            var texture=mc.getTextureManager().getTexture(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("crimeandlaw",shape[1]==2048?"gang_logo":"gang_banner"));texture.bind();
             for(int level=0;level<=31-Integer.numberOfLeadingZeros(shape[0]);level++){
                 require(org.lwjgl.opengl.GL11.glGetTexLevelParameteri(org.lwjgl.opengl.GL11.GL_TEXTURE_2D,level,org.lwjgl.opengl.GL11.GL_TEXTURE_WIDTH)==Math.max(1,shape[0]>>level),"Every mip level is allocated");
                 require(org.lwjgl.opengl.GL11.glGetTexLevelParameteri(org.lwjgl.opengl.GL11.GL_TEXTURE_2D,level,org.lwjgl.opengl.GL11.GL_TEXTURE_HEIGHT)==Math.max(1,shape[1]>>level),"Non-square mip level is complete");

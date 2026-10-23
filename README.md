@@ -1,19 +1,19 @@
 # Crime And Law
 
 Autorski mod gangsterski: panel gangów, członkostwo i własny wygląd menu.
-Wersja **0.1.22**.
+Wersja **0.1.23**.
 
 Pierwsza propozycja własnej ekonomii w dolarach i rozwoju terenów:
 [Balans terytoriów](docs/BALANS_TERYTORIOW.md) oraz
 [symulacja](docs/SYMULACJA_BALANSU.md). To projekt do dalszej implementacji;
-JAR 0.1.22 nie odczytuje tych reguł i nie wypłaca jeszcze pieniędzy.
+JAR 0.1.23 nie odczytuje tych reguł i nie wypłaca jeszcze pieniędzy.
 
 ## Uruchomienie
 
 - Minecraft **1.21.1**, Java **21**, NeoForge **21.1.248**.
-- Włóż `crimeandlaw-0.1.22.jar` do `mods`, zastępując poprzedni JAR tego moda.
+- Włóż `crimeandlaw-0.1.23.jar` do `mods`, zastępując poprzedni JAR tego moda.
 - W rozgrywce sieciowej mod musi być **u graczy i na serwerze**.
-  Zaktualizuj serwer i wszystkich klientów do 0.1.22. Sieć moda używa protokołu 13.
+  Zaktualizuj serwer i wszystkich klientów do 0.1.23. Sieć moda używa protokołu 13.
 - W świecie jednoosobowym część serwerowa działa razem ze światem.
 - **G** otwiera panel; skrót można zmienić w sterowaniu. Esc lub X zamyka okno.
 
@@ -150,11 +150,14 @@ Importer korzysta z tych samych formatów i limitów źródła co logo.
 Osobne kadrowanie odpowiada proporcjom pasa. Można przesuwać obraz, przybliżać,
 oddalać poniżej 1× albo zmieścić całość z przezroczystymi marginesami.
 Kolor baneru wypełnia marginesy także przy wybranym obrazie. Wynik ma do
-**8192×2048**, obecny pas daje PNG **8192×1901**, do 68 MB;
+**2048×512**, obecny pas daje PNG **2048×475**;
 wyświetlanie zachowuje proporcje i dopasowuje kadr do szerokości pasa.
 Logo pozostaje osobnym PNG 2048×2048.
-Starsze banery nadal się wyświetlają. Większa szczegółowość wymaga ponownego
-wczytania oryginalnego obrazu; powiększenie starego zapisu nie odzyskuje detali.
+Starsze banery 4K/8K są przy wczytywaniu świata automatycznie zmniejszane
+do 2K z zachowaniem proporcji, marginesów, koloru i krycia. Zmiana zapisuje się
+ze światem. Klient zmniejsza też starszą teksturę odebraną od serwera 0.1.22.
+Odczyt zachowuje dawny limit 8192×2048 / 68 MB dla zgodności; nowe zapisy
+i tekstury są ograniczone do 2K. Protokół 13 pozostaje zgodny z 0.1.22.
 Przygotowanie końcowego PNG działa w tle; anulowanie nie zapisuje porzuconego kadru.
 
 Baner zapisuje lider lub osoba z dotychczasowym uprawnieniem do wyglądu/logo.
@@ -183,7 +186,7 @@ Windows: gradlew.bat build
 Linux/macOS: ./gradlew build
 ```
 
-Wynik: `build/libs/crimeandlaw-0.1.22.jar`.
+Wynik: `build/libs/crimeandlaw-0.1.23.jar`.
 Gradle Wrapper 9.2.1, ModDevGradle 2.0.148, NeoForge 21.1.248.
 `./gradlew test` sprawdza model, migrację zapisów, duże listy i prywatność
 zgłoszeń, walidację/edycję logo, kolory oraz skalowanie menu.
@@ -215,7 +218,7 @@ Rejestr: numer strony i dwie sąsiadujące strzałki w prawym narożniku nagłó
 W 0.1.8 dodano przyciski Premie, Zarządzanie saldem, Czarna lista i Cele. Otwierają panele informacyjne; funkcje tych systemów są do rozwijania. Transport nadal jest ukryty.
 
 ## Import logo 0.1.9
-Format jest rozpoznawany po danych, a nie rozszerzeniu. Czytniki są dołączone do JAR-a. Przykładowo WebP lub SVG zapisany pod nazwą PNG może zostać odczytany bez ręcznej konwersji. Obraz roboczy zachowuje do 8192 px na dłuższym boku i 16 777 216 pikseli łącznie; mały podgląd ma do 2048 px. Po kadrowaniu do serwera trafia logo PNG 2048×2048 albo osobny szeroki baner do 8192×2048. SVG renderuje lokalne kształty wektorowe; odwołania do obrazów i plików zewnętrznych są pomijane. Formatów HEIC/AVIF, PDF i animowanego logo nie obsługuje to wydanie.
+Format jest rozpoznawany po danych, a nie rozszerzeniu. Czytniki są dołączone do JAR-a. Przykładowo WebP lub SVG zapisany pod nazwą PNG może zostać odczytany bez ręcznej konwersji. Obraz roboczy zachowuje do 8192 px na dłuższym boku i 16 777 216 pikseli łącznie; mały podgląd ma do 2048 px. Po kadrowaniu do serwera trafia logo PNG 2048×2048 albo osobny szeroki baner do 2048×512. SVG renderuje lokalne kształty wektorowe; odwołania do obrazów i plików zewnętrznych są pomijane. Formatów HEIC/AVIF, PDF i animowanego logo nie obsługuje to wydanie.
 
 ## Odczyt logo 0.1.10
 Jeśli pierwszy czytnik rozpoznaje format, lecz nie potrafi odczytać danego wariantu,

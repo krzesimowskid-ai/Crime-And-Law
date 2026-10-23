@@ -573,3 +573,17 @@ gdy właściwe systemy własności oraz mapy będą rozwijane.
   Pozostałe ruchy to przesunięcie rysowania, bez ponownego dekodowania obrazu.
 - Protokół 13: serwer i wszyscy gracze aktualizują mod. Oddzielne limity
   logo/banera i małe części transmisji zachowują walidację po stronie serwera.
+
+
+## Powrót banera do 2K — 0.1.23
+
+- Decyzja użytkownika: 2048 pikseli szerokości zamiast 8192. Obecny pas
+  zapisuje się jako 2048×475, limit wyjścia 2048×512. Logo pozostaje 2048×2048.
+- Dotychczasowe szerokie obrazy są redukowane przy wczytywaniu świata,
+  z zachowaniem kadru, marginesów, koloru i krycia; migracja oznacza zapis
+  jako zmieniony. Kolejny odczyt nie uruchamia ponownej migracji.
+- Klient ogranicza do 2K także teksturę ze starszego serwera. Limit odczytu
+  i transmisji pozostaje zgodny z 0.1.22 / protokołem 13.
+- Swobodna kamera mapy, jej przesunięcie między chunkami i trafianie kursorem
+  pozostają bez zmian. Rozdzielczość źródła do kadrowania pozostaje większa
+  od wyniku, aby przybliżenie nadal korzystało z oryginalnych szczegółów.

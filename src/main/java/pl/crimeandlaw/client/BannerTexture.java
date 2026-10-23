@@ -7,7 +7,7 @@ import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.resources.ResourceLocation;
 import java.util.Base64;
 import java.io.ByteArrayInputStream;
-import pl.crimeandlaw.gang.GangLogo;
+import pl.crimeandlaw.gang.GangBanner;
 
 public final class BannerTexture {
     private static final ResourceLocation ID=ResourceLocation.fromNamespaceAndPath("crimeandlaw","gang_banner");
@@ -21,7 +21,15 @@ public final class BannerTexture {
         // Stream decoding avoids allocating a detailed PNG on LWJGL's small stack.
         try(var input=new ByteArrayInputStream(Base64.getDecoder().decode(logo))){
             NativeImage image=NativeImage.read(input);
-            if(image.getWidth()>pl.crimeandlaw.gang.GangBanner.WIDTH||image.getHeight()>pl.crimeandlaw.gang.GangBanner.HEIGHT){image.close();return null;}
+            if(image.getWidth()>GangBanner.READ_WIDTH||image.getHeight()>GangBanner.READ_HEIGHT){image.close();return null;}
+            double scale=Math.min(1,Math.min(GangBanner.WIDTH/(double)image.getWidth(),GangBanner.HEIGHT/(double)image.getHeight()));
+            if(scale<1){
+                var reduced=new NativeImage(Math.max(1,(int)Math.round(image.getWidth()*scale)),Math.max(1,(int)Math.round(image.getHeight()*scale)),false);
+                try{image.resizeSubRectTo(0,0,image.getWidth(),image.getHeight(),reduced);}
+                catch(Throwable error){reduced.close();throw error;}
+                finally{image.close();}
+                image=reduced;
+            }
             width=image.getWidth();height=image.getHeight();
             var texture=SmoothImageTexture.create(image);
             Minecraft.getInstance().getTextureManager().register(ID,texture);valid=true;return ID;}

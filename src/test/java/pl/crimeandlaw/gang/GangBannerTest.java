@@ -29,9 +29,21 @@ class GangBannerTest {
         assertFalse(GangBanner.validateImage(wide).isEmpty());assertThrows(IllegalArgumentException.class,()->GangLogo.validate(wide));
         String old=Base64.getEncoder().encodeToString(LogoImages.png(new BufferedImage(4096,1024,BufferedImage.TYPE_INT_ARGB)));
         assertFalse(GangBanner.validateImage(old).isEmpty());
-        String tall=Base64.getEncoder().encodeToString(LogoImages.png(new BufferedImage(512,GangBanner.HEIGHT+1,BufferedImage.TYPE_INT_ARGB)));
+        String tall=Base64.getEncoder().encodeToString(LogoImages.png(new BufferedImage(512,GangBanner.READ_HEIGHT+1,BufferedImage.TYPE_INT_ARGB)));
         assertThrows(IllegalArgumentException.class,()->GangBanner.validateImage(tall));
         assertThrows(IllegalArgumentException.class,()->GangBanner.validateImage("not base64"));
+    }
+    @Test void existing8KWorldBannerMigratesTo2KAndPersistsItsColorOpacityAndMargins()throws Exception{
+        var image=new BufferedImage(8192,1901,BufferedImage.TYPE_INT_ARGB);var paint=image.createGraphics();
+        paint.setColor(java.awt.Color.RED);paint.fillRect(1024,0,2048,1901);paint.setColor(java.awt.Color.BLUE);paint.fillRect(5120,0,2048,1901);paint.dispose();
+        var directory=new GangDirectory();var owner=new UUID(23,1);var gang=directory.create(owner,"Owner","Migracja banera","");
+        gang.banner=new GangBanner(Base64.getEncoder().encodeToString(LogoImages.png(image)),0x123456,177);
+        var loaded=GangDirectory.fromJson(directory.toJson());var banner=loaded.of(owner).banner;
+        assertTrue(loaded.needsMigration());assertEquals(0x123456,banner.color());assertEquals(177,banner.opacity());
+        var result=ImageIO.read(new ByteArrayInputStream(Base64.getDecoder().decode(banner.image())));
+        assertEquals(2048,result.getWidth());assertEquals(475,result.getHeight());
+        assertEquals(0,result.getRGB(0,200)>>>24);assertEquals(0xFFFF0000,result.getRGB(500,200));assertEquals(0xFF0000FF,result.getRGB(1500,200));
+        var again=GangDirectory.fromJson(loaded.toJson());assertFalse(again.needsMigration());assertEquals(banner,again.of(owner).banner);
     }
     @Test void onlyAppearancePermissionAllowsBannerChangesAndBadImagesAreAtomic(){
         var d=new GangDirectory();var owner=new UUID(17,1);var member=new UUID(17,2);var gang=d.create(owner,"Owner","Banner Test","");d.request(member,"Member",gang.id);d.accept(owner,member);
