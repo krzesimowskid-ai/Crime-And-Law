@@ -20,7 +20,6 @@ final class TerrainPanel extends AbstractWidget {
     private final boolean grid;
     private final Supplier<Theme> theme;
     private final Consumer<TerrainView.Cell> selected;
-    private final BiConsumer<Integer,Integer> pan;
     private final IntConsumer zoom;
     private final ScrollPosition scroll;
     private final List<Line> lines=new ArrayList<>();
@@ -28,10 +27,9 @@ final class TerrainPanel extends AbstractWidget {
     static final int GRID=196,DETAILS=GRID+16;
     private int textHeight;
     private final TerrainDrag drag=new TerrainDrag();
-    private boolean cameraStarted;
     private double dragX,dragY;
-    TerrainPanel(int x,int y,int width,int height,TerrainView view,int selectedX,int selectedZ,TerrainView.Cell knownSelection,int radius,boolean grid,Supplier<Theme> theme,ScrollPosition scroll,Consumer<TerrainView.Cell> selected,BiConsumer<Integer,Integer> pan,IntConsumer zoom){
-        super(x,y,width,height,Component.literal("Mapa terenu"));this.view=view;this.knownSelection=knownSelection;this.selectedX=selectedX;this.selectedZ=selectedZ;this.radius=radius;this.grid=grid;this.theme=theme;this.scroll=scroll;this.selected=selected;this.pan=pan;this.zoom=zoom;
+    TerrainPanel(int x,int y,int width,int height,TerrainView view,int selectedX,int selectedZ,TerrainView.Cell knownSelection,int radius,boolean grid,Supplier<Theme> theme,ScrollPosition scroll,Consumer<TerrainView.Cell> selected,IntConsumer zoom){
+        super(x,y,width,height,Component.literal("Mapa terenu"));this.view=view;this.knownSelection=knownSelection;this.selectedX=selectedX;this.selectedZ=selectedZ;this.radius=radius;this.grid=grid;this.theme=theme;this.scroll=scroll;this.selected=selected;this.zoom=zoom;
         update(view);
     }
     boolean dragging(){return drag.active();}
@@ -41,8 +39,13 @@ final class TerrainPanel extends AbstractWidget {
             int dx=cell.x()-view.centerX()+view.radius(),dz=cell.z()-view.centerZ()+view.radius();
             if(dx>=0&&dx<side&&dz>=0&&dz<side)cells[dz*side+dx]=cell;
         }
-        if(view!=null&&drag.active()){dragX=drag.offsetX(view.centerX());dragY=drag.offsetY(view.centerZ());}
+        updateOffsets();
         TerrainMapTexture.update(view);lines.clear();textHeight=0;buildDetails();scroll.range(height-12,textHeight);
+    }
+    private void updateOffsets(){
+        double size=GRID/(double)(radius*2+1);
+        dragX=view==null?0:(view.centerX()-TerrainClient.cameraX())*size;
+        dragY=view==null?0:(view.centerZ()-TerrainClient.cameraZ())*size;
     }
     private TerrainView.Cell cell(int x,int z){
         if(view==null)return null;int side=view.radius()*2+1,dx=x-view.centerX()+view.radius(),dz=z-view.centerZ()+view.radius();
@@ -72,6 +75,7 @@ final class TerrainPanel extends AbstractWidget {
         line("Brak przyznanych bonusów.",0xFFAAA3B3);
     }
     @Override protected void renderWidget(GuiGraphics g,int mx,int my,float delta){
+        updateOffsets();
         var font=Minecraft.getInstance().font;int x=getX(),y=getY();Theme t=theme.get();
         g.fill(x-1,y-1,x+GRID+1,y+GRID+1,0xFF17191F);
         g.fill(x,y,x+GRID,y+GRID,0xFF29262B);
@@ -120,7 +124,7 @@ final class TerrainPanel extends AbstractWidget {
     @Override public boolean mouseClicked(double x,double y,int button){
         if(button!=0||!isMouseOver(x,y)||view==null)return false;
         if(x<getX()+GRID&&y<getY()+GRID){
-            drag.begin(new TerrainViewport(view.centerX(),view.centerZ()),x,y,radius,GRID);cameraStarted=false;dragX=0;dragY=0;return true;
+            updateOffsets();drag.begin(TerrainClient.cameraX(),TerrainClient.cameraZ(),x,y,radius,GRID);return true;
         }
         return x>=getX()+DETAILS&&x<getX()+width-10;
     }
@@ -128,22 +132,19 @@ final class TerrainPanel extends AbstractWidget {
         if(button!=0||!drag.active())return false;
         drag.move(x,y);
         if(drag.moved()){
-            var target=drag.viewport();int dxChunks=target.x()-view.centerX(),dzChunks=target.z()-view.centerZ();
-            if(!cameraStarted||dxChunks!=0||dzChunks!=0){cameraStarted=true;pan.accept(dxChunks,dzChunks);}
-            dragX=drag.offsetX(view.centerX());dragY=drag.offsetY(view.centerZ());
+            TerrainClient.moveTo(drag.x(),drag.z());updateOffsets();
         }
         return true;
     }
     @Override public boolean mouseReleased(double x,double y,int button){
         if(button!=0||!drag.active())return false;
         drag.finish();
-        dragX=0;dragY=0;
-        // The rounded camera was already moved during the gesture. Releasing only
-        // ends the fractional preview and updates header controls, never pans twice.
-        if(drag.moved()){pan.accept(0,0);return true;}
+        updateOffsets();
+        // The continuous camera outlives the gesture, including its fractional part.
+        if(drag.moved()){TerrainClient.pan(0,0);return true;}
         if(x>=getX()&&x<getX()+GRID&&y>=getY()&&y<getY()+GRID){
             int side=radius*2+1;
-            var cell=cell(view.centerX()-radius+(int)((x-getX())*side/GRID),view.centerZ()-radius+(int)((y-getY())*side/GRID));
+            var cell=cell(view.centerX()-radius+(int)Math.floor((x-getX()-dragX)*side/GRID),view.centerZ()-radius+(int)Math.floor((y-getY()-dragY)*side/GRID));
             if(cell!=null)selected.accept(cell);
         }
         return true;

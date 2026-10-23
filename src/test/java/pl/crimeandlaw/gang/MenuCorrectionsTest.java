@@ -19,7 +19,7 @@ class MenuCorrectionsTest {
         var crop=new LogoCrop(1800,900,530/123.0);crop.fit(true);
         assertTrue(crop.zoom()<1);assertTrue(crop.x()<0);
         var saved=ImageIO.read(new ByteArrayInputStream(Base64.getDecoder().decode(LogoImages.encode(image,crop,true))));
-        assertEquals(4096,saved.getWidth());assertEquals(951,saved.getHeight());
+        assertEquals(8192,saved.getWidth());assertEquals(1901,saved.getHeight());
         boolean red=false,blue=false;for(int x=0;x<saved.getWidth();x++){int rgb=saved.getRGB(x,saved.getHeight()/2);red|=rgb==0xFFFF0000;blue|=rgb==0xFF0000FF;}
         assertTrue(red&&blue,"Both extreme characters survive fitting into the actual banner strip");
         crop.zoom(crop.zoom()/2);double before=crop.x();crop.pan(-100,0);assertTrue(crop.x()<before);assertTrue(crop.side()>image.getWidth());

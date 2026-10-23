@@ -331,7 +331,7 @@ public final class GangScreen extends Screen {
         button(cx+212,cy-5,22,"+",b->{terrainRadius=Math.max(2,terrainRadius-1);rebuildWidgets();}).active=terrainRadius>2;
         int mapTop=cy+25,mapHeight=top+h-26-mapTop;
         terrainPanel=addRenderableWidget(new TerrainPanel(cx,mapTop,cw,mapHeight,view,terrainX,terrainZ,terrainSelection,terrainRadius,terrainGrid,this::theme,terrainScroll,
-            cell->{terrainX=cell.x();terrainZ=cell.z();terrainSelection=cell;terrainScroll.reset();rebuildWidgets();},TerrainClient::pan,
+            cell->{terrainX=cell.x();terrainZ=cell.z();terrainSelection=cell;terrainScroll.reset();rebuildWidgets();},
             direction->{terrainRadius=Math.clamp(terrainRadius+direction,2,pl.crimeandlaw.territory.TerrainView.RADIUS);rebuildWidgets();}));
         addRenderableWidget(new RegisterScrollBar(cx+cw-10,mapTop+6,mapHeight-12,terrainScroll,this::theme,"Przewijanie opisu terenu"));
     }

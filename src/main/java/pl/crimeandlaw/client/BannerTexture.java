@@ -17,7 +17,7 @@ public final class BannerTexture {
         if(logo==null || logo.isEmpty()){clear();return null;}
         if(logo.equals(current)){current=logo;return valid?ID:null;}
         clear();current=logo;
-        if(logo.length()>GangLogo.MAX_ENCODED_LENGTH)return null;
+        if(logo.length()>pl.crimeandlaw.gang.GangBanner.MAX_ENCODED_LENGTH)return null;
         // Stream decoding avoids allocating a detailed PNG on LWJGL's small stack.
         try(var input=new ByteArrayInputStream(Base64.getDecoder().decode(logo))){
             NativeImage image=NativeImage.read(input);

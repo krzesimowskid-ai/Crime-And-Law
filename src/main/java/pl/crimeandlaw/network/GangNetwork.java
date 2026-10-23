@@ -15,14 +15,14 @@ import pl.crimeandlaw.gang.*;
 import pl.crimeandlaw.gang.GangDirectory.*;
 
 public final class GangNetwork {
-    public static final int ACTION_MAX_JSON=GangLogo.MAX_ENCODED_LENGTH+1024;
-    public static final int STATE_MAX_JSON=2*GangLogo.MAX_ENCODED_LENGTH+200_000;
+    public static final int ACTION_MAX_JSON=Math.max(GangLogo.MAX_ENCODED_LENGTH,GangBanner.MAX_ENCODED_LENGTH)+1024;
+    public static final int STATE_MAX_JSON=GangLogo.MAX_ENCODED_LENGTH+GangBanner.MAX_ENCODED_LENGTH+200_000;
     private static final Gson JSON=new Gson();
     public static Consumer<String> clientReceiver=ignored->{};
     public static Consumer<String> terrainReceiver=ignored->{};
     private static final Map<ServerPlayer,View> views=new WeakHashMap<>();
     private static final Map<ServerPlayer,Rate> rates=new WeakHashMap<>();
-    public static final int ACTION_MAX_BYTES=ACTION_MAX_JSON*3,STATE_MAX_BYTES=STATE_MAX_JSON*3;
+    public static final int ACTION_MAX_BYTES=ACTION_MAX_JSON+2048,STATE_MAX_BYTES=STATE_MAX_JSON+400_000;
     private static final Map<ServerPlayer,MessageChunks.Assembler> uploads=new WeakHashMap<>();
     private static final MessageChunks.Assembler download=new MessageChunks.Assembler();
     public static void expireUploads(){long now=System.nanoTime();uploads.entrySet().removeIf(entry->entry.getValue().expire(now));}
@@ -71,7 +71,7 @@ public final class GangNetwork {
         @Override public Type<? extends CustomPacketPayload> type(){return TYPE;}
     }
     public static void register(RegisterPayloadHandlersEvent event){
-        var registrar=event.registrar("12");
+        var registrar=event.registrar("13");
         registrar.playToServer(Action.TYPE,Action.CODEC,GangNetwork::handle);
         registrar.playToClient(State.TYPE,State.CODEC,(p,c)->clientReceiver.accept(p.json));
         registrar.playToClient(Terrain.TYPE,Terrain.CODEC,(p,c)->terrainReceiver.accept(p.json));

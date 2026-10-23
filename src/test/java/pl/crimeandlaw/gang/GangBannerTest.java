@@ -25,8 +25,10 @@ class GangBannerTest {
         assertEquals(GangBanner.WIDTH,result.getWidth());assertEquals(GangBanner.HEIGHT,result.getHeight());assertEquals(0,result.getRGB(0,result.getHeight()/2)>>>24);assertEquals(0xFF00FF00,result.getRGB(result.getWidth()/2,result.getHeight()/2));
     }
     @Test void bannerAndLogoHaveIndependentDimensionValidation()throws Exception{
-        String wide=Base64.getEncoder().encodeToString(LogoImages.png(new BufferedImage(4096,1024,BufferedImage.TYPE_INT_ARGB)));
+        String wide=Base64.getEncoder().encodeToString(LogoImages.png(new BufferedImage(8192,2048,BufferedImage.TYPE_INT_ARGB)));
         assertFalse(GangBanner.validateImage(wide).isEmpty());assertThrows(IllegalArgumentException.class,()->GangLogo.validate(wide));
+        String old=Base64.getEncoder().encodeToString(LogoImages.png(new BufferedImage(4096,1024,BufferedImage.TYPE_INT_ARGB)));
+        assertFalse(GangBanner.validateImage(old).isEmpty());
         String tall=Base64.getEncoder().encodeToString(LogoImages.png(new BufferedImage(512,GangBanner.HEIGHT+1,BufferedImage.TYPE_INT_ARGB)));
         assertThrows(IllegalArgumentException.class,()->GangBanner.validateImage(tall));
         assertThrows(IllegalArgumentException.class,()->GangBanner.validateImage("not base64"));

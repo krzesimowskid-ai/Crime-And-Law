@@ -111,7 +111,7 @@ class LogoImportTest {
         Path file=folder.resolve("broken.png");Files.write(file,new byte[0]);
         assertTrue(assertThrows(IOException.class,()->LogoImages.read(file)).getMessage().contains("Nie można odczytać"));
         try(var large=new RandomAccessFile(file.toFile(),"rw")){large.setLength((long)LogoImages.MAX_FILE_BYTES+1);}
-        assertTrue(assertThrows(IOException.class,()->LogoImages.read(file)).getMessage().contains("64 MB"));
+        assertTrue(assertThrows(IOException.class,()->LogoImages.read(file)).getMessage().contains("80 MB"));
     }
     private static final class FailingPngSpi extends ImageReaderSpi {
         boolean runtime;int attempts,disposals;

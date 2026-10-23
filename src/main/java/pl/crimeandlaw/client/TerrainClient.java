@@ -10,6 +10,7 @@ final class TerrainClient {
     static TerrainView view;
     private static long requested;
     private static TerrainViewport target;
+    private static double cameraX,cameraZ;
     private static boolean pending;
     private static final pl.crimeandlaw.territory.TerrainViewCache cache=new pl.crimeandlaw.territory.TerrainViewCache();
     private TerrainClient(){}
@@ -22,14 +23,22 @@ final class TerrainClient {
         flush();
     }
     static boolean following(){return target==null;}
+    static double cameraX(){return target!=null?cameraX:view==null?0:view.centerX();}
+    static double cameraZ(){return target!=null?cameraZ:view==null?0:view.centerZ();}
     static void pan(int dx,int dz){
         if(target==null&&view==null)return;
-        var base=target==null?new TerrainViewport(view.centerX(),view.centerZ()):target;
-        target=base.move(dx,dz);
-        if(view!=null){cache.remember(view);view=cache.viewport(view,target,TerrainView.BUFFER_RADIUS);updated();}
-        request();
+        if(!moveTo(cameraX()+dx,cameraZ()+dz))updated();
     }
-    static void home(){target=null;request();}
+    static boolean moveTo(double x,double z){
+        if(view==null||!Double.isFinite(x)||!Double.isFinite(z))return false;
+        cameraX=Math.clamp(x,-TerrainViewport.LIMIT,TerrainViewport.LIMIT);
+        cameraZ=Math.clamp(z,-TerrainViewport.LIMIT,TerrainViewport.LIMIT);
+        var next=new TerrainViewport((int)Math.round(cameraX),(int)Math.round(cameraZ));
+        boolean rebase=!next.equals(target);target=next;
+        if(rebase){cache.remember(view);view=cache.viewport(view,target,TerrainView.BUFFER_RADIUS);updated();request();}
+        return rebase;
+    }
+    static void home(){target=null;cameraX=cameraZ=0;updated();request();}
     private static void flush(){
         if(Minecraft.getInstance().player==null||Minecraft.getInstance().getConnection()==null)return;
         if(view!=null&&!view.dimension().equals(Minecraft.getInstance().player.level().dimension().location().toString())){clear();pending=true;}
@@ -52,5 +61,5 @@ final class TerrainClient {
         if(next.equals(view))return;view=next;updated();
     }
     private static void updated(){if(Minecraft.getInstance().screen instanceof GangScreen screen)screen.terrainUpdated();}
-    static void clear(){view=null;target=null;pending=false;requested=0;cache.clear();TerrainMapTexture.clear();}
+    static void clear(){view=null;target=null;cameraX=cameraZ=0;pending=false;requested=0;cache.clear();TerrainMapTexture.clear();}
 }

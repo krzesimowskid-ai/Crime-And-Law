@@ -14,13 +14,14 @@ import static org.junit.jupiter.api.Assertions.*;
 class HighResolutionImagesTest {
     @TempDir Path folder;
     @Test void wideOriginalKeepsOnePixelDetailsThroughImportAndSavedBanner()throws Exception{
-        var source=new BufferedImage(4096,1024,BufferedImage.TYPE_INT_ARGB);
-        for(int y=0;y<1024;y++)for(int x=0;x<4096;x++)source.setRGB(x,y,((x+y)&1)==0?0xFF142538:0xFFF1DACB);
+        var source=new BufferedImage(8192,2048,BufferedImage.TYPE_INT_ARGB);
+        for(int y=0;y<2048;y++)for(int x=0;x<8192;x++)source.setRGB(x,y,((x+y)&1)==0?0xFF142538:0xFFF1DACB);
         Path file=folder.resolve("detailed.png");ImageIO.write(source,"png",file.toFile());
-        var decoded=LogoImages.read(file);assertEquals(4096,decoded.getWidth());assertEquals(1024,decoded.getHeight());
+        var decoded=LogoImages.read(file);assertEquals(8192,decoded.getWidth());assertEquals(2048,decoded.getHeight());
         var preview=LogoImages.preview(decoded);assertEquals(2048,preview.getWidth());assertEquals(512,preview.getHeight());
-        var saved=ImageIO.read(new ByteArrayInputStream(Base64.getDecoder().decode(LogoImages.encode(decoded,new LogoCrop(4096,1024,4),true))));
-        assertArrayEquals(source.getRGB(0,0,4096,1024,null,0,4096),saved.getRGB(0,0,4096,1024,null,0,4096));
+        var saved=ImageIO.read(new ByteArrayInputStream(Base64.getDecoder().decode(LogoImages.encode(decoded,new LogoCrop(8192,2048,4),true))));
+        assertEquals(8192,saved.getWidth());assertEquals(2048,saved.getHeight());
+        for(int y=0;y<2048;y++)assertArrayEquals(source.getRGB(0,y,8192,1,null,0,8192),saved.getRGB(0,y,8192,1,null,0,8192));
     }
     @Test void longBannerSourceStaysDetailedWhileSquareSourcesRespectPixelBudget()throws Exception{
         Path wide=folder.resolve("wide.svg"),square=folder.resolve("square.svg");

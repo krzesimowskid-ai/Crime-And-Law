@@ -1,19 +1,19 @@
 # Crime And Law
 
 Autorski mod gangsterski: panel gangów, członkostwo i własny wygląd menu.
-Wersja **0.1.21**.
+Wersja **0.1.22**.
 
 Pierwsza propozycja własnej ekonomii w dolarach i rozwoju terenów:
 [Balans terytoriów](docs/BALANS_TERYTORIOW.md) oraz
 [symulacja](docs/SYMULACJA_BALANSU.md). To projekt do dalszej implementacji;
-JAR 0.1.21 nie odczytuje tych reguł i nie wypłaca jeszcze pieniędzy.
+JAR 0.1.22 nie odczytuje tych reguł i nie wypłaca jeszcze pieniędzy.
 
 ## Uruchomienie
 
 - Minecraft **1.21.1**, Java **21**, NeoForge **21.1.248**.
-- Włóż `crimeandlaw-0.1.21.jar` do `mods`, zastępując poprzedni JAR tego moda.
+- Włóż `crimeandlaw-0.1.22.jar` do `mods`, zastępując poprzedni JAR tego moda.
 - W rozgrywce sieciowej mod musi być **u graczy i na serwerze**.
-  Zaktualizuj serwer i wszystkich klientów do 0.1.21. Sieć moda używa protokołu 12.
+  Zaktualizuj serwer i wszystkich klientów do 0.1.22. Sieć moda używa protokołu 13.
 - W świecie jednoosobowym część serwerowa działa razem ze światem.
 - **G** otwiera panel; skrót można zmienić w sterowaniu. Esc lub X zamyka okno.
 
@@ -105,7 +105,7 @@ kadrowania oraz zapisu. Sprawdzane są poprawność pliku i limity zasobów.
 
 Wybierz obraz z systemowego okna albo przeciągnij jeden plik z folderu
 na otwarty panel gry. Pole ścieżki i przycisk ręcznego wczytywania usunięto.
- PNG/JPG/JPEG/GIF/BMP oraz WebP, SVG, TIFF, ICO, ICNS, PSD, TGA, PCX i PNM. Plik rastrowy do 64 MB; SVG do 8 MB. W razie potrzeby użyj F11,
+ PNG/JPG/JPEG/GIF/BMP oraz WebP, SVG, TIFF, ICO, ICNS, PSD, TGA, PCX i PNM. Plik rastrowy do 80 MB; SVG do 8 MB. W razie potrzeby użyj F11,
 aby widzieć grę i folder jednocześnie.
 
 Obrazy 256×256, poziome, pionowe i inne proporcje są przyjmowane. GIF używa
@@ -150,9 +150,11 @@ Importer korzysta z tych samych formatów i limitów źródła co logo.
 Osobne kadrowanie odpowiada proporcjom pasa. Można przesuwać obraz, przybliżać,
 oddalać poniżej 1× albo zmieścić całość z przezroczystymi marginesami.
 Kolor baneru wypełnia marginesy także przy wybranym obrazie. Wynik ma do
-**4096×1024**, obecny pas daje PNG **4096×951**, do 17 MB;
+**8192×2048**, obecny pas daje PNG **8192×1901**, do 68 MB;
 wyświetlanie zachowuje proporcje i dopasowuje kadr do szerokości pasa.
 Logo pozostaje osobnym PNG 2048×2048.
+Starsze banery nadal się wyświetlają. Większa szczegółowość wymaga ponownego
+wczytania oryginalnego obrazu; powiększenie starego zapisu nie odzyskuje detali.
 Przygotowanie końcowego PNG działa w tle; anulowanie nie zapisuje porzuconego kadru.
 
 Baner zapisuje lider lub osoba z dotychczasowym uprawnieniem do wyglądu/logo.
@@ -181,7 +183,7 @@ Windows: gradlew.bat build
 Linux/macOS: ./gradlew build
 ```
 
-Wynik: `build/libs/crimeandlaw-0.1.19.jar`.
+Wynik: `build/libs/crimeandlaw-0.1.22.jar`.
 Gradle Wrapper 9.2.1, ModDevGradle 2.0.148, NeoForge 21.1.248.
 `./gradlew test` sprawdza model, migrację zapisów, duże listy i prywatność
 zgłoszeń, walidację/edycję logo, kolory oraz skalowanie menu.
@@ -213,7 +215,7 @@ Rejestr: numer strony i dwie sąsiadujące strzałki w prawym narożniku nagłó
 W 0.1.8 dodano przyciski Premie, Zarządzanie saldem, Czarna lista i Cele. Otwierają panele informacyjne; funkcje tych systemów są do rozwijania. Transport nadal jest ukryty.
 
 ## Import logo 0.1.9
-Format jest rozpoznawany po danych, a nie rozszerzeniu. Czytniki są dołączone do JAR-a. Przykładowo WebP lub SVG zapisany pod nazwą PNG może zostać odczytany bez ręcznej konwersji. Obraz roboczy zachowuje do 8192 px na dłuższym boku i 16 777 216 pikseli łącznie; mały podgląd ma do 2048 px. Po kadrowaniu do serwera trafia logo PNG 2048×2048 albo osobny szeroki baner do 4096×1024. SVG renderuje lokalne kształty wektorowe; odwołania do obrazów i plików zewnętrznych są pomijane. Formatów HEIC/AVIF, PDF i animowanego logo nie obsługuje to wydanie.
+Format jest rozpoznawany po danych, a nie rozszerzeniu. Czytniki są dołączone do JAR-a. Przykładowo WebP lub SVG zapisany pod nazwą PNG może zostać odczytany bez ręcznej konwersji. Obraz roboczy zachowuje do 8192 px na dłuższym boku i 16 777 216 pikseli łącznie; mały podgląd ma do 2048 px. Po kadrowaniu do serwera trafia logo PNG 2048×2048 albo osobny szeroki baner do 8192×2048. SVG renderuje lokalne kształty wektorowe; odwołania do obrazów i plików zewnętrznych są pomijane. Formatów HEIC/AVIF, PDF i animowanego logo nie obsługuje to wydanie.
 
 ## Odczyt logo 0.1.10
 Jeśli pierwszy czytnik rozpoznaje format, lecz nie potrafi odczytać danego wariantu,
@@ -255,6 +257,11 @@ To mapa barwna z cieniowaniem rzeźby, nie zdjęcie tekstur z góry.
 Domyślnie widoczny jest obszar 11×11 chunków (176×176 bloków) wokół gracza.
 Przyciski +/− oraz kółko nad mapą zmieniają przybliżenie.
 Przeciąganie lewym przyciskiem przesuwa widok już przy wciśniętej myszy.
+Kamera zachowuje dowolne położenie między chunkami po puszczeniu myszy,
+kolejnym naciśnięciu, przełączeniu siatki, zmianie przybliżenia i odbiorze danych.
+Kliknięcia na częściowo widocznych chunkach uwzględniają to przesunięcie.
+Zaokrąglenie dotyczy wyłącznie obszaru pobieranych danych. Ruch wewnątrz
+tego samego obszaru nie przebudowuje listy opisów ani tekstury mapy.
 Klient pobiera obszar 15×15 chunków, z zapasem wokół widocznych 11×11,
 i rysuje również ten zapas. Odbiór danych nie przerywa trzymanego przeciągnięcia;
 spóźnione odpowiedzi uzupełniają pamięć kafli, zachowując bieżące położenie kamery.

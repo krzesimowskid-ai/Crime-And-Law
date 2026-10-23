@@ -38,11 +38,15 @@ public final class GangUiSmokeTest {
     private static final double[][] MAP_PATH={{1.7,-1.4},{-2.1,2.2},{.35,.45},{2.4,1.1},{-2,-2},{0,0}};
     private static final StringBuilder REPORT=new StringBuilder();
     private static int headerStep=-1;
+    private static int freeStep=-1,freeRound;
+    private static double freeX,freeZ;
+    private static int[] freePixels;
 
     @SubscribeEvent public static void frame(RenderFrameEvent.Post event) {
         if(!Boolean.getBoolean("crimeandlaw.uiSmoke"))return;
         Minecraft mc=Minecraft.getInstance();
         try {
+            if(Boolean.getBoolean("crimeandlaw.freeMapOnly")){checkFreeMapRun(mc);return;}
             if(Boolean.getBoolean("crimeandlaw.headerAlignmentOnly")){checkHeaderAlignmentRun(mc);return;}
             if(stage==-2){
                 if(++frames<24)return;capture(mc,"00-loading");
@@ -473,11 +477,11 @@ public final class GangUiSmokeTest {
                     capture(mc,"51-banner-image-settings");var field=GangScreen.class.getDeclaredField("draftBanner");field.setAccessible(true);
                     var banner=(pl.crimeandlaw.gang.GangBanner)field.get(screen);
                     var decoded=javax.imageio.ImageIO.read(new java.io.ByteArrayInputStream(java.util.Base64.getDecoder().decode(banner.image())));
-                    require(decoded.getWidth()==4096&&decoded.getHeight()==951,"Banner keeps its independent detailed strip texture");
+                    require(decoded.getWidth()==8192&&decoded.getHeight()==1901,"Banner keeps its independent detailed strip texture");
                     directory.banner(PLAYER,banner);fixturePage(PLAYER,0);screen.updated();selectTab(0);
                 }
                 case 52 -> {
-                    capture(mc,"52-banner-image-overview");checkLogoTexture(mc,net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("crimeandlaw","gang_banner"),4096,951);
+                    capture(mc,"52-banner-image-overview");checkLogoTexture(mc,net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("crimeandlaw","gang_banner"),8192,1901);
                     fixture(false);screen=new GangScreen();mc.setScreen(screen);
                     var name=screen.children().stream().filter(c->c instanceof EditBox).map(c->(EditBox)c).findFirst().orElseThrow();name.setValue("Test");
                     screen.setFocused(widget(screen,"Zamknij"));screen.keyPressed(org.lwjgl.glfw.GLFW.GLFW_KEY_ENTER,0,0);
@@ -558,7 +562,7 @@ public final class GangUiSmokeTest {
                     if(++mapRound<3){startHeldMap(mc);stage=61;}
                     else {
                         REPORT.append("PASS held map pan: three zoom levels, eighteen direction/reversal steps, delayed neighboring replies during a held gesture, stable focus/selection, no background or fog pixels across fully known visible terrain, and round-trip release.\n");
-                    REPORT.append("PASS high-resolution images: actual 2048-square/4096-wide textures, full GPU mip chains, neutral checkerboard minification without coarse aliasing, asynchronous apply and cancellation.\n");
+                    REPORT.append("PASS high-resolution images: actual 2048-square/8192-wide textures, full GPU mip chains, neutral checkerboard minification without coarse aliasing, asynchronous apply and cancellation.\n");
                     REPORT.append("PASS: actual Minecraft renderer; earlier map, list, roles, register and logo checks retained; centered actions, accented creation form, member skin card/dismissal, banner color/image/crop, Enter focus, stationary rank-drag autoscroll, persistent chunk selection and top player icon; loading gate, full strip edges, cached drag round-trip, searchable locked future permissions; actual alpha-blended hat, jacket and both sleeves for wide and slim skins.\n");
                     Files.writeString(OUT.resolve("result.txt"),REPORT.toString());System.out.println("CRIME_UI_SMOKE_PASS");mc.stop();
                     }
@@ -569,6 +573,85 @@ public final class GangUiSmokeTest {
             try{Files.createDirectories(OUT);Files.writeString(OUT.resolve("result.txt"),"FAIL: "+error);}catch(Exception ignored){}
             stage=1000;mc.stop();
         }
+    }
+    /** Verify the released camera through the actual input handlers and framebuffer. */
+    private static void checkFreeMapRun(Minecraft mc)throws Exception {
+        if(freeStep<0){
+            if(++startupFrames>1800)throw new AssertionError("Client did not reach the title screen");
+            if(mc.getOverlay()==null&&mc.screen instanceof net.minecraft.client.gui.screens.AccessibilityOnboardingScreen onboarding){mc.options.onboardingAccessibilityFinished();onboarding.onClose();return;}
+            if(!(mc.screen instanceof TitleScreen)||mc.getOverlay()!=null)return;
+            Files.createDirectories(OUT);directory=new GangDirectory();directory.create(PLAYER,"Gracz","Swobodna mapa","");
+            fixturePage(PLAYER,0);screen=new GangScreen();mc.setScreen(screen);screen.updated();startFreeMap(mc);return;
+        }
+        if(++frames<24)return;frames=0;
+        TerrainPanel panel=freeStep<11?(TerrainPanel)widget(screen,"Mapa terenu"):null;
+        var layout=GangLayout.of(screen.width,screen.height);double unit=layout.scale();
+        double cell=TerrainPanel.GRID/(double)(new int[]{5,3,2}[freeRound]*2+1);
+        switch(freeStep++){
+            case 0->{
+                mapPointerX=(panel.getX()+98)*unit;mapPointerY=(panel.getY()+98)*unit;
+                require(screen.mouseClicked(mapPointerX,mapPointerY,0),"Start fractional gesture");
+                require(screen.mouseDragged(mapPointerX+.37*cell*unit,mapPointerY-.23*cell*unit,0,.37*cell*unit,-.23*cell*unit),"Move fractional camera");
+                freeX=-.37;freeZ=.23;
+            }
+            case 1->{checkFreePosition();freePixels=mapPixels(mc,panel);capture(mc,"free-map-"+freeRound+"-held");screen.mouseReleased(mapPointerX,mapPointerY,0);}
+            case 2->{
+                checkFreePosition();require(java.util.Arrays.equals(freePixels,mapPixels(mc,panel)),"Release preserves every rendered map pixel");capture(mc,"free-map-"+freeRound+"-released");
+                double x=(panel.getX()+.15*cell)*unit,y=(panel.getY()+1.15*cell)*unit;
+                screen.mouseClicked(x,y,0);screen.mouseReleased(x,y,0);
+            }
+            case 3->{
+                int radius=new int[]{5,3,2}[freeRound];
+                var x=GangScreen.class.getDeclaredField("terrainX");x.setAccessible(true);var z=GangScreen.class.getDeclaredField("terrainZ");z.setAccessible(true);
+                require(x.getInt(screen)==(int)Math.floor(freeX-radius+.15)&&z.getInt(screen)==(int)Math.floor(freeZ-radius+1.15),"Partial chunk click chooses the terrain under the cursor");
+                freePixels=mapPixels(mc,panel);click(mc,"Siatka");
+            }
+            case 4->{checkFreePosition();capture(mc,"free-map-"+freeRound+"-grid");click(mc,"Siatka");}
+            case 5->{
+                checkFreePosition();require(java.util.Arrays.equals(freePixels,mapPixels(mc,panel)),"Grid toggle retains the map raster");
+                TerrainClient.receive(ClientState.JSON.toJson(wideMap(-7,0,0)));
+            }
+            case 6->{
+                checkFreePosition();require(java.util.Arrays.equals(freePixels,mapPixels(mc,panel)),"Delayed neighboring reply retains map position");
+                boolean far=new int[]{5,3,2}[freeRound]==5;click(mc,far?"+":"−");checkFreePosition();click(mc,far?"−":"+");checkFreePosition();
+                mc.options.guiScale().set(mc.options.guiScale().get()==2?4:2);mc.resizeDisplay();
+            }
+            case 7->{
+                checkFreePosition();freePixels=mapPixels(mc,panel);mapPointerX=(panel.getX()+98)*unit;mapPointerY=(panel.getY()+98)*unit;
+                require(screen.mouseClicked(mapPointerX,mapPointerY,0),"Start second fractional gesture");
+            }
+            case 8->{
+                checkFreePosition();require(java.util.Arrays.equals(freePixels,mapPixels(mc,panel)),"Pressing again does not snap the camera");
+                screen.mouseDragged(mapPointerX-.19*cell*unit,mapPointerY+.43*cell*unit,0,-.19*cell*unit,.43*cell*unit);freeX=-.18;freeZ=-.20;
+            }
+            case 9->{checkFreePosition();freePixels=mapPixels(mc,panel);screen.mouseReleased(mapPointerX,mapPointerY,0);}
+            case 10->{
+                checkFreePosition();require(java.util.Arrays.equals(freePixels,mapPixels(mc,panel)),"Second release preserves all raster pixels");capture(mc,"free-map-"+freeRound+"-second-release");
+                REPORT.append("PASS free camera: radius ").append(new int[]{5,3,2}[freeRound]).append(", release, grid toggles, delayed replies, zoom, GUI resize, repeated gestures, partial-chunk selection, identical raster pixels.\n");
+                if(++freeRound<3)startFreeMap(mc);else freeRound=2;
+            }
+            case 11->mc.setScreen(new ImageQualityProbe());
+            case 12->{
+                checkMinification(mc);capture(mc,"8k-banner-minification");REPORT.append("PASS: actual Minecraft framebuffer; no chunk snapping at any tested zoom. 8192x1901 banner texture, all mip levels and smooth minification verified.\n");Files.writeString(OUT.resolve("result.txt"),REPORT.toString());System.out.println("CRIME_FREE_MAP_PASS");mc.stop();
+            }
+        }
+    }
+    private static void startFreeMap(Minecraft mc)throws Exception {
+        mc.options.guiScale().set(freeRound==1?4:2);mc.resizeDisplay();TerrainClient.clear();
+        for(int z:new int[]{-7,0,7})for(int x:new int[]{-7,0,7})TerrainClient.receive(ClientState.JSON.toJson(wideMap(x,z,0)));
+        TerrainClient.receive(ClientState.JSON.toJson(wideMap(0,0,0)));
+        var radius=GangScreen.class.getDeclaredField("terrainRadius");radius.setAccessible(true);radius.setInt(screen,new int[]{5,3,2}[freeRound]);
+        var grid=GangScreen.class.getDeclaredField("terrainGrid");grid.setAccessible(true);grid.setBoolean(screen,false);
+        selectTab(2);freeStep=0;frames=0;
+    }
+    private static void checkFreePosition(){require(Math.abs(TerrainClient.cameraX()-freeX)<1e-9&&Math.abs(TerrainClient.cameraZ()-freeZ)<1e-9,"Continuous camera retained: "+TerrainClient.cameraX()+", "+TerrainClient.cameraZ());}
+    private static int[] mapPixels(Minecraft mc,TerrainPanel panel){
+        double scale=GangLayout.of(mc.screen.width,mc.screen.height).scale()*mc.getWindow().getGuiScale();
+        int side=TerrainPanel.GRID-4;int[] pixels=new int[side*side];
+        try(var image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){
+            for(int y=0;y<side;y++)for(int x=0;x<side;x++)pixels[y*side+x]=image.getPixelRGBA((int)((panel.getX()+x+2.5)*scale),(int)((panel.getY()+y+2.5)*scale));
+        }
+        return pixels;
     }
     /** A narrow, zoomed-out banner exposes differences between the three rendered axes. */
     private static void checkHeaderAlignmentRun(Minecraft mc)throws Exception {
@@ -654,7 +737,7 @@ public final class GangUiSmokeTest {
         ImageQualityProbe()throws Exception{
             super(net.minecraft.network.chat.Component.literal("Próba szczegółów grafiki"));
             for(boolean banner:new boolean[]{false,true}){
-                int width=banner?4096:2048,height=banner?951:2048;
+                int width=banner?8192:2048,height=banner?1901:2048;
                 var image=new java.awt.image.BufferedImage(width,height,java.awt.image.BufferedImage.TYPE_INT_ARGB);
                 for(int y=0;y<height;y++)for(int x=0;x<width;x++)image.setRGB(x,y,((x+y)&1)==0?0xFF000000:0xFFFFFFFF);
                 String png=java.util.Base64.getEncoder().encodeToString(LogoImages.png(image));
@@ -670,8 +753,8 @@ public final class GangUiSmokeTest {
     private static void checkMinification(Minecraft mc){
         double scale=GangLayout.of(mc.screen.width,mc.screen.height).scale()*mc.getWindow().getGuiScale();
         checkLogoTexture(mc,net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("crimeandlaw","gang_logo"),2048,2048);
-        checkLogoTexture(mc,net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("crimeandlaw","gang_banner"),4096,951);
-        for(int[] shape:new int[][]{{2048,2048},{4096,951}}){
+        checkLogoTexture(mc,net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("crimeandlaw","gang_banner"),8192,1901);
+        for(int[] shape:new int[][]{{2048,2048},{8192,1901}}){
             var texture=mc.getTextureManager().getTexture(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("crimeandlaw",shape[0]==2048?"gang_logo":"gang_banner"));texture.bind();
             for(int level=0;level<=31-Integer.numberOfLeadingZeros(shape[0]);level++){
                 require(org.lwjgl.opengl.GL11.glGetTexLevelParameteri(org.lwjgl.opengl.GL11.GL_TEXTURE_2D,level,org.lwjgl.opengl.GL11.GL_TEXTURE_WIDTH)==Math.max(1,shape[0]>>level),"Every mip level is allocated");
@@ -851,7 +934,7 @@ public final class GangUiSmokeTest {
         for(int delta:new int[]{64,-64}){
             var panel=widget(screen,"Mapa terenu");double x=(panel.getX()+90)*l.scale(),y=(panel.getY()+90)*l.scale();
             screen.mouseClicked(x,y,0);screen.mouseDragged(x+delta*l.scale(),y,0,delta*l.scale(),0);screen.mouseReleased(x+delta*l.scale(),y,0);
-            panel=widget(screen,"Mapa terenu");var field=TerrainPanel.class.getDeclaredField("dragX");field.setAccessible(true);require(field.getDouble(panel)==0,"No stale drag translation remains after release");
+            panel=widget(screen,"Mapa terenu");var field=TerrainPanel.class.getDeclaredField("dragX");field.setAccessible(true);require(Math.abs(field.getDouble(panel)-(TerrainClient.view.centerX()-TerrainClient.cameraX())*TerrainPanel.GRID/11.0)<1e-8,"Release preserves the fractional camera translation");
         }
         require(TerrainClient.view.centerX()==original.centerX()&&TerrainClient.view.centerZ()==original.centerZ(),"Immediate reverse drag returns to the original viewport");
         for(var cell:original.cells())if(!cell.mapPixels().isEmpty()){

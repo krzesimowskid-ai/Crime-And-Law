@@ -4,6 +4,16 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class TerrainDragTest {
+    @Test void repeatedGesturesResumeFromTheFractionalWorldPosition(){
+        for(int radius=2;radius<=5;radius++){
+            double size=196.0/(radius*2+1);var drag=new TerrainDrag();
+            drag.begin(-2.37,5.23,80,90,radius,196);drag.move(80+.41*size,90-.36*size);drag.finish();
+            assertEquals(-2.78,drag.x(),1e-9);assertEquals(5.59,drag.z(),1e-9);
+            drag.begin(drag.x(),drag.z(),80,90,radius,196);drag.move(80-.19*size,90+.43*size);drag.finish();
+            assertEquals(-2.59,drag.x(),1e-9);assertEquals(5.16,drag.z(),1e-9);
+            assertNotEquals(Math.rint(drag.x()),drag.x());assertFalse(drag.active());
+        }
+    }
     @Test void repeatedReversalsKeepTheWorldPointUnderTheHeldMouseAtEveryZoom(){
         for(int radius=2;radius<=5;radius++){
             var drag=new TerrainDrag();var origin=new TerrainViewport(-1,-2);double pixels=196.0/(radius*2+1);

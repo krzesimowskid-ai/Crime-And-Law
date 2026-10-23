@@ -35,7 +35,7 @@ public final class GangMultiplayerSmoke {
     private static int mapStep,mapOriginX,mapOriginZ,mapReplies,replyBefore,selectedMapX,selectedMapZ;
     private static boolean awaitingMap;
     private static double mapPointerX,mapPointerY;
-    private static final double[][] MAP_PATH={{.4,0},{1.7,.5},{-1.6,1.7},{1.8,-1.7},{.3,.2},{0,0}};
+    private static final double[][] MAP_PATH={{.4,0},{1.7,.5},{-1.6,1.7},{1.8,-1.7},{.3,.2},{.37,-.23}};
 
     @SubscribeEvent public static void frame(RenderFrameEvent.Post event){
         if(ROLE.isEmpty()||finished)return;
@@ -108,8 +108,8 @@ public final class GangMultiplayerSmoke {
             }
             case 11 -> {
                 if(gang.theme.background()!=0x253047)return;
-                press(mc,"Baner");BufferedImage image=new BufferedImage(4096,951,BufferedImage.TYPE_INT_ARGB);var random=new Random(1717);
-                for(int y=0;y<951;y++)for(int x=0;x<4096;x++)image.setRGB(x,y,random.nextInt()|0xFF000000);
+                press(mc,"Baner");BufferedImage image=new BufferedImage(8192,1901,BufferedImage.TYPE_INT_ARGB);var random=new Random(1717);
+                for(int y=0;y<1901;y++)for(int x=0;x<8192;x++)image.setRGB(x,y,(x%4==0&&y%4==0)?random.nextInt()|0xFF000000:0xFF000000|((x&255)<<16)|((y&255)<<8)|((x^y)&255));
                 Path file=OUT.resolve("large-banner-fixture.png");ImageIO.write(image,"png",file.toFile());
                 ((GangScreen)mc.screen).onFilesDrop(List.of(file));next("import wide banner");
             }
@@ -159,9 +159,19 @@ public final class GangMultiplayerSmoke {
                 var x=GangScreen.class.getDeclaredField("terrainX");x.setAccessible(true);var z=GangScreen.class.getDeclaredField("terrainZ");z.setAccessible(true);
                 require(x.getInt(mc.screen)==selectedMapX&&z.getInt(mc.screen)==selectedMapZ,"Dragging and real replies preserve the separate selection");
                 checkMapCanvas(mc,(TerrainPanel)widget(mc,"Mapa terenu"));
-                pass(mc,"Owner membership/permissions and identical detailed images passed; logo chars="+gang.logo.length()+", banner chars="+gang.banner.image().length()+". Actual loaded-world map: full prefetched buffer, six held direction changes, real TCP replies without losing focus, no clipping pixels, stable selection and release/return; replies="+mapReplies);
+                checkFractionalMap();press(mc,"Siatka");replyBefore=mapReplies;TerrainClient.request();next("verify released camera through grid rebuild and real reply");
+            }
+            case 19 -> {
+                if(mapReplies<=replyBefore)return;checkFractionalMap();press(mc,"Siatka");next("verify final continuous camera");
+            }
+            case 20 -> {
+                checkFractionalMap();checkMapCanvas(mc,(TerrainPanel)widget(mc,"Mapa terenu"));
+                pass(mc,"Owner membership/permissions and identical detailed 8K banner passed; logo chars="+gang.logo.length()+", banner chars="+gang.banner.image().length()+". Actual loaded-world map: six held direction changes, real TCP replies without losing focus, no clipping pixels, stable selection, fractional release and grid toggles; replies="+mapReplies);
             }
         }
+    }
+    private static void checkFractionalMap(){
+        require(Math.abs(TerrainClient.cameraX()-(mapOriginX-.37))<1e-9&&Math.abs(TerrainClient.cameraZ()-(mapOriginZ+.23))<1e-9,"Free camera survives release, grid toggles and server replies");
     }
     private static void member(Minecraft mc)throws Exception{
         var gang=ClientState.gang();
@@ -205,7 +215,7 @@ public final class GangMultiplayerSmoke {
                 if(gang.logo.length()<=28_000||gang.banner.image().length()<=1_000_000||gang.theme.background()!=0x253047||!Files.exists(OUT.resolve("logo.sha256"))||!Files.exists(OUT.resolve("banner.sha256")))return;
                 require(hash(gang.banner.image()).equals(Files.readString(OUT.resolve("banner.sha256"))),"Both clients received the same detailed wide banner");
                 var bannerTexture=(net.minecraft.client.renderer.texture.DynamicTexture)mc.getTextureManager().getTexture(BannerTexture.get(gang.banner.image()));
-                require(bannerTexture.getPixels().getWidth()==4096&&bannerTexture.getPixels().getHeight()==951,"Remote banner has its full independent resolution");
+                require(bannerTexture.getPixels().getWidth()==8192&&bannerTexture.getPixels().getHeight()==1901,"Remote banner has its full independent resolution");
                 require(hash(gang.logo).equals(Files.readString(OUT.resolve("logo.sha256"))),"Both clients received identical detailed logo data");
                 var location=LogoTexture.get(gang.logo);var texture=(net.minecraft.client.renderer.texture.DynamicTexture)mc.getTextureManager().getTexture(location);
                 require(texture.getPixels().getWidth()==2048&&texture.getPixels().getHeight()==2048,"Remote logo renders at saved resolution");

@@ -554,3 +554,22 @@ gdy właściwe systemy własności oraz mapy będą rozwijane.
 - Próba graficzna `-Dcrimeandlaw.headerAlignmentOnly=true` obejmuje pionowe
   źródło 240×300: dopasowanie całości i dalsze oddalenie, skale GUI 2 oraz 4.
   Porównuje rzeczywiste piksele banera, logo i ramki nazwy.
+
+
+## Swobodna kamera i dokładniejszy baner — 0.1.22
+
+- Baner: maks. 8192×2048, obecny pas 8192×1901, bezstratny PNG do 68 MB.
+  Logo nadal 2048×2048 / 17 MB. Źródło rastrowe do 80 MB, pozostałe
+  limity obrazu roboczego oraz SVG bez zmian. Wygładzanie i mipmapy pozostają.
+- Większa jakość wymaga ponownego importu oryginału. Nie zmieniamy kadru
+  ani wybranego przybliżenia i zachowujemy wyśrodkowanie z 0.1.21.
+- Użytkownik chce swobodnego położenia mapy, bez przyciągania do środka
+  chunka. Dokładne współrzędne kamery są niezależne od całkowitego środka
+  bufora pobieranych danych; nie są zerowane przy puszczeniu myszy,
+  przełączeniu siatki, nowym geście, zmianie przybliżenia ani odpowiedzi.
+- Trafianie myszą w częściowo widoczny chunk uwzględnia ułamkowe przesunięcie
+  i zaokrąglenie w dół także przy ujemnych współrzędnych.
+- Zmiana bufora tylko po przejściu granicy jego całkowitego środka.
+  Pozostałe ruchy to przesunięcie rysowania, bez ponownego dekodowania obrazu.
+- Protokół 13: serwer i wszyscy gracze aktualizują mod. Oddzielne limity
+  logo/banera i małe części transmisji zachowują walidację po stronie serwera.

@@ -22,7 +22,7 @@ import pl.crimeandlaw.gang.GangLogo;
 /** Content-neutral decoding, preview downsampling and final encoding outside rendering. */
 public final class LogoImages {
     public static final String FORMATS="PNG / JPG / GIF / BMP / WebP / SVG / TIFF / ICO / ICNS / PSD / TGA / PCX / PNM";
-    public static final int MAX_FILE_BYTES=64_000_000,SOURCE_SIDE=8192,PREVIEW_SIDE=2048;
+    public static final int MAX_FILE_BYTES=80_000_000,SOURCE_SIDE=8192,PREVIEW_SIDE=2048;
     public static final long MAX_SOURCE_PIXELS=16_777_216L;
     private static final Set<IIORegistry> REGISTRIES=Collections.newSetFromMap(new WeakHashMap<>());
     private LogoImages(){}
@@ -45,10 +45,10 @@ public final class LogoImages {
     }
     public static BufferedImage read(Path path)throws IOException {
         if(!Files.isRegularFile(path))throw new IOException("Nie znaleziono pliku. Sprawdź ścieżkę i nazwę obrazu.");
-        if(Files.size(path)>MAX_FILE_BYTES)throw new IOException("Obraz przekracza limit 64 MB.");
+        if(Files.size(path)>MAX_FILE_BYTES)throw new IOException("Obraz przekracza limit 80 MB.");
         byte[] bytes;
         try(var raw=Files.newInputStream(path)){bytes=raw.readNBytes(MAX_FILE_BYTES+1);}
-        if(bytes.length>MAX_FILE_BYTES)throw new IOException("Obraz przekracza limit 64 MB.");
+        if(bytes.length>MAX_FILE_BYTES)throw new IOException("Obraz przekracza limit 80 MB.");
         if(looksLikeSvg(bytes))return readSvg(bytes);
         registerReaders();
         try(var in=new MemoryCacheImageInputStream(new ByteArrayInputStream(bytes))){

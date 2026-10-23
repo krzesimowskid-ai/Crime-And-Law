@@ -16,11 +16,14 @@ public final class GangLogo {
         return validateImage(encoded,SIDE,SIDE,"Logo");
     }
     static String validateImage(String encoded,int maxWidth,int maxHeight,String label){
+        return validateImage(encoded,maxWidth,maxHeight,MAX_BYTES,label);
+    }
+    static String validateImage(String encoded,int maxWidth,int maxHeight,int maxBytes,String label){
         if(encoded==null || encoded.isEmpty())return "";
-        if(encoded.length()>MAX_ENCODED_LENGTH)throw new IllegalArgumentException("Przekroczono limit rozmiaru obrazu.");
+        if(encoded.length()>((maxBytes+2)/3)*4)throw new IllegalArgumentException("Przekroczono limit rozmiaru obrazu.");
         try{
             byte[] bytes=Base64.getDecoder().decode(encoded);
-            if(bytes.length>MAX_BYTES)throw new IOException();
+            if(bytes.length>maxBytes)throw new IOException();
             try(ImageInputStream in=new MemoryCacheImageInputStream(new ByteArrayInputStream(bytes))){
                 var readers=ImageIO.getImageReaders(in);if(!readers.hasNext())throw new IOException();
                 var reader=readers.next();
@@ -29,10 +32,10 @@ public final class GangLogo {
                     if(!reader.getFormatName().equalsIgnoreCase("png") || w<1 || h<1 || w>maxWidth || h>maxHeight)throw new IOException();
                     BufferedImage image=reader.read(0);ByteArrayOutputStream out=new ByteArrayOutputStream();
                     try(var output=new MemoryCacheImageOutputStream(out)){ImageIO.write(image,"png",output);}
-                    if(out.size()>MAX_BYTES)throw new IOException();
+                    if(out.size()>maxBytes)throw new IOException();
                     return Base64.getEncoder().encodeToString(out.toByteArray());
                 }finally{reader.dispose();}
             }
-        }catch(Exception exception){throw new IllegalArgumentException(label+" musi być poprawnym PNG do "+maxWidth+"×"+maxHeight+" i 17 MB.");}
+        }catch(Exception exception){throw new IllegalArgumentException(label+" musi być poprawnym PNG do "+maxWidth+"×"+maxHeight+" i "+maxBytes/1_000_000+" MB.");}
     }
 }

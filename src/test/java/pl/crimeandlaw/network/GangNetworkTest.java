@@ -31,10 +31,13 @@ class GangNetworkTest {
         var wide=new BufferedImage(4096,1024,BufferedImage.TYPE_INT_ARGB);
         for(int y=0;y<1024;y++)for(int x=0;x<4096;x++)wide.setRGB(x,y,random.nextInt()|0xFF000000);
         String banner=LogoImages.encode(wide,new LogoCrop(4096,1024,4),true);
+        assertTrue(banner.length()>GangLogo.MAX_ENCODED_LENGTH,"Banner uses its own larger budget");
         directory.banner(owner,new GangBanner(banner,0x334455,180));
         GangDirectory restored=GangDirectory.fromJson(directory.toJson());
         assertEquals(logo,restored.of(owner).logo);
         String snapshot=GangView.snapshot(restored.of(owner),owner,0,0).toString();
+        assertTrue(snapshot.length()<=GangNetwork.STATE_MAX_JSON);
+        assertTrue(snapshot.getBytes(java.nio.charset.StandardCharsets.UTF_8).length<=GangNetwork.STATE_MAX_BYTES);
         var download=new RegistryFriendlyByteBuf(Unpooled.buffer(),RegistryAccess.EMPTY);
         try{
             GangNetwork.State.CODEC.encode(download,new GangNetwork.State(snapshot));
