@@ -23,7 +23,7 @@ public final class LogoTexture {
             NativeImage image=NativeImage.read(input);
             if(image.getWidth()>GangLogo.SIDE||image.getHeight()>GangLogo.SIDE){image.close();return null;}
             width=image.getWidth();height=image.getHeight();
-            var texture=new DynamicTexture(image);texture.setFilter(true,false);
+            var texture=SmoothImageTexture.create(image);
             Minecraft.getInstance().getTextureManager().register(ID,texture);valid=true;return ID;}
         catch(Exception exception){return null;}
     }

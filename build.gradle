@@ -2,7 +2,7 @@ plugins {
     id 'java-library'
     id 'net.neoforged.moddev' version '2.0.148'
 }
-version = '0.1.18'
+version = '0.1.19'
 group = 'pl.crimeandlaw'
 base { archivesName = 'crimeandlaw' }
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
@@ -97,7 +97,11 @@ dependencies {
 // NeoForge 1.21.1 needs library dependencies on the development launcher classpath.
 configurations.additionalRuntimeClasspath.extendsFrom(configurations.jarJar)
 tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
-tasks.named('test') { useJUnitPlatform() }
+tasks.named('test') {
+    useJUnitPlatform()
+    // End-to-end image tests retain two worst-case detailed assets plus codec copies.
+    maxHeapSize = '1536m'
+}
 // Keep fixture automation out of releases even after a prior smoke-test compile.
 tasks.named('jar') {
     exclude 'pl/crimeandlaw/client/GangUiSmokeTest*', 'pl/crimeandlaw/territory/TerrainServerSmoke*',

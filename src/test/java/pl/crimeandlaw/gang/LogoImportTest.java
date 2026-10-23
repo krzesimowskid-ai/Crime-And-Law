@@ -42,8 +42,8 @@ class LogoImportTest {
               <rect width="3000" height="3000" fill="#2878c8"/>
             </svg>
             """);
-        BufferedImage image=LogoImages.read(file);assertEquals(2048,image.getWidth());assertEquals(1024,image.getHeight());
-        assertEquals(0xFF2878C8,image.getRGB(100,100));assertEquals(0,image.getRGB(1800,100)>>>24);
+        BufferedImage image=LogoImages.read(file);assertTrue(image.getWidth()>4096);assertEquals(image.getWidth()/2,image.getHeight());assertTrue((long)image.getWidth()*image.getHeight()<=LogoImages.MAX_SOURCE_PIXELS);
+        assertEquals(0xFF2878C8,image.getRGB(100,100));assertEquals(0,image.getRGB(image.getWidth()-100,100)>>>24);
     }
     @Test void pngWithSvgTextMetadataRemainsARaster()throws Exception {
         var image=new BufferedImage(16,16,BufferedImage.TYPE_INT_ARGB);image.setRGB(8,8,0xFF2878C8);
@@ -73,7 +73,7 @@ class LogoImportTest {
     }
     @Test void veryWideRasterIsDownsampledBeforePreview()throws Exception {
         Path file=folder.resolve("panorama.png");ImageIO.write(new BufferedImage(20000,4,BufferedImage.TYPE_INT_RGB),"png",file.toFile());
-        var image=LogoImages.read(file);assertTrue(image.getWidth()<=LogoImages.PREVIEW_SIDE);assertTrue(image.getHeight()>=1);
+        var image=LogoImages.read(file);assertTrue(image.getWidth()<=LogoImages.SOURCE_SIDE);assertTrue(image.getHeight()>=1);
     }
     @Test void pngColorModelsAndFileNamesDoNotRestrictImport()throws Exception {
         int[] types={BufferedImage.TYPE_INT_RGB,BufferedImage.TYPE_INT_ARGB,BufferedImage.TYPE_BYTE_GRAY,

@@ -493,3 +493,26 @@ gdy właściwe systemy własności oraz mapy będą rozwijane.
   kolejność i kompletność. Limit dotyczy całej wiadomości; jeden nieukończony
   transfer na połączenie, wygaszany po 60 sekundach bez danych (maks. 5 minut).
   Zapis obrazu pozostaje jednym kompletnym PNG; podział dotyczy wyłącznie sieci.
+
+
+## Dalsze zwiększenie szczegółowości — 0.1.19
+
+- 1024×1024 było przykładem użytkownika, nie wymaganym sztywnym rozmiarem.
+  Celem jest zachowanie szczegółów i bardzo trudne do zauważenia piksele
+  przy zwykłym oglądaniu logo i baneru. Jakość nadal ogranicza oryginał
+  i fizyczna rozdzielczość ekranu; nie obiecywać odzyskiwania utraconych detali.
+- Zapis logo 2048×2048 i baneru do 4096×1024; aktualny pas 4096×951.
+  Bezstratny PNG do 17 MB na grafikę, także dla szczegółowych obrazów RGBA.
+  Protokół 11 wymaga tej samej wersji serwera i wszystkich klientów.
+- Źródło robocze: do 8192 px na bok i 16 777 216 pikseli łącznie.
+  Podgląd edytora jest osobną pomniejszoną kopią do 2048 px i nie zastępuje
+  większego źródła używanego przy zatwierdzaniu. Limit pliku źródłowego 64 MB, SVG 8 MB.
+- Logo, baner i podgląd mają pełny łańcuch mipmap oraz filtrowanie trójliniowe
+  przy pomniejszaniu; wygładzanie przy powiększaniu pozostaje liniowe.
+  Łańcuch jest tworzony raz na zmianę obrazu. Dotyczy także starych grafik.
+- Zatwierdzenie kadru przygotowuje PNG w tle z nieruchomej kopii ustawień.
+  Okno można anulować; porzucony wynik nie zmienia logo/baneru.
+- Zachować przeciąganie we wszystkich kierunkach, scroll, oddalanie poniżej 1×,
+  cały obraz i kolor tła. Dopiero wybrany kadr jest zapisywany; oryginalny plik
+  nie jest przechowywany na serwerze. Dodatkowe detale starszego małego zapisu
+  wymagają ponownego wczytania oryginalnego pliku.

@@ -22,7 +22,8 @@ import pl.crimeandlaw.gang.GangLogo;
 /** Content-neutral decoding, preview downsampling and final encoding outside rendering. */
 public final class LogoImages {
     public static final String FORMATS="PNG / JPG / GIF / BMP / WebP / SVG / TIFF / ICO / ICNS / PSD / TGA / PCX / PNM";
-    public static final int MAX_FILE_BYTES=64_000_000,PREVIEW_SIDE=2048;
+    public static final int MAX_FILE_BYTES=64_000_000,SOURCE_SIDE=8192,PREVIEW_SIDE=2048;
+    public static final long MAX_SOURCE_PIXELS=16_777_216L;
     private static final Set<IIORegistry> REGISTRIES=Collections.newSetFromMap(new WeakHashMap<>());
     private LogoImages(){}
     private static synchronized void registerReaders(){
@@ -65,7 +66,8 @@ public final class LogoImages {
                     int width=reader.getWidth(0),height=reader.getHeight(0);
                     if(width<1||height<1)continue;
                     if(width>100_000||height>100_000||(long)width*height>1_000_000_000L){dimensionsRejected=true;continue;}
-                    var param=reader.getDefaultReadParam();int step=Math.max(1,(Math.max(width,height)+PREVIEW_SIDE-1)/PREVIEW_SIDE);
+                    var param=reader.getDefaultReadParam();int step=Math.max(1,(Math.max(width,height)+SOURCE_SIDE-1)/SOURCE_SIDE);
+                    while(((width+step-1L)/step)*((height+step-1L)/step)>MAX_SOURCE_PIXELS)step++;
                     param.setSourceSubsampling(step,step,0,0);
                     BufferedImage image=reader.read(0,param);
                     if(image!=null)return image;
@@ -92,11 +94,24 @@ public final class LogoImages {
         if(document==null)throw new IOException("Nie można odczytać obrazu SVG: niepoprawny dokument.");
         double w=document.size().width,h=document.size().height;
         if(!Double.isFinite(w)||!Double.isFinite(h)||w<=0||h<=0)throw new IOException("Obraz SVG nie ma poprawnych wymiarów lub viewBox.");
-        double scale=Math.min(1,PREVIEW_SIDE/Math.max(w,h));
-        int width=Math.max(1,(int)Math.round(w*scale)),height=Math.max(1,(int)Math.round(h*scale));
+        double scale=Math.min(1,Math.min(SOURCE_SIDE/Math.max(w,h),Math.sqrt(MAX_SOURCE_PIXELS/(w*h))));
+        int width=Math.max(1,(int)Math.floor(w*scale)),height=Math.max(1,(int)Math.floor(h*scale));
         BufferedImage image=new BufferedImage(width,height,BufferedImage.TYPE_INT_ARGB);var g=image.createGraphics();
-        try{document.render(null,g,new ViewBox(0,0,width,height));}finally{g.dispose();}
+        try{g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);document.render(null,g,new ViewBox(0,0,width,height));}finally{g.dispose();}
         return image;
+    }
+    /** The small editor does not need a full 16-megapixel GPU texture; encoding still uses the source. */
+    public static BufferedImage preview(BufferedImage source){
+        double scale=Math.min(1,PREVIEW_SIDE/(double)Math.max(source.getWidth(),source.getHeight()));
+        int width=Math.max(1,(int)Math.round(source.getWidth()*scale)),height=Math.max(1,(int)Math.round(source.getHeight()*scale));
+        BufferedImage current=source;
+        while(current.getWidth()>width||current.getHeight()>height){
+            int w=Math.max(width,current.getWidth()/2),h=Math.max(height,current.getHeight()/2);
+            var next=new BufferedImage(w,h,BufferedImage.TYPE_INT_ARGB);var g=next.createGraphics();
+            try{g.setComposite(java.awt.AlphaComposite.Src);g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,RenderingHints.VALUE_INTERPOLATION_BICUBIC);g.drawImage(current,0,0,w,h,null);}finally{g.dispose();}
+            if(current!=source)current.flush();current=next;
+        }
+        return current;
     }
     public static byte[] png(BufferedImage image)throws IOException {
         ByteArrayOutputStream out=new ByteArrayOutputStream();

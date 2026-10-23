@@ -18,7 +18,7 @@ public final class LogoCropScreen extends MenuDialog {
     private final int previewHeight;
     private final int background;
     private final boolean banner;
-    private boolean dragging,registered;
+    private boolean dragging,registered,encoding;
     private String error="";
     private ValueSlider zoom;
     public LogoCropScreen(GangScreen parent,BufferedImage image,String filename,Consumer<String> accepted){
@@ -33,20 +33,30 @@ public final class LogoCropScreen extends MenuDialog {
         if(!registered)try {
             // The byte[] overload allocates the entire PNG on a small LWJGL
             // stack. Stream decoding uses a growable buffer for larger previews.
-            var texture=new DynamicTexture(NativeImage.read(new java.io.ByteArrayInputStream(LogoImages.png(image))));
-            texture.setFilter(true,false);minecraft.getTextureManager().register(TEXTURE,texture);registered=true;
+            var texture=SmoothImageTexture.create(NativeImage.read(new java.io.ByteArrayInputStream(LogoImages.png(LogoImages.preview(image)))));
+            minecraft.getTextureManager().register(TEXTURE,texture);registered=true;
         }catch(Exception e){error="Nie można wyświetlić podglądu obrazu.";}
         int rx=left+258,rw=panelWidth-276;
-        addRenderableWidget(new FlatButton(rx,top+92,rw,21,banner?"Wypełnij baner":"Wypełnij kwadrat",b->{crop.fit(false);rebuildWidgets();},this::theme,!crop.fit()));
-        addRenderableWidget(new FlatButton(rx,top+118,rw,21,"Pokaż cały obraz",b->{crop.fit(true);rebuildWidgets();},this::theme,crop.fit()));
+        addRenderableWidget(new FlatButton(rx,top+92,rw,21,banner?"Wypełnij baner":"Wypełnij kwadrat",b->{crop.fit(false);rebuildWidgets();},this::theme,!crop.fit())).active=!encoding;
+        addRenderableWidget(new FlatButton(rx,top+118,rw,21,"Pokaż cały obraz",b->{crop.fit(true);rebuildWidgets();},this::theme,crop.fit())).active=!encoding;
         zoom=addRenderableWidget(new ValueSlider(rx,top+158,rw,"Przybliżenie",crop.normalizedZoom(),this::theme,crop::normalizedZoom).display(v->String.format(java.util.Locale.ROOT,"%.2f×",crop.zoom())));
-        zoom.active=true;
-        button(rx,top+199,rw,"Wyśrodkuj / resetuj",b->{crop.reset();rebuildWidgets();});
+        zoom.active=!encoding;
+        button(rx,top+199,rw,"Wyśrodkuj / resetuj",b->{crop.reset();rebuildWidgets();}).active=!encoding;
         button(left+18,top+panelHeight-35,100,"Anuluj",b->onClose());
         button(left+panelWidth-164,top+panelHeight-35,146,banner?"Zastosuj baner":"Zastosuj logo",b->{
-            try {String encoded=LogoImages.encode(image,crop,banner);minecraft.setScreen(parent);accepted.accept(encoded);}
-            catch(Exception e){error="Nie udało się zapisać obrazu: "+e.getMessage();}
-        }).active=registered;
+            if(encoding)return;
+            LogoCrop selected=crop.copy();encoding=true;dragging=false;error="";rebuildWidgets();
+            java.util.concurrent.CompletableFuture.supplyAsync(()->{
+                try{return LogoImages.encode(image,selected,banner);}
+                catch(Exception e){throw new java.util.concurrent.CompletionException(e);}
+            }).whenComplete((encoded,failure)->minecraft.execute(()->{
+                // Closing/cancelling the dialog must never apply an abandoned result.
+                if(minecraft.screen!=this)return;
+                encoding=false;
+                if(failure!=null){var cause=failure.getCause()==null?failure:failure.getCause();error="Nie udało się zapisać obrazu: "+cause.getMessage();rebuildWidgets();}
+                else{minecraft.setScreen(parent);accepted.accept(encoded);}
+            }));
+        }).active=registered&&!encoding;
     }
     @Override protected void paint(GuiGraphics g,int x,int y,float delta){
         for(int by=0;by<previewHeight;by+=10)for(int bx=0;bx<size;bx+=10)g.fill(px+bx,py+by,px+Math.min(bx+10,size),py+Math.min(by+10,previewHeight),((bx/10+by/10)&1)==0?0xFF30323B:0xFF23252D);
@@ -69,16 +79,17 @@ public final class LogoCropScreen extends MenuDialog {
         g.drawString(font,crop.fit()?"Cały obraz z marginesami":banner?"Kadr dopasowany do pasa":"Kwadratowy kadr",rx,top+72,0xFFAAA7B6,false);
         g.drawString(font,"Przeciągnij obraz, aby ustawić kadr.",px,py+previewHeight+9,0xFFAAA7B6,false);
         g.drawString(font,"Kółko myszy zmienia przybliżenie.",px,py+previewHeight+21,0xFFAAA7B6,false);
-        if(!error.isEmpty())g.drawString(font,font.plainSubstrByWidth(error,panelWidth-36),left+18,top+panelHeight-49,0xFFFF9292,false);
+        if(encoding)g.drawString(font,"Przygotowywanie obrazu…",left+18,top+panelHeight-49,0xFFEAE7ED,false);
+        else if(!error.isEmpty())g.drawString(font,font.plainSubstrByWidth(error,panelWidth-36),left+18,top+panelHeight-49,0xFFFF9292,false);
     }
     private boolean over(double x,double y){return x>=px&&x<px+size&&y>=py&&y<py+previewHeight;}
-    @Override protected boolean click(double x,double y,int button){if(button==0&&over(x,y)){dragging=true;return true;}return super.click(x,y,button);}
+    @Override protected boolean click(double x,double y,int button){if(!encoding&&button==0&&over(x,y)){dragging=true;return true;}return super.click(x,y,button);}
     @Override protected boolean drag(double x,double y,int button,double dx,double dy){
         if(dragging){crop.pan(-dx*crop.side()/size,-dy*crop.cropHeight()/previewHeight);return true;}return super.drag(x,y,button,dx,dy);
     }
     @Override protected boolean release(double x,double y,int button){if(dragging){dragging=false;return true;}return super.release(x,y,button);}
     @Override protected boolean scroll(double x,double y,double horizontal,double vertical){
-        if(over(x,y)){crop.zoom(crop.zoom()*Math.pow(1.15,vertical));zoom.normalized(crop.normalizedZoom());return true;}return super.scroll(x,y,horizontal,vertical);
+        if(over(x,y)){if(!encoding){crop.zoom(crop.zoom()*Math.pow(1.15,vertical));zoom.normalized(crop.normalizedZoom());}return true;}return super.scroll(x,y,horizontal,vertical);
     }
     @Override public void removed(){if(registered){minecraft.getTextureManager().release(TEXTURE);registered=false;}}
 }

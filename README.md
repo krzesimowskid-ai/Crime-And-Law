@@ -1,19 +1,19 @@
 # Crime And Law
 
 Autorski mod gangsterski: panel gangów, członkostwo i własny wygląd menu.
-Wersja **0.1.18**.
+Wersja **0.1.19**.
 
 Pierwsza propozycja własnej ekonomii w dolarach i rozwoju terenów:
 [Balans terytoriów](docs/BALANS_TERYTORIOW.md) oraz
 [symulacja](docs/SYMULACJA_BALANSU.md). To projekt do dalszej implementacji;
-JAR 0.1.18 nie odczytuje tych reguł i nie wypłaca jeszcze pieniędzy.
+JAR 0.1.19 nie odczytuje tych reguł i nie wypłaca jeszcze pieniędzy.
 
 ## Uruchomienie
 
 - Minecraft **1.21.1**, Java **21**, NeoForge **21.1.248**.
-- Włóż `crimeandlaw-0.1.18.jar` do `mods`, zastępując poprzedni JAR tego moda.
+- Włóż `crimeandlaw-0.1.19.jar` do `mods`, zastępując poprzedni JAR tego moda.
 - W rozgrywce sieciowej mod musi być **u graczy i na serwerze**.
-  Zaktualizuj serwer i wszystkich klientów do 0.1.18. Sieć moda używa protokołu 10.
+  Zaktualizuj serwer i wszystkich klientów do 0.1.19. Sieć moda używa protokołu 11.
 - W świecie jednoosobowym część serwerowa działa razem ze światem.
 - **G** otwiera panel; skrót można zmienić w sterowaniu. Esc lub X zamyka okno.
 
@@ -110,16 +110,19 @@ aby widzieć grę i folder jednocześnie.
 
 Obrazy 256×256, poziome, pionowe i inne proporcje są przyjmowane. GIF używa
 pierwszej klatki. Limit wymiarów rastra: 100 000 px na bok i miliard pikseli;
-podgląd jest pomniejszany do maksymalnie 2048 px na dłuższym boku.
+roboczy obraz zachowuje do 8192 px na dłuższym boku i 16 777 216 pikseli łącznie.
+Sam mały podgląd edytora ma do 2048 px; zapis korzysta z większego obrazu roboczego.
 
 W oknie „Dopasuj logo” przesuwaj obraz, przybliżaj kółkiem lub suwakiem.
 Wybierz kwadratowy kadr albo cały obraz z zachowaniem proporcji i przezroczystymi
 marginesami. „Anuluj”/X/Esc zachowuje poprzednie logo. „Zastosuj logo” przygotowuje
 podgląd; zapisz go przez „Utwórz gang” lub Ustawienia → Wygląd → Logo → „Zapisz logo gangu”.
 
-Logo jest zapisywane jako bezstratny PNG **1024×1024**, do 4,3 MB. Nagłówek,
-podgląd i główna zakładka wyświetlają cały obraz z wygładzaniem skalowania.
-Dla wyraźnego logo przygotuj źródło 1024×1024 lub większe; przy mocnym kadrowaniu
+Logo jest zapisywane jako bezstratny PNG **2048×2048**, do 17 MB. Nagłówek,
+podgląd i główna zakładka wyświetlają cały obraz z wygładzaniem skalowania. Przy pomniejszaniu gra korzysta
+z wcześniej przygotowanych poziomów szczegółowości, ograniczając ząbkowanie
+i migotanie drobnych wzorów. Poziomy powstają raz po zmianie grafiki, nie co klatkę.
+Dla wyraźnego logo przygotuj źródło 2048×2048 lub większe; przy mocnym kadrowaniu
 warto mieć większy oryginał. Mniejszy obraz jest przyjmowany, ale powiększanie
 nie odzyska brakujących szczegółów. Nie ma wyboru stylu ani przerabiania rysunku
 na inny rodzaj grafiki.
@@ -146,9 +149,10 @@ Importer korzysta z tych samych formatów i limitów źródła co logo.
 Osobne kadrowanie odpowiada proporcjom pasa. Można przesuwać obraz, przybliżać,
 oddalać poniżej 1× albo zmieścić całość z przezroczystymi marginesami.
 Kolor baneru wypełnia marginesy także przy wybranym obrazie. Wynik ma do
-**2048×512**, obecny pas daje PNG **2048×475**, do 4,3 MB;
+**4096×1024**, obecny pas daje PNG **4096×951**, do 17 MB;
 wyświetlanie zachowuje proporcje i dopasowuje kadr do szerokości pasa.
-Logo pozostaje osobnym PNG 1024×1024.
+Logo pozostaje osobnym PNG 2048×2048.
+Przygotowanie końcowego PNG działa w tle; anulowanie nie zapisuje porzuconego kadru.
 
 Baner zapisuje lider lub osoba z dotychczasowym uprawnieniem do wyglądu/logo.
 Serwer ponownie sprawdza uprawnienia, obraz i limity. Baner jest wspólny
@@ -176,7 +180,7 @@ Windows: gradlew.bat build
 Linux/macOS: ./gradlew build
 ```
 
-Wynik: `build/libs/crimeandlaw-0.1.18.jar`.
+Wynik: `build/libs/crimeandlaw-0.1.19.jar`.
 Gradle Wrapper 9.2.1, ModDevGradle 2.0.148, NeoForge 21.1.248.
 `./gradlew test` sprawdza model, migrację zapisów, duże listy i prywatność
 zgłoszeń, walidację/edycję logo, kolory oraz skalowanie menu.
@@ -186,7 +190,10 @@ sprawdza menu i edytory oraz zapisuje obrazy i raport w `build/ui-smoke-current`
 Własny katalog próby wybiera `-PuiSmokeId=nazwa`; rozdzielczość:
 `-PuiWidth=1280 -PuiHeight=720`.
 Wymaga ekranu/OpenGL. Kod z `src/uiTest` jest wyłączony z wydania JAR.
-Ten test graficzny korzysta z przygotowanych danych. Osobny test sieciowy
+Ten test graficzny korzysta z przygotowanych danych oraz mapy prawdziwego świata
+z `build/server-smoke-terrain16a/view.json`. Przed pierwszą próbą graficzną
+uruchom test serwera `-PserverSmoke -PserverSmokeId=terrain16a runServer`
+w jego osobnym świecie testowym. Osobny test sieciowy
 `-PnetworkSmoke -PnetworkSmokeId=nazwa` udostępnia zadania `runNetworkServer`,
 `runNetworkOwner` i `runNetworkMember`: dwa klienty łączą się z własnym serwerem
 na 127.0.0.1:25597, obsługują menu i sprawdzają synchronizację/uprawnienia.
@@ -205,7 +212,7 @@ Rejestr: numer strony i dwie sąsiadujące strzałki w prawym narożniku nagłó
 W 0.1.8 dodano przyciski Premie, Zarządzanie saldem, Czarna lista i Cele. Otwierają panele informacyjne; funkcje tych systemów są do rozwijania. Transport nadal jest ukryty.
 
 ## Import logo 0.1.9
-Format jest rozpoznawany po danych, a nie rozszerzeniu. Czytniki są dołączone do JAR-a. Przykładowo WebP lub SVG zapisany pod nazwą PNG może zostać odczytany bez ręcznej konwersji. Podgląd ma najwyżej 1024 px na dłuższym boku, a po kadrowaniu do serwera trafia PNG 64×64. SVG renderuje lokalne kształty wektorowe; odwołania do obrazów i plików zewnętrznych są pomijane. Formatów HEIC/AVIF, PDF i animowanego logo nie obsługuje to wydanie.
+Format jest rozpoznawany po danych, a nie rozszerzeniu. Czytniki są dołączone do JAR-a. Przykładowo WebP lub SVG zapisany pod nazwą PNG może zostać odczytany bez ręcznej konwersji. Obraz roboczy zachowuje do 8192 px na dłuższym boku i 16 777 216 pikseli łącznie; mały podgląd ma do 2048 px. Po kadrowaniu do serwera trafia logo PNG 2048×2048 albo osobny szeroki baner do 4096×1024. SVG renderuje lokalne kształty wektorowe; odwołania do obrazów i plików zewnętrznych są pomijane. Formatów HEIC/AVIF, PDF i animowanego logo nie obsługuje to wydanie.
 
 ## Odczyt logo 0.1.10
 Jeśli pierwszy czytnik rozpoznaje format, lecz nie potrafi odczytać danego wariantu,
@@ -356,7 +363,7 @@ przycisku. Tworzenie gangu ma uporządkowaną kartę i wyróżniony przycisk gł
 Nie dodano magazynów, pojazdów, finansów ani innych przyszłych systemów.
 
 
-## Korekty po 0.1.17 — 0.1.18
+## Korekty po 0.1.17 — 0.1.19
 
 Baner wypełnia całą strefę tożsamości gangu. Większe logo i baner wymagają
 ponownego importu oryginału, aby odzyskać szczegóły utracone w starszym zapisie.

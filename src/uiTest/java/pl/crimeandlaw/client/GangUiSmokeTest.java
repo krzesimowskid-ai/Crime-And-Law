@@ -31,6 +31,7 @@ public final class GangUiSmokeTest {
     private static GangScreen screen;
     private static pl.crimeandlaw.territory.TerrainView unshiftedMap;
     private static int chosenX,chosenZ;
+    private static long roleEdgeDeadline;
     private static final StringBuilder REPORT=new StringBuilder();
 
     @SubscribeEvent public static void frame(RenderFrameEvent.Post event) {
@@ -54,6 +55,13 @@ public final class GangUiSmokeTest {
             }
             if((stage==12||stage==50)&&!(mc.screen instanceof LogoCropScreen)){
                 if(++waitFrames>600)throw new AssertionError("Crop dialog did not open: "+ClientState.message);return;
+            }
+            if((stage==13||stage==51)&&mc.screen instanceof LogoCropScreen){
+                if(++waitFrames>1200)throw new AssertionError("Asynchronous image encoding did not finish");return;
+            }
+            if(stage==38&&System.nanoTime()<roleEdgeDeadline){
+                var field=GangScreen.class.getDeclaredField("roleScroll");field.setAccessible(true);
+                if(((ScrollPosition)field.get(screen)).offset()>0)return;
             }
             if(++frames<24)return;
             frames=0;
@@ -139,6 +147,8 @@ public final class GangUiSmokeTest {
                     double x=(dialog.left+110)*scale,y=(dialog.top+145)*scale;
                     require(dialog.mouseClicked(x,y,0),"Crop click");dialog.mouseDragged(x+30*scale,y+10*scale,0,30*scale,10*scale);
                     dialog.mouseReleased(x+30*scale,y+10*scale,0);dialog.mouseScrolled(x,y,0,2);click(mc,"Zastosuj logo");
+                }
+                case 13 -> {
                     var field=GangScreen.class.getDeclaredField("draftLogo");field.setAccessible(true);String encoded=(String)field.get(screen);
                     require(!encoded.isBlank()&&!pl.crimeandlaw.gang.GangLogo.validate(encoded).isBlank(),"Dropped image cropped and encoded");
                     var legacy=new java.awt.image.BufferedImage(64,64,java.awt.image.BufferedImage.TYPE_INT_ARGB);
@@ -151,12 +161,10 @@ public final class GangUiSmokeTest {
                     for(int row=0;row<512;row++)for(int col=0;col<512;col++)noise.setRGB(col,row,random.nextInt()|0xFF000000);
                     String large=LogoImages.encode(noise,new LogoCrop(512,512));
                     require(large.length()>28000,"Detailed logo exceeds previous network cap");
-                    checkLogoTexture(mc,LogoTexture.get(large),1024,1024);
-                    checkLogoTexture(mc,LogoTexture.get(encoded),1024,1024);
+                    checkLogoTexture(mc,LogoTexture.get(large),2048,2048);
+                    checkLogoTexture(mc,LogoTexture.get(encoded),2048,2048);
                     directory.logo(PLAYER,encoded);
-                    REPORT.append("PASS logo: 1024x1024 saved texture, legacy 64x64, detailed PNG stream decoding, linear min/mag filters, smooth crop preview.\n");
-                }
-                case 13 -> {
+                    REPORT.append("PASS logo: 2048x2048 saved texture, legacy 64x64, detailed PNG stream decoding, trilinear minification/linear magnification filters, smooth crop preview.\n");
                     capture(mc,"13-logo-preview");fixturePage(FRIEND,0);screen.updated();selectTab(3);click(mc,"Wygląd");
                     require(screen.children().stream().noneMatch(c->c instanceof AbstractWidget w&&w.getMessage().getString().equals("Zarządzanie")),"Management hidden from ordinary member");
                     require(!widget(screen,"Zapisz dla gangu").active,"Member cannot save shared appearance");
@@ -376,6 +384,8 @@ public final class GangUiSmokeTest {
                     screen.mouseClicked(x,from,0);
                     screen.mouseDragged(x,to,0,0,to-from);
                     // No more mouse movement: rendering must continue scrolling by elapsed time.
+                    // Use elapsed time, not 24 frames, which may be only a few milliseconds on a fast renderer.
+                    roleEdgeDeadline=System.nanoTime()+3_000_000_000L;
 
                 }
                 case 38 -> {
@@ -457,11 +467,11 @@ public final class GangUiSmokeTest {
                     capture(mc,"51-banner-image-settings");var field=GangScreen.class.getDeclaredField("draftBanner");field.setAccessible(true);
                     var banner=(pl.crimeandlaw.gang.GangBanner)field.get(screen);
                     var decoded=javax.imageio.ImageIO.read(new java.io.ByteArrayInputStream(java.util.Base64.getDecoder().decode(banner.image())));
-                    require(decoded.getWidth()==2048&&decoded.getHeight()==475,"Banner keeps its independent detailed strip texture");
+                    require(decoded.getWidth()==4096&&decoded.getHeight()==951,"Banner keeps its independent detailed strip texture");
                     directory.banner(PLAYER,banner);fixturePage(PLAYER,0);screen.updated();selectTab(0);
                 }
                 case 52 -> {
-                    capture(mc,"52-banner-image-overview");checkLogoTexture(mc,net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("crimeandlaw","gang_banner"),2048,475);
+                    capture(mc,"52-banner-image-overview");checkLogoTexture(mc,net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("crimeandlaw","gang_banner"),4096,951);
                     fixture(false);screen=new GangScreen();mc.setScreen(screen);
                     var name=screen.children().stream().filter(c->c instanceof EditBox).map(c->(EditBox)c).findFirst().orElseThrow();name.setValue("Test");
                     screen.setFocused(widget(screen,"Zamknij"));screen.keyPressed(org.lwjgl.glfw.GLFW.GLFW_KEY_ENTER,0,0);
@@ -501,7 +511,18 @@ public final class GangUiSmokeTest {
                     click(mc,"Anuluj");mc.setScreen(new SkinLayerProbe(mc));
                 }
                 case 58 -> {
-                    capture(mc,"58-skin-outer-layers");checkSkinLayers(mc);mc.screen.onClose();
+                    capture(mc,"58-skin-outer-layers");checkSkinLayers(mc);mc.screen.onClose();mc.setScreen(new ImageQualityProbe());
+                }
+                case 59 -> {
+                    capture(mc,"59-high-resolution-minification");checkMinification(mc);
+                    var image=new java.awt.image.BufferedImage(800,400,java.awt.image.BufferedImage.TYPE_INT_ARGB);
+                    mc.setScreen(new LogoCropScreen(screen,image,"cancel-probe.png",encoded->{throw new AssertionError("Cancelled encoding changed the logo");}));
+                    click(mc,"Zastosuj logo");require(!widget(mc.screen,"Zastosuj logo").active,"Encoding cannot be started twice");
+                    require(!widget(mc.screen,"Przybliżenie").active,"Crop is frozen while the snapshot is encoded");click(mc,"Anuluj");
+                }
+                case 60 -> {
+                    require(mc.screen==screen,"Cancelled asynchronous encoding leaves the parent open");
+                    REPORT.append("PASS high-resolution images: actual 2048-square/4096-wide textures, full GPU mip chains, neutral checkerboard minification without coarse aliasing, asynchronous apply and cancellation.\n");
                     REPORT.append("PASS: actual Minecraft renderer; earlier map, list, roles, register and logo checks retained; centered actions, accented creation form, member skin card/dismissal, banner color/image/crop, Enter focus, stationary rank-drag autoscroll, persistent chunk selection and top player icon; loading gate, full strip edges, cached drag round-trip, searchable locked future permissions; actual alpha-blended hat, jacket and both sleeves for wide and slim skins.\n");
                     Files.writeString(OUT.resolve("result.txt"),REPORT.toString());System.out.println("CRIME_UI_SMOKE_PASS");mc.stop();
                 }
@@ -510,6 +531,42 @@ public final class GangUiSmokeTest {
             error.printStackTrace();
             try{Files.createDirectories(OUT);Files.writeString(OUT.resolve("result.txt"),"FAIL: "+error);}catch(Exception ignored){}
             stage=1000;mc.stop();
+        }
+    }
+    private static final class ImageQualityProbe extends Screen {
+        ImageQualityProbe()throws Exception{
+            super(net.minecraft.network.chat.Component.literal("Próba szczegółów grafiki"));
+            for(boolean banner:new boolean[]{false,true}){
+                int width=banner?4096:2048,height=banner?951:2048;
+                var image=new java.awt.image.BufferedImage(width,height,java.awt.image.BufferedImage.TYPE_INT_ARGB);
+                for(int y=0;y<height;y++)for(int x=0;x<width;x++)image.setRGB(x,y,((x+y)&1)==0?0xFF000000:0xFFFFFFFF);
+                String png=java.util.Base64.getEncoder().encodeToString(LogoImages.png(image));
+                if(banner)BannerTexture.get(png);else LogoTexture.get(png);
+            }
+        }
+        @Override public void render(net.minecraft.client.gui.GuiGraphics g,int mx,int my,float delta){
+            g.fill(0,0,width,height,0xFF181A22);var l=GangLayout.of(width,height);g.pose().pushPose();g.pose().scale(l.scale(),l.scale(),1);
+            LogoTexture.draw(g,80,100,137,137);BannerTexture.draw(g,250,100,360,84,255);g.pose().popPose();
+        }
+        @Override public void removed(){LogoTexture.clear();BannerTexture.clear();}
+    }
+    private static void checkMinification(Minecraft mc){
+        double scale=GangLayout.of(mc.screen.width,mc.screen.height).scale()*mc.getWindow().getGuiScale();
+        checkLogoTexture(mc,net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("crimeandlaw","gang_logo"),2048,2048);
+        checkLogoTexture(mc,net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("crimeandlaw","gang_banner"),4096,951);
+        for(int[] shape:new int[][]{{2048,2048},{4096,951}}){
+            var texture=mc.getTextureManager().getTexture(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("crimeandlaw",shape[0]==2048?"gang_logo":"gang_banner"));texture.bind();
+            for(int level=0;level<=31-Integer.numberOfLeadingZeros(shape[0]);level++){
+                require(org.lwjgl.opengl.GL11.glGetTexLevelParameteri(org.lwjgl.opengl.GL11.GL_TEXTURE_2D,level,org.lwjgl.opengl.GL11.GL_TEXTURE_WIDTH)==Math.max(1,shape[0]>>level),"Every mip level is allocated");
+                require(org.lwjgl.opengl.GL11.glGetTexLevelParameteri(org.lwjgl.opengl.GL11.GL_TEXTURE_2D,level,org.lwjgl.opengl.GL11.GL_TEXTURE_HEIGHT)==Math.max(1,shape[1]>>level),"Non-square mip level is complete");
+            }
+        }
+        try(var image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){
+            for(int[] rect:new int[][]{{80,100,137,137},{250,100,360,84}})
+                for(int y=rect[1]+10;y<rect[1]+rect[3]-10;y+=7)for(int x=rect[0]+10;x<rect[0]+rect[2]-10;x+=7){
+                    int pixel=image.getPixelRGBA((int)(x*scale),(int)(y*scale));
+                    for(int shift:new int[]{0,8,16}){int channel=pixel>>shift&255;require(channel>=110&&channel<=145,"Fine source checkerboard averages to stable gray instead of a coarse pattern");}
+                }
         }
     }
     private static final class SkinLayerProbe extends Screen {
@@ -640,7 +697,7 @@ public final class GangUiSmokeTest {
         var pixels=((net.minecraft.client.renderer.texture.DynamicTexture)texture).getPixels();
         require(pixels!=null&&pixels.getWidth()==width&&pixels.getHeight()==height,"Stored texture resolution "+width+"x"+height);
         texture.bind();
-        require(org.lwjgl.opengl.GL11.glGetTexParameteri(org.lwjgl.opengl.GL11.GL_TEXTURE_2D,org.lwjgl.opengl.GL11.GL_TEXTURE_MIN_FILTER)==org.lwjgl.opengl.GL11.GL_LINEAR,"Linear logo minification");
+        require(org.lwjgl.opengl.GL11.glGetTexParameteri(org.lwjgl.opengl.GL11.GL_TEXTURE_2D,org.lwjgl.opengl.GL11.GL_TEXTURE_MIN_FILTER)==org.lwjgl.opengl.GL11.GL_LINEAR_MIPMAP_LINEAR,"Trilinear logo minification");
         require(org.lwjgl.opengl.GL11.glGetTexParameteri(org.lwjgl.opengl.GL11.GL_TEXTURE_2D,org.lwjgl.opengl.GL11.GL_TEXTURE_MAG_FILTER)==org.lwjgl.opengl.GL11.GL_LINEAR,"Linear logo magnification");
     }
     private static void selectTab(int tab)throws Exception {

@@ -15,6 +15,7 @@ public final class LogoCrop {
     public double y(){return centerY-cropHeight()/2;}
     public double zoom(){return zoom;}
     public double aspect(){return aspect;}
+    public LogoCrop copy(){var copy=new LogoCrop(width,height,aspect);copy.centerX=centerX;copy.centerY=centerY;copy.zoom=zoom;copy.fit=fit;return copy;}
     public double minimumZoom(){return Math.min(.1,Math.min(width,height*aspect)/Math.max(width,height*aspect));}
     public double normalizedZoom(){return Math.log(zoom/minimumZoom())/Math.log(8/minimumZoom());}
     public void normalizedZoom(double value){zoom(minimumZoom()*Math.pow(8/minimumZoom(),Math.clamp(value,0,1)));}

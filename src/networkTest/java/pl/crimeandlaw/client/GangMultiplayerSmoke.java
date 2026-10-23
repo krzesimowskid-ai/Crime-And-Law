@@ -85,8 +85,8 @@ public final class GangMultiplayerSmoke {
             case 7 -> {
                 var member=gang.members.values().stream().filter(m->m.name.equals("Member16")).findFirst().orElseThrow();
                 var role=gang.roles.get(member.role);if(role==null||!role.name.equals("Stylista"))return;
-                BufferedImage image=new BufferedImage(1024,1024,BufferedImage.TYPE_INT_ARGB);var random=new Random(1616);
-                for(int y=0;y<1024;y++)for(int x=0;x<1024;x++)image.setRGB(x,y,random.nextInt()|0xFF000000);
+                BufferedImage image=new BufferedImage(2048,2048,BufferedImage.TYPE_INT_ARGB);var random=new Random(1616);
+                for(int y=0;y<2048;y++)for(int x=0;x<2048;x++)image.setRGB(x,y,random.nextInt()|0xFF000000);
                 Path file=OUT.resolve("large-logo-fixture.png");ImageIO.write(image,"png",file.toFile());
                 ((GangScreen)mc.screen).onFilesDrop(List.of(file));next("load detailed logo through drop handler");
             }
@@ -103,8 +103,8 @@ public final class GangMultiplayerSmoke {
             }
             case 11 -> {
                 if(gang.theme.background()!=0x253047)return;
-                press(mc,"Baner");BufferedImage image=new BufferedImage(2048,475,BufferedImage.TYPE_INT_ARGB);var random=new Random(1717);
-                for(int y=0;y<475;y++)for(int x=0;x<2048;x++)image.setRGB(x,y,random.nextInt()|0xFF000000);
+                press(mc,"Baner");BufferedImage image=new BufferedImage(4096,951,BufferedImage.TYPE_INT_ARGB);var random=new Random(1717);
+                for(int y=0;y<951;y++)for(int x=0;x<4096;x++)image.setRGB(x,y,random.nextInt()|0xFF000000);
                 Path file=OUT.resolve("large-banner-fixture.png");ImageIO.write(image,"png",file.toFile());
                 ((GangScreen)mc.screen).onFilesDrop(List.of(file));next("import wide banner");
             }
@@ -122,7 +122,7 @@ public final class GangMultiplayerSmoke {
             case 15 -> {
                 if(!Files.exists(OUT.resolve("member.PASS")))return;
                 require(gang.owner.equals(mc.player.getUUID())&&ClientState.memberCount()==2,"Unauthorized member operation did not change membership");
-                pass(mc,"Owner created/accepted membership and assigned appearance rights through UI, saved 1024x1024 logo + 2048x475 banner and shared theme; logo chars="+gang.logo.length()+", banner chars="+gang.banner.image().length());
+                pass(mc,"Owner created/accepted membership and assigned appearance rights through UI, saved 2048x2048 logo + 4096x951 banner and shared theme; logo chars="+gang.logo.length()+", banner chars="+gang.banner.image().length());
             }
         }
     }
@@ -168,10 +168,10 @@ public final class GangMultiplayerSmoke {
                 if(gang.logo.length()<=28_000||gang.banner.image().length()<=1_000_000||gang.theme.background()!=0x253047||!Files.exists(OUT.resolve("logo.sha256"))||!Files.exists(OUT.resolve("banner.sha256")))return;
                 require(hash(gang.banner.image()).equals(Files.readString(OUT.resolve("banner.sha256"))),"Both clients received the same detailed wide banner");
                 var bannerTexture=(net.minecraft.client.renderer.texture.DynamicTexture)mc.getTextureManager().getTexture(BannerTexture.get(gang.banner.image()));
-                require(bannerTexture.getPixels().getWidth()==2048&&bannerTexture.getPixels().getHeight()==475,"Remote banner has its full independent resolution");
+                require(bannerTexture.getPixels().getWidth()==4096&&bannerTexture.getPixels().getHeight()==951,"Remote banner has its full independent resolution");
                 require(hash(gang.logo).equals(Files.readString(OUT.resolve("logo.sha256"))),"Both clients received identical detailed logo data");
                 var location=LogoTexture.get(gang.logo);var texture=(net.minecraft.client.renderer.texture.DynamicTexture)mc.getTextureManager().getTexture(location);
-                require(texture.getPixels().getWidth()==1024&&texture.getPixels().getHeight()==1024,"Remote logo renders at saved resolution");
+                require(texture.getPixels().getWidth()==2048&&texture.getPixels().getHeight()==2048,"Remote logo renders at saved resolution");
                 press(mc,"Gang");capture(mc,"member-overview.png");
                 JsonObject args=new JsonObject();args.addProperty("target",gang.owner.toString());ClientState.action("kick",args);next("attempt unauthorized membership change");
             }

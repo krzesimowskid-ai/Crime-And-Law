@@ -23,7 +23,7 @@ public final class BannerTexture {
             NativeImage image=NativeImage.read(input);
             if(image.getWidth()>pl.crimeandlaw.gang.GangBanner.WIDTH||image.getHeight()>pl.crimeandlaw.gang.GangBanner.HEIGHT){image.close();return null;}
             width=image.getWidth();height=image.getHeight();
-            var texture=new DynamicTexture(image);texture.setFilter(true,false);
+            var texture=SmoothImageTexture.create(image);
             Minecraft.getInstance().getTextureManager().register(ID,texture);valid=true;return ID;}
         catch(Exception exception){return null;}
     }

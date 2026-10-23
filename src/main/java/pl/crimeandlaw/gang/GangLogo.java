@@ -9,7 +9,7 @@ import javax.imageio.stream.MemoryCacheImageInputStream;
 import javax.imageio.stream.MemoryCacheImageOutputStream;
 
 public final class GangLogo {
-    public static final int SIDE=1024,MAX_BYTES=4_300_000;
+    public static final int SIDE=2048,MAX_BYTES=17_000_000;
     public static final int MAX_ENCODED_LENGTH=((MAX_BYTES+2)/3)*4;
     private GangLogo(){}
     public static String validate(String encoded){
@@ -33,6 +33,6 @@ public final class GangLogo {
                     return Base64.getEncoder().encodeToString(out.toByteArray());
                 }finally{reader.dispose();}
             }
-        }catch(Exception exception){throw new IllegalArgumentException(label+" musi być poprawnym PNG do "+maxWidth+"×"+maxHeight+" i 4,3 MB.");}
+        }catch(Exception exception){throw new IllegalArgumentException(label+" musi być poprawnym PNG do "+maxWidth+"×"+maxHeight+" i 17 MB.");}
     }
 }
