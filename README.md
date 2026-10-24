@@ -1,21 +1,21 @@
 # Crime And Law
 
 Autorski mod gangsterski: panel gangów, członkostwo i własny wygląd menu.
-Wersja **0.1.26**.
+Wersja **0.1.27**.
 
 Pierwsza propozycja własnej ekonomii w dolarach i rozwoju terenów:
 [Balans terytoriów](docs/BALANS_TERYTORIOW.md) oraz
 [symulacja](docs/SYMULACJA_BALANSU.md). To projekt do dalszej implementacji;
-JAR 0.1.26 nie odczytuje tych reguł ekonomii i nie wypłaca jeszcze pieniędzy.
+JAR 0.1.27 nie odczytuje tych reguł ekonomii i nie wypłaca jeszcze pieniędzy.
 Przejmowanie terenów, zegar świata oraz oznaczenia mapy już działają:
 [zasady i komendy captów](docs/CAPTY.md).
 
 ## Uruchomienie
 
 - Minecraft **1.21.1**, Java **21**, NeoForge **21.1.248**.
-- Włóż `crimeandlaw-0.1.26.jar` do `mods`, zastępując poprzedni JAR tego moda.
+- Włóż `crimeandlaw-0.1.27.jar` do `mods`, zastępując poprzedni JAR tego moda.
 - W rozgrywce sieciowej mod musi być **u graczy i na serwerze**.
-  Zaktualizuj serwer i wszystkich klientów do 0.1.26. Sieć moda używa protokołu 16.
+  Wersje 0.1.26 i 0.1.27 korzystają z protokołu sieciowego 16.
 - W świecie jednoosobowym część serwerowa działa razem ze światem.
 - **G** otwiera panel; skrót można zmienić w sterowaniu. Esc lub X zamyka okno.
 
@@ -189,7 +189,7 @@ Windows: gradlew.bat build
 Linux/macOS: ./gradlew build
 ```
 
-Wynik: `build/libs/crimeandlaw-0.1.26.jar`.
+Wynik: `build/libs/crimeandlaw-0.1.27.jar`.
 Gradle Wrapper 9.2.1, ModDevGradle 2.0.148, NeoForge 21.1.248.
 `./gradlew test` sprawdza model, migrację zapisów, duże listy i prywatność
 zgłoszeń, walidację/edycję logo, kolory oraz skalowanie menu.
@@ -456,3 +456,11 @@ udziału nie pozwala rozpocząć udziału całego gangu bez decyzji lidera.
 Gdy gang już uczestniczy, jego uprawnieni członkowie dołączają do własnej drużyny.
 Menu podaje powód odmowy, a serwer ponownie sprawdza te same warunki przy akcji.
 Zasady obecności i zakończenia zapisów pozostają obowiązujące. Protokół 16.
+
+
+## Komunikaty przy kadrowaniu — 0.1.27
+
+W oknie dopasowania logo i banera instrukcje przesuwania obrazu i kółka
+myszy pozostają pod podglądem. Status przygotowania i błędy wyświetlane
+są w osobnym obszarze prawej kolumny, pod narzędziami kadrowania.
+Dłuższy błąd zawija się w obrębie tej kolumny, nad przyciskami dolnymi.

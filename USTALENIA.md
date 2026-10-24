@@ -4,7 +4,7 @@ Stan projektu: 24 października 2026.
 
 ## Status i sposób dalszej pracy
 
-To zapis pomysłów i decyzji użytkownika, a nie opis gotowego moda. Powstaje prototyp panelu gangów, obecnie wersja 0.1.26. 19 października użytkownik odłożył DarkPerazera i wrócił do Crime And Law. Zaakceptował rozpoczęcie od podstaw panelu gangów; obecnie doprecyzowuje jego wygląd. Dla pierwszego prototypu przyjęto Minecraft 1.21.1 i NeoForge 21.1.248: użytkownik polecił rozpoczęcie bez wskazania innej platformy. Jest to jawne założenie wykonawcze, nie wcześniejsza deklaracja użytkownika.
+To zapis pomysłów i decyzji użytkownika, a nie opis gotowego moda. Powstaje prototyp panelu gangów, obecnie wersja 0.1.27. 19 października użytkownik odłożył DarkPerazera i wrócił do Crime And Law. Zaakceptował rozpoczęcie od podstaw panelu gangów; obecnie doprecyzowuje jego wygląd. Dla pierwszego prototypu przyjęto Minecraft 1.21.1 i NeoForge 21.1.248: użytkownik polecił rozpoczęcie bez wskazania innej platformy. Jest to jawne założenie wykonawcze, nie wcześniejsza deklaracja użytkownika.
 
 Crime And Law jest nowym, osobnym modem. McArk pozostaje odłożony, zachowując cel odwzorowania ASA 1:1. Nie zmieniać projektu McArk w Crime And Law ani nie usuwać jego materiałów w ramach tej pracy.
 
@@ -637,3 +637,12 @@ gdy właściwe systemy własności oraz mapy będą rozwijane.
 - Warunki są egzekwowane na serwerze i udostępniane menu jako powód odmowy.
   Zwykłe zakładanie terytorium, obrona własnego pola, obecność i czas
   wydarzenia zachowują dotychczasowe zasady. Protokół sieciowy 16.
+
+
+## Kadrowanie logo / banera — 0.1.27
+
+- Zgłoszony na zrzucie komunikat przygotowywania obrazu nachodził na
+  instrukcję używania kółka myszy. Status i błędy przeniesiono do prawej
+  kolumny, pod przyciski kadrowania, z zawijaniem dłuższego błędu.
+- Sprawdzono rzeczywisty render dla logo i banera, również przy GUI 2 i 4.
+  Protokół sieciowy pozostaje 16.

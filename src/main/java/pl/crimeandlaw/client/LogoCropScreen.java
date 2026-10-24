@@ -5,6 +5,7 @@ import java.awt.image.BufferedImage;
 import java.util.function.Consumer;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.texture.DynamicTexture;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
 public final class LogoCropScreen extends MenuDialog {
@@ -79,8 +80,14 @@ public final class LogoCropScreen extends MenuDialog {
         g.drawString(font,crop.fit()?"Cały obraz z marginesami":banner?"Kadr dopasowany do pasa":"Kwadratowy kadr",rx,top+72,0xFFAAA7B6,false);
         g.drawString(font,"Przeciągnij obraz, aby ustawić kadr.",px,py+previewHeight+9,0xFFAAA7B6,false);
         g.drawString(font,"Kółko myszy zmienia przybliżenie.",px,py+previewHeight+21,0xFFAAA7B6,false);
-        if(encoding)g.drawString(font,"Przygotowywanie obrazu…",left+18,top+panelHeight-49,0xFFEAE7ED,false);
-        else if(!error.isEmpty())g.drawString(font,font.plainSubstrByWidth(error,panelWidth-36),left+18,top+panelHeight-49,0xFFFF9292,false);
+        String status=encoding?"Przygotowywanie obrazu…":error;
+        if(!status.isEmpty()){
+            int statusY=top+236,lineStep=font.lineHeight+3;
+            int maxLines=Math.max(1,(top+panelHeight-47-statusY)/lineStep);
+            var lines=font.split(Component.literal(status),panelWidth-276);
+            for(int i=0;i<Math.min(maxLines,lines.size());i++)
+                g.drawString(font,lines.get(i),rx,statusY+i*lineStep,encoding?0xFFEAE7ED:0xFFFF9292,false);
+        }
     }
     private boolean over(double x,double y){return x>=px&&x<px+size&&y>=py&&y<py+previewHeight;}
     @Override protected boolean click(double x,double y,int button){if(!encoding&&button==0&&over(x,y)){dragging=true;return true;}return super.click(x,y,button);}
