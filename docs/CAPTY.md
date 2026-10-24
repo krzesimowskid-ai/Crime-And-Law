@@ -1,6 +1,6 @@
-# Capty i zegar świata — 0.1.25
+# Capty i zegar świata — 0.1.26
 
-Minecraft 1.21.1, NeoForge 21.1.248, Java 21. Protokół 15; aktualizacja
+Minecraft 1.21.1, NeoForge 21.1.248, Java 21. Protokół 16; aktualizacja
 serwera i wszystkich klientów jest wymagana.
 
 ## Przebieg
@@ -15,6 +15,14 @@ Uprawniony gracz staje w wybranym chunku w trybie przetrwania lub przygody
 i potwierdza start. Obecni, uprawnieni członkowie gangu są automatycznie
 zapisywani. Teren neutralny przejmowany jest po czasie, bez NPC do obrony.
 Brak wymaganej obecności zatrzymuje postęp; po okresie tolerancji anuluje akcję.
+
+Dołączenie nowego rywala do neutralnego captu wymaga własnego terenu
+w jednym z ośmiu sąsiednich chunków, także po skosie, w tym samym wymiarze.
+Decyzję podejmuje lider: zaznacza pole na mapie, klika dołączenie i potwierdza
+atak. Inny członek z prawem udziału nie może sam zapisać nowego gangu; po
+decyzji lidera może już dołączyć do własnej drużyny. Wymóg fizycznej obecności,
+minimum uczestników, cooldownu i otwartych zapisów nadal obowiązuje.
+Menu pokazuje powód blokady, a serwer ponownie ocenia stan przy dołączeniu.
 
 Dołączenie rywala uruchamia przygotowanie do PvP. Atak na zajęty teren
 rozpoczyna się od przygotowania, podczas którego obrońca może się zapisać.

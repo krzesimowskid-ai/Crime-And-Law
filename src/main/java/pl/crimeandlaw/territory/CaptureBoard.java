@@ -57,20 +57,25 @@ public final class CaptureBoard {
         if(owner!=null){require(forGang(owner)==null,"Właściciel terenu uczestniczy już w innym capcie.");battle.absences.put(owner,0L);battle.phase=Phase.PREPARING;}
         active.put(key.storageKey(),battle);return battle;
     }
-    public void join(TerrainKey key,UUID gang,UUID player,long now){
-        var b=at(key);require(b!=null,"Nie ma aktywnego captu na tym terenie.");
-        require(b.phase!=Phase.FIGHTING,"Zapisy do tej walki zostały zakończone.");
-        require(!b.removedTeams.contains(gang),"Ten gang odpadł już z wydarzenia.");
-        var previous=b.fighters.get(player);require(previous==null||!previous.eliminated,"Po eliminacji nie można wrócić do tego captu.");
-        if(previous!=null){require(previous.gang.equals(gang),"Nie można zmienić strony w trakcie captu.");return;}
-        require(!registered(player),"Uczestniczysz już w innym capcie.");
-        require(b.fighters.size()<MAX_PLAYERS,"Lista uczestników captu jest pełna.");
+    public String joinProblem(TerrainKey key,UUID gang,UUID player,long now){
+        var b=at(key);if(b==null)return "Nie ma aktywnego captu na tym terenie.";
+        if(b.phase==Phase.FIGHTING)return "Zapisy do tej walki zostały zakończone.";
+        if(b.removedTeams.contains(gang))return "Ten gang odpadł już z wydarzenia.";
+        var previous=b.fighters.get(player);
+        if(previous!=null){if(previous.eliminated)return "Po eliminacji nie można wrócić do tego captu.";return previous.gang.equals(gang)?"":"Nie można zmienić strony w trakcie captu.";}
+        if(registered(player))return "Uczestniczysz już w innym capcie.";
+        if(b.fighters.size()>=MAX_PLAYERS)return "Lista uczestników captu jest pełna.";
         if(!b.absences.containsKey(gang)){
-            require(unlocked(gang),"Lider musi aktywować gałąź Kontrola terytoriów.");
-            require(cooldown(gang,now)==0,"Twój gang czeka na zakończenie cooldownu.");
-            require(forGang(gang)==null,"Twój gang uczestniczy już w innym capcie.");
-            require(b.absences.size()<MAX_TEAMS,"Osiągnięto limit gangów w jednym capcie.");b.absences.put(gang,0L);
-        }
+            if(!unlocked(gang))return "Lider musi aktywować gałąź Kontrola terytoriów.";
+            if(cooldown(gang,now)>0)return "Twój gang czeka na zakończenie cooldownu.";
+            if(forGang(gang)!=null)return "Twój gang uczestniczy już w innym capcie.";
+            if(b.absences.size()>=MAX_TEAMS)return "Osiągnięto limit gangów w jednym capcie.";
+        }return "";
+    }
+    public void join(TerrainKey key,UUID gang,UUID player,long now){
+        String problem=joinProblem(key,gang,player,now);require(problem.isEmpty(),problem);
+        var b=at(key);if(b.fighters.containsKey(player))return;
+        b.absences.putIfAbsent(gang,0L);
         b.fighters.put(player,new Fighter(player,gang));
         if(b.phase==Phase.CLAIMING&&!b.attacker.equals(gang)){b.phase=Phase.PREPARING;b.phaseElapsed=0;b.holding=null;b.holdingElapsed=0;}
     }

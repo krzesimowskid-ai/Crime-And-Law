@@ -1,4 +1,4 @@
-# Katalog uprawnień — 0.1.25
+# Katalog uprawnień — 0.1.26
 
 Opcje z referencyjnych ekranów rang, dopasowane do gangu w Minecraft.
 Dodatkowo zachowane prawo wyglądu menu/logo/baneru.
@@ -45,3 +45,7 @@ zestawów, finansów ani rajdów.
 Lider aktywuje gałąź kontroli terytoriów. Rozpoczynanie captu i udział w nim
 można przyznać niezależnie rangom. Prywatne oznaczenia mapy należą do gracza;
 oznaczenia gangowe może edytować każdy obecny członek tego gangu.
+
+W neutralnym capcie rozpoczęcie udziału nowego gangu wymaga decyzji lidera
+i własnego terenu w jednym z ośmiu sąsiednich chunków. Prawo udziału pozwala
+członkom dołączyć do już zapisanej drużyny; nie zastępuje decyzji lidera.

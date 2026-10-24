@@ -61,7 +61,9 @@ public final class CaptureClientSmoke {
                 if(!CaptureClient.state.has("battle"))return;
                 if(ROLE.equals("rival")){
                     if(!CaptureClient.flag("unlocked")){click(mc,"Aktywuj kontrolę terytoriów");return;}
-                    check(CaptureClient.marks(0,0).isEmpty(),"Other gang never receives the owner's private marker");click(mc,"Dołącz do captu");
+                    check(CaptureClient.marks(0,0).isEmpty(),"Other gang never receives the owner's private marker");
+                    check(CaptureClient.state.getAsJsonObject("battle").get("joinAllowed").getAsBoolean(),"Leader with a diagonal territory can counterattack");
+                    click(mc,"Dołącz do captu");check(mc.screen instanceof ConfirmScreen,"Rival leader explicitly confirms the attack");click(mc,"Yes");
                 }step=6;return;
             }
             if(step==6){

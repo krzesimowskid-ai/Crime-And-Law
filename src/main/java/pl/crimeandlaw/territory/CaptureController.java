@@ -59,6 +59,7 @@ public final class CaptureController {
             for(var participant:participants)if(!participant.getUUID().equals(player.getUUID()))saved.board.join(key,gang.id,participant.getUUID(),now);
         }else if(action.equals("capture_join")){
             var battle=saved.board.at(key);require(battle!=null,"Nie ma tu aktywnego captu.");
+            String problem=joinProblem(player,key,gang,saved,terrain.atlas,now);require(problem.isEmpty(),problem);
             var participants=eligible(player,gang,key,saved.board).stream().limit(CaptureBoard.MAX_PLAYERS-battle.fighters.size()).toList();
             boolean newTeam=!battle.teams().contains(gang.id);
             if(newTeam)require(participants.size()>=battle.rules.minimumPlayers(),"W strefie jest za mało uprawnionych uczestników twojego gangu.");
@@ -74,11 +75,19 @@ public final class CaptureController {
             .filter(p->p==actor||GangDirectory.allowed(gang,p.getUUID(),Permission.JOIN_TERRITORY_ATTACK)).sorted(Comparator.comparing(p->p!=actor)).limit(CaptureBoard.MAX_PLAYERS).toList();
     }
     public static boolean firstOrAdjacent(TerrainAtlas atlas,UUID gang,TerrainKey key){
-        if(!atlas.hasLand(gang,key.dimension()))return true;
-        for(int[] delta:new int[][]{{1,0},{-1,0},{0,1},{0,-1}}){
-            long x=(long)key.x()+delta[0],z=(long)key.z()+delta[1];if(Math.abs(x)>TerrainViewport.LIMIT||Math.abs(z)>TerrainViewport.LIMIT)continue;
-            if(gang.equals(atlas.owner(new TerrainKey(key.dimension(),(int)x,(int)z))))return true;
-        }return false;
+        return !atlas.hasLand(gang,key.dimension())||atlas.neighbours(gang,key,false);
+    }
+    private static String joinProblem(ServerPlayer player,TerrainKey key,Gang gang,CaptureSavedData saved,TerrainAtlas atlas,long now){
+        var battle=saved.board.at(key);if(battle==null)return "Nie ma tu aktywnego captu.";
+        if(gang==null)return "Najpierw dołącz do gangu.";
+        String problem=CaptureJoinPolicy.problem(battle,gang,player.getUUID(),atlas);if(!problem.isEmpty())return problem;
+        if(!GangDirectory.allowed(gang,player.getUUID(),Permission.JOIN_TERRITORY_ATTACK))return "Nie masz uprawnienia do udziału w capcie.";
+        if(!present(player,key))return "Stań w wybranym chunku, aby dołączyć.";
+        problem=saved.board.joinProblem(key,gang.id,player.getUUID(),now);if(!problem.isEmpty())return problem;
+        if(battle.fighters.containsKey(player.getUUID()))return "Uczestniczysz już w tym capcie.";
+        if(!battle.teams().contains(gang.id)&&Math.min(eligible(player,gang,key,saved.board).size(),CaptureBoard.MAX_PLAYERS-battle.fighters.size())<battle.rules.minimumPlayers())
+            return "Za mało uprawnionych graczy w strefie.";
+        return "";
     }
     public static boolean present(ServerPlayer player,TerrainKey key){
         return player!=null&&!player.isDeadOrDying()&&!player.isSpectator()&&!player.isCreative()
@@ -150,7 +159,11 @@ public final class CaptureController {
         out.addProperty("present",present(player,key));out.addProperty("adjacent",gang!=null&&firstOrAdjacent(atlas,gang.id,key));
         UUID owner=atlas.owner(key);if(owner!=null){out.addProperty("owner",owner.toString());out.addProperty("ownerName",directory.get(owner)==null?"Nieznany gang":directory.get(owner).name);}
         out.addProperty("recognized",atlas.get(key)!=null);
-        var battle=saved.board.at(key);if(battle!=null)out.add("battle",battleJson(player,battle,directory));
+        var battle=saved.board.at(key);if(battle!=null){
+            var details=battleJson(player,battle,directory);String problem=joinProblem(player,key,gang,saved,atlas,now);
+            details.addProperty("joinAllowed",problem.isEmpty());details.addProperty("joinReason",problem);
+            details.addProperty("challenge",gang!=null&&CaptureJoinPolicy.challenge(battle,gang));out.add("battle",details);
+        }
         var own=gang==null?null:saved.board.forGang(gang.id);
         if(own!=null&&own.fighters.containsKey(player.getUUID()))out.add("ownBattle",battleJson(player,own,directory));
         out.addProperty("busy",own!=null||saved.board.registered(player.getUUID()));

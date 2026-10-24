@@ -1,0 +1,26 @@
+{
+  "artifact": {
+    "jar": "crimeandlaw-0.1.26.jar",
+    "bytes": 1916825,
+    "sha256": "21abae51663624a4e407bff3e78a958962925fa11a46c6bbaf522fc70b419e71",
+    "tests": 128,
+    "failures": 0,
+    "bundled_jars": 15,
+    "jar_crc": "PASS",
+    "smoke_classes": "excluded"
+  },
+  "checks": {
+    "server.PASS": "Actual dedicated server: commands/permission, clock/gamerule restoration, presence, neutral capture, PvP elimination, protection, loot isolation and NBT passed.",
+    "owner.PASS": "Real owner: scoped marker, activation/start/confirm, PvP roster, HUD, ownership refresh, death loot and depot claim over TCP passed.",
+    "rival.PASS": "Real rival joined, died, respawned, remained eliminated and received end-of-capture cleanup.",
+    "screenshots": {
+      "owner-capture-hud.png": "a7c96d04a07f8743d1c4159fe7eb90eb5bf1aaba66137812b511bd266be75b91",
+      "owner-color-wheel.png": "fa7af27c264742cf7484ed5151596007f4e3edba0ee05d35eb5cf56934275cab",
+      "owner-map-before-capture.png": "e0b40e6c7846560b8199d389b55187860cf441acdd1228e1d5f5f622ce98b943",
+      "owner-map-contested.png": "7169977c072e9e6e5967996f091b1242b088ef84fb323ccfde3720e900128d75",
+      "owner-map-winner.png": "f2cfb601251480697a861a09b77831c95597ac9a5dfd4232589fa655b9da9e32",
+      "rival-capture-hud.png": "fa505cf97beab13aef17867188b4a94265e93354c54f898325174af01e3bf25a",
+      "rival-map-contested.png": "cc5a2429808be1adc36f8bee04800e479ad2cf8bdd27dbe094c06d4d6cc99d6e"
+    }
+  }
+}

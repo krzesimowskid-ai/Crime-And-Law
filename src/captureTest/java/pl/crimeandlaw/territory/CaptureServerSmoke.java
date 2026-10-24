@@ -26,7 +26,7 @@ import pl.crimeandlaw.network.GangNetwork;
 @EventBusSubscriber(modid="crimeandlaw")
 public final class CaptureServerSmoke {
     private static final Path OUT=Path.of(System.getProperty("crimeandlaw.captureOutput","build/capture-smoke"));
-    private static final UUID A=new UUID(25,101),B=new UUID(25,102),C=new UUID(25,103);
+    private static final UUID A=new UUID(25,101),B=new UUID(25,102),C=new UUID(25,103),D=new UUID(26,104);
     private static final TerrainKey KEY=new TerrainKey("minecraft:overworld",-30,40),NEXT=new TerrainKey(KEY.dimension(),-29,40),RESTART=new TerrainKey(KEY.dimension(),-30,41);
     private static final Map<UUID,FakePlayer> fakes=new HashMap<>();
     private static UUID ga,gb;private static int stage,wait,combatTicks;private static boolean done;
@@ -53,7 +53,8 @@ public final class CaptureServerSmoke {
             var directory=GangSavedData.get(server).directory;
             ga=directory.create(A,"FakeOwner","Serwerowe A","").id;gb=directory.create(B,"FakeRival","Serwerowe B","").id;
             directory.request(C,"FakeMember",ga);directory.accept(A,C);GangSavedData.get(server).setDirty();
-            for(var id:List.of(A,B,C)){
+            directory.request(D,"FakeParticipant",gb);directory.accept(B,D);directory.role(B,"member","Atakujący",Set.of(GangDirectory.Permission.JOIN_TERRITORY_ATTACK));
+            for(var id:List.of(A,B,C,D)){
                 var fake=new FakePlayer(server.overworld(),new GameProfile(id,"Fake"+id.getLeastSignificantBits()));fake.setGameMode(GameType.SURVIVAL);fake.setPos(KEY.x()*16+8,100,KEY.z()*16+8);fakes.put(id,fake);register(server,fake,true);
             }
             for(var key:List.of(KEY,NEXT,RESTART))remember(server,key);
@@ -87,6 +88,12 @@ public final class CaptureServerSmoke {
                         a.setGameMode(GameType.CREATIVE);rejected(()->CaptureController.action(a,"capture_start",KEY),"Creative presence is rejected");a.setGameMode(GameType.SURVIVAL);
                         a.setPos(KEY.x()*16+40,100,KEY.z()*16+8);rejected(()->CaptureController.action(a,"capture_start",KEY),"Wrong chunk is rejected");a.setPos(KEY.x()*16+8,100,KEY.z()*16+8);
                         CaptureController.action(a,"capture_start",KEY);
+                        rejected(()->CaptureController.action(fakes.get(B),"capture_join",KEY),"A leader without bordering land cannot join neutral capture");
+                        var border=new TerrainKey(KEY.dimension(),KEY.x()+1,KEY.z()+1);remember(server,border);terrain.atlas.setOwner(border,gb);terrain.setDirty();
+                        check(CaptureController.snapshot(fakes.get(B),KEY,"").getAsJsonObject("battle").get("joinAllowed").getAsBoolean(),"A diagonal border admits the real leader");
+                        rejected(()->CaptureController.action(fakes.get(D),"capture_join",KEY),"Even a permitted member cannot commit a new gang without its leader");
+                        check(!CaptureController.snapshot(fakes.get(D),KEY,"").getAsJsonObject("battle").get("joinAllowed").getAsBoolean(),"The client receives the same leadership block");
+                        check(data.board.at(KEY).teams().size()==1,"Rejected attempts never enroll the gang");
                         var tagged=item(server,KEY,31);tagged.getPersistentData().putUUID(CaptureLoot.EVENT,data.board.at(KEY).id);unrelated=item(server,KEY,5);
                         data.markers.set(KEY,A,ga,false,0x12ABCD);data.markers.set(KEY,A,ga,true,0xC84375);data.setDirty();
                         stage=2;
@@ -128,6 +135,7 @@ public final class CaptureServerSmoke {
             }
             for(var player:server.getPlayerList().getPlayers())if(player.getGameProfile().getName().startsWith("Capture")&&prepared.add(player.getUUID())){
                 var gang=directory.create(player.getUUID(),player.getGameProfile().getName(),player.getGameProfile().getName()+" Gang","");directory.mapColor(player.getUUID(),player.getGameProfile().getName().equals("CaptureOwner")?0xB84F7B:0x3BB8B3);
+                if(player.getGameProfile().getName().equals("CaptureRival")){var border=new TerrainKey(KEY.dimension(),1,1);remember(server,border);terrain.atlas.setOwner(border,gang.id);terrain.setDirty();}
                 double x=player.getGameProfile().getName().equals("CaptureOwner")?8:12,z=player.getGameProfile().getName().equals("CaptureOwner")?8:12;
                 int y=server.overworld().getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,(int)x,(int)z)+1;
                 player.setGameMode(GameType.SURVIVAL);player.setInvulnerable(true);player.setNoGravity(true);player.connection.teleport(x,y,z,-45,0);

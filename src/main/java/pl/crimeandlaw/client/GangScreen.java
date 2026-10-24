@@ -348,7 +348,11 @@ public final class GangScreen extends Screen {
             boolean joined=battle.get("joined").getAsBoolean(),eliminated=battle.get("eliminated").getAsBoolean(),closed=battle.get("phase").getAsString().equals("FIGHTING");
             if(!CaptureClient.flag("unlocked")&&!joined&&!gang().id.toString().equals(CaptureClient.text("owner")))
                 button(right,bottom,space,"Aktywuj kontrolę terytoriów",b->CaptureClient.action("capture_unlock")).centered().active=isLeader()&&!closed;
-            else button(right,bottom,space,eliminated?"Wyeliminowano":joined?"Uczestniczysz w capcie":closed?"Zapisy zakończone":"Dołącz do captu",b->CaptureClient.action("capture_join")).centered().active=!joined&&!closed&&CaptureClient.flag("present")&&can(Permission.JOIN_TERRITORY_ATTACK);
+            else button(right,bottom,space,eliminated?"Wyeliminowano":joined?"Uczestniczysz w capcie":closed?"Zapisy zakończone":"Dołącz do captu",b->{
+                if(battle.get("challenge").getAsBoolean())confirm("Zaatakować neutralny teren?","Chunk "+terrainX+", "+terrainZ+". Twój gang dołączy do walki o to pole.",()->CaptureClient.action("capture_join"));
+                else CaptureClient.action("capture_join");
+            }).centered().active=!joined&&!closed&&battle.get("joinAllowed").getAsBoolean();
+            if(!joined&&!closed&&!battle.get("joinAllowed").getAsBoolean())label(right,bottom+37,battle.get("joinReason").getAsString(),0xFFAAA3B3);
         }else if(!CaptureClient.flag("unlocked")){
             button(right,bottom,space,"Aktywuj kontrolę terytoriów",b->CaptureClient.action("capture_unlock")).centered().active=current&&isLeader();
         }else{

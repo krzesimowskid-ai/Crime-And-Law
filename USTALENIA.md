@@ -4,7 +4,7 @@ Stan projektu: 24 października 2026.
 
 ## Status i sposób dalszej pracy
 
-To zapis pomysłów i decyzji użytkownika, a nie opis gotowego moda. Powstaje prototyp panelu gangów, obecnie wersja 0.1.25. 19 października użytkownik odłożył DarkPerazera i wrócił do Crime And Law. Zaakceptował rozpoczęcie od podstaw panelu gangów; obecnie doprecyzowuje jego wygląd. Dla pierwszego prototypu przyjęto Minecraft 1.21.1 i NeoForge 21.1.248: użytkownik polecił rozpoczęcie bez wskazania innej platformy. Jest to jawne założenie wykonawcze, nie wcześniejsza deklaracja użytkownika.
+To zapis pomysłów i decyzji użytkownika, a nie opis gotowego moda. Powstaje prototyp panelu gangów, obecnie wersja 0.1.26. 19 października użytkownik odłożył DarkPerazera i wrócił do Crime And Law. Zaakceptował rozpoczęcie od podstaw panelu gangów; obecnie doprecyzowuje jego wygląd. Dla pierwszego prototypu przyjęto Minecraft 1.21.1 i NeoForge 21.1.248: użytkownik polecił rozpoczęcie bez wskazania innej platformy. Jest to jawne założenie wykonawcze, nie wcześniejsza deklaracja użytkownika.
 
 Crime And Law jest nowym, osobnym modem. McArk pozostaje odłożony, zachowując cel odwzorowania ASA 1:1. Nie zmieniać projektu McArk w Crime And Law ani nie usuwać jego materiałów w ramach tej pracy.
 
@@ -626,3 +626,14 @@ gdy właściwe systemy własności oraz mapy będą rozwijane.
   odbierany komendą /crimeandlaw lupy zgodnie z uprawnieniami rangi.
 - Poziomy gangów, dolary, kwalifikacja bonusów, fizyczny magazyn oraz pozostałe
   wcześniej zaplanowane systemy pozostają kolejnymi etapami. Transport ukryty.
+
+
+## Nowy rywal w neutralnym capcie — 0.1.26
+
+- Na polecenie użytkownika dopuszczamy gangi posiadające sąsiedni chunk,
+  także stykający się po skosie: osiem sąsiadów w tym samym wymiarze.
+- O przystąpieniu nowego gangu decyduje jego lider z mapy, z potwierdzeniem.
+  Potem uprawnieni członkowie dołączają do własnej drużyny.
+- Warunki są egzekwowane na serwerze i udostępniane menu jako powód odmowy.
+  Zwykłe zakładanie terytorium, obrona własnego pola, obecność i czas
+  wydarzenia zachowują dotychczasowe zasady. Protokół sieciowy 16.
