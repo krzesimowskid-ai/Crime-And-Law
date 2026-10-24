@@ -95,7 +95,13 @@ public final class CaptureServerSmoke {
                         if(data.board.at(KEY)!=null)return;
                         check(ga.equals(terrain.atlas.owner(KEY)),"Authoritative neutral capture changes chunk owner");
                         check(CaptureLoot.get(server).count(ga)==31&&unrelated.isAlive()&&unrelated.getItem().getCount()==5,"Only event drops collected; unrelated identical items cannot merge into loot");
-                        check(CaptureLoot.get(server).claim(fakes.get(A),ga)==31&&CaptureLoot.get(server).count(ga)==0,"Depot transfer conserves items");
+                        var inventory=fakes.get(A).getInventory();for(int i=0;i<inventory.items.size();i++)inventory.setItem(i,new ItemStack(Items.COBBLESTONE,64));
+                        fakes.get(A).getAbilities().instabuild=true;
+                        check(CaptureLoot.get(server).claim(fakes.get(A),ga)==0&&CaptureLoot.get(server).count(ga)==31,"A full creative inventory cannot destroy depot items");
+                        inventory.setItem(0,new ItemStack(Items.DIAMOND,63));
+                        check(CaptureLoot.get(server).claim(fakes.get(A),ga)==1&&CaptureLoot.get(server).count(ga)==30,"Only the portion that fits is claimed");
+                        inventory.clearContent();fakes.get(A).getAbilities().instabuild=false;
+                        check(CaptureLoot.get(server).claim(fakes.get(A),ga)==30&&CaptureLoot.get(server).count(ga)==0,"Remaining depot transfer conserves items");
                         var extra=item(server,KEY,7);var id=UUID.randomUUID();extra.getPersistentData().putUUID(CaptureLoot.EVENT,id);CaptureLoot.get(server).collect(server.overworld(),KEY,id,ga);
                         rejected(()->CaptureController.action(fakes.get(B),"capture_start",KEY),"Protection rejects new attack");
                         var saved=CaptureLoot.get(server).save(new CompoundTag(),server.registryAccess());check(CaptureLoot.load(saved,server.registryAccess()).count(ga)==7,"Real NBT retains the depot");

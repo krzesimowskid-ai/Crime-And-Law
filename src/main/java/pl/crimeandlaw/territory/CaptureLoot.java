@@ -43,7 +43,12 @@ public final class CaptureLoot extends SavedData {
     public int claim(ServerPlayer player,UUID gang){
         var items=stored.get(gang);if(items==null)return 0;int claimed=0;
         for(var it=items.iterator();it.hasNext();){
-            var stack=it.next();int before=stack.getCount();player.getInventory().add(stack);claimed+=before-stack.getCount();if(stack.isEmpty())it.remove();
+            var stack=it.next();var inventory=player.getInventory();int capacity=0,max=Math.min(stack.getMaxStackSize(),inventory.getMaxStackSize());
+            for(var slot:inventory.items)if(slot.isEmpty())capacity+=max;else if(ItemStack.isSameItemSameComponents(slot,stack))capacity+=Math.max(0,max-slot.getCount());
+            for(var slot:inventory.offhand)if(!slot.isEmpty()&&ItemStack.isSameItemSameComponents(slot,stack))capacity+=Math.max(0,max-slot.getCount());
+            // Creative Inventory.add discards overflow: only hand it a portion that fits.
+            int amount=Math.min(capacity,stack.getCount());if(amount==0)continue;
+            var portion=stack.copyWithCount(amount);inventory.add(portion);int inserted=amount-portion.getCount();stack.shrink(inserted);claimed+=inserted;if(stack.isEmpty())it.remove();
         }
         if(items.isEmpty())stored.remove(gang);if(claimed>0){setDirty();player.inventoryMenu.broadcastChanges();}return claimed;
     }

@@ -7,6 +7,16 @@ import static org.junit.jupiter.api.Assertions.*;
 import pl.crimeandlaw.territory.TerrainProfile.*;
 
 class TerrainAtlasTest {
+    @Test void dissolvedGangsReleaseOwnershipWithoutChangingRecordedTerrain(){
+        var atlas=new TerrainAtlas();var a=UUID.randomUUID();var b=UUID.randomUUID();
+        var key=new TerrainKey("minecraft:overworld",0,0);var next=new TerrainKey(key.dimension(),1,0);var diagonal=new TerrainKey(key.dimension(),1,1);
+        var profile=profile(key,Surface.SOIL,false,List.of());atlas.remember(profile);atlas.remember(profile(next,Surface.ROCK,false,List.of()));atlas.remember(profile(diagonal,Surface.SOIL,false,List.of()));
+        atlas.setOwner(key,a);atlas.setOwner(diagonal,b);
+        assertTrue(CaptureController.firstOrAdjacent(atlas,a,next));assertFalse(CaptureController.firstOrAdjacent(atlas,a,diagonal));
+        assertTrue(CaptureController.firstOrAdjacent(atlas,a,new TerrainKey("minecraft:the_nether",100,100)));
+        assertTrue(atlas.releaseMissingOwners(Set.of(b)));assertNull(atlas.owner(key));assertEquals(b,atlas.owner(diagonal));assertEquals(profile,atlas.get(key));
+        assertFalse(atlas.releaseMissingOwners(Set.of(b)));assertFalse(atlas.hasLand(a,key.dimension()));
+    }
     private TerrainProfile profile(TerrainKey key,Surface surface,boolean forest,List<String> templates){
         List<Sample> samples=new ArrayList<>();for(int i=0;i<16;i++)samples.add(new Sample(64,surface,forest,"minecraft:plains"));
         return TerrainProfile.analyse(key,samples,!templates.isEmpty(),templates,100);
