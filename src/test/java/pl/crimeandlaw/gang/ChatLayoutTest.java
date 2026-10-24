@@ -5,6 +5,16 @@ import pl.crimeandlaw.client.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ChatLayoutTest {
+    @Test void closingTypingKeepsEveryVisibleRowAndItsPosition(){
+        for(int[] size:new int[][]{{428,241},{320,240},{480,270},{960,540}})
+            for(double height:new double[]{0,.44375,1})
+                for(double spacing:new double[]{0,1}){
+                    var open=ChatLayout.of(size[0],size[1],true,1,1,spacing,height);
+                    var idle=ChatLayout.of(size[0],size[1],false,1,1,spacing,height);
+                    assertEquals(open,idle,"Changing focus must only change opacity");
+                    assertEquals(18,idle.header());
+                }
+    }
     @Test void chatAndInputStayAboveTheRadarAndFitAcrossGuiSizes(){
         for(int[] size:new int[][]{{960,540},{640,360},{480,270},{800,450},{534,300},{400,225},{320,240},{344,258}}){
             var chat=ChatLayout.of(size[0],size[1],true,1,1,0);var hud=PlayerHudLayout.of(size[0],size[1]);

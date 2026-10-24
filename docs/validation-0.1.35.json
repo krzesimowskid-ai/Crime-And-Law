@@ -1,0 +1,137 @@
+{
+  "version": "0.1.35",
+  "minecraft": "1.21.1",
+  "neoforge": "21.1.248",
+  "java": 21,
+  "protocol": 19,
+  "dataSchema": 4,
+  "build": "PASS",
+  "junit": {
+    "tests": 166,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "renderer": {
+    "result": "PASS",
+    "type": "Actual Minecraft renderer and real resized windows; localhost dedicated server; local capture payload fixture",
+    "cases": [
+      {
+        "case": "hidden-chat",
+        "geometry": "CaptureHudLayout[x=74, y=12, width=280, height=40] image=855x481 gui=428x241",
+        "result": "PASS"
+      },
+      {
+        "case": "large-gui2",
+        "geometry": "CaptureHudLayout[x=361, y=12, width=280, height=40] image=1920x1080 gui=960x540",
+        "result": "PASS"
+      },
+      {
+        "case": "large-gui4",
+        "geometry": "CaptureHudLayout[x=184, y=12, width=280, height=40] image=1920x1080 gui=480x270",
+        "result": "PASS"
+      },
+      {
+        "case": "minimum-closed",
+        "geometry": "CaptureHudLayout[x=125, y=12, width=185, height=40] image=640x480 gui=320x240",
+        "result": "PASS"
+      },
+      {
+        "case": "minimum-open",
+        "geometry": "CaptureHudLayout[x=125, y=12, width=185, height=40] image=640x480 gui=320x240",
+        "result": "PASS"
+      },
+      {
+        "case": "small-closed",
+        "geometry": "CaptureHudLayout[x=164, y=12, width=254, height=40] image=855x481 gui=428x241",
+        "result": "PASS"
+      },
+      {
+        "case": "small-open",
+        "geometry": "CaptureHudLayout[x=164, y=12, width=254, height=40] image=855x481 gui=428x241",
+        "result": "PASS"
+      }
+    ],
+    "persistence": {
+      "result": "PASS",
+      "realWaitSecondsAtLeast": 12,
+      "guiTicksAtLeast": 240,
+      "visibleRows": 11,
+      "pixelMeasurements": {
+        "persistent-open": {
+          "glyphPixelsByRow": [
+            312,
+            370,
+            309,
+            321,
+            338,
+            311,
+            330,
+            324,
+            379,
+            227,
+            122
+          ],
+          "peakCyanContrast": 168
+        },
+        "persistent-closed": {
+          "glyphPixelsByRow": [
+            286,
+            341,
+            287,
+            287,
+            313,
+            288,
+            294,
+            308,
+            359,
+            220,
+            107
+          ],
+          "peakCyanContrast": 108
+        },
+        "persistent-after-12s": {
+          "glyphPixelsByRow": [
+            286,
+            341,
+            287,
+            287,
+            313,
+            288,
+            294,
+            308,
+            359,
+            220,
+            107
+          ],
+          "peakCyanContrast": 108
+        }
+      },
+      "checks": [
+        "Identical layout before and after Escape",
+        "All idle rows remain visible after 12s",
+        "Idle panel opacity is lower and stays stable",
+        "Native deletion and clear remain authoritative",
+        "No interaction with idle text",
+        "Native command completion and clickable component",
+        "Settings use one height and preserve draft",
+        "Empty idle chat leaves no ghost panel"
+      ]
+    },
+    "screenshotsInspected": [
+      "persistent-open",
+      "persistent-after-12s",
+      "persistent-settings-return",
+      "persistent-cleared"
+    ]
+  },
+  "jar": {
+    "name": "crimeandlaw-0.1.35.jar",
+    "bytes": 2124311,
+    "sha256": "e96e0fc3d6fdbe81b381517fdb259c894f3e2539d3a5fdb3279705a31fa13a74",
+    "crc": "PASS",
+    "nestedJars": 15,
+    "nestedCrc": "PASS",
+    "smokeClasses": 0
+  }
+}

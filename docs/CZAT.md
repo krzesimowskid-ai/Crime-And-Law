@@ -1,4 +1,4 @@
-# Czat — 0.1.34
+# Czat — 0.1.35
 
 Klasyczny kompaktowy układ w lewym górnym rogu, inspirowany Majestic RP:
 gładka czcionka, godziny wiadomości, kolory, półprzezroczystość i pole pod
@@ -19,6 +19,23 @@ Nie dodano pozornych kanałów frakcji lub rodziny bez odpowiednich mechanik.
 Minimapa, pieniądze i zegar pozostają widoczne podczas pisania. Dolny HUD
 ma margines sześciu jednostek od lewej i od dołu. F1 i pozostałe menu nadal
 kontrolują widoczność HUD-u. Nie ma przyciemnienia całego świata przy czacie.
+
+## Po zakończeniu pisania
+
+Wiadomości pozostają widoczne bez ograniczenia czasu. Panel, tło, nagłówek,
+tekst i pasek historii przechodzą w ciągu 200 ms do 58% ustawionej
+nieprzezroczystości. Otwarcie pisania przywraca pełną ustawioną wartość.
+Położenie i wysokość historii pozostają takie same, więc zamknięcie pola
+nie ukrywa dodatkowych wierszy. Pole pisania jest dostępne po T lub /.
+
+Wysokość dla obu stanów ustawia suwak wysokości otwartego czatu. Ustawienia
+pod zębatką pokazują jeden suwak wysokości. Szerokość, skala, odstępy,
+przezroczystość tekstu/tła i ukrycie całego czatu nadal są respektowane.
+Gdy historia jest pusta, zamknięty czat nie rysuje pustego panelu.
+
+Nowe wiadomości przesuwają najstarsze poza widoczny obszar; historia nadal
+podlega natywnemu limitowi 100 wpisów i limitowi 800 zawiniętych wierszy.
+Natywne usuwanie i czyszczenie wiadomości pozostają nadrzędne.
 
 Pasek captu rezerwuje miejsce na całą szerokość czatu wraz z tłem i paskiem
 przewijania. Gdy wyśrodkowany panel by nachodził na czat, przesuwa się

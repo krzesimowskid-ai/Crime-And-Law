@@ -3,7 +3,6 @@ package pl.crimeandlaw.client;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.*;
 import net.minecraft.client.gui.screens.ChatScreen;
-import net.minecraft.client.gui.screens.options.ChatOptionsScreen;
 import net.minecraft.network.chat.Component;
 import pl.crimeandlaw.mixin.client.ChatScreenAccess;
 
@@ -36,7 +35,7 @@ public final class RpChatScreen extends ChatScreen {
         if(suggestions().mouseClicked(mx,my,button))return true;
         if(button==0){
             if(mx>=l.x()+l.width()-24&&mx<=l.x()+l.width()+2&&my>=l.inputY()&&my<=l.inputY()+l.inputHeight()){handleChatInput(input.getValue(),true);if(minecraft.screen==this)minecraft.setScreen(null);return true;}
-            if(mx>=l.x()+l.width()-22&&mx<=l.x()+l.width()&&my>=l.y()&&my<=l.historyY()){minecraft.setScreen(new ChatOptionsScreen(this,minecraft.options));return true;}
+            if(mx>=l.x()+l.width()-22&&mx<=l.x()+l.width()&&my>=l.y()&&my<=l.historyY()){minecraft.setScreen(new RpChatOptionsScreen(this,minecraft.options));return true;}
             if(ChatView.scrollbarClicked(x,y)){scrolling=true;return true;}
             if(ChatView.queueClicked(x,y))return true;
             var style=ChatView.styleAt(x,y);if(style!=null&&handleComponentClicked(style))return true;

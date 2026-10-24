@@ -750,3 +750,15 @@ gdy właściwe systemy własności oraz mapy będą rozwijane.
 - Capt pozostaje widoczny podczas pisania, w tej samej pozycji co przed
   otwarciem czatu. Ukryty czat nie rezerwuje miejsca.
 - Zmiana dotyczy układu i widoczności klienta. Protokół 19, schemat danych 4.
+
+## Widoczne wiadomości po zamknięciu pisania — 0.1.35
+
+- Użytkownik doprecyzował, że wiadomości mają pozostawać widoczne, a cały
+  panel ma jedynie stawać się bardziej przezroczysty po zakończeniu pisania.
+- Wyłączono wygaszanie treści zależne od wieku. Oba stany używają tej samej
+  wysokości i położenia wierszy; zamknięcie pisania nie zwija historii.
+- Cały panel przechodzi płynnie w ciągu 200 ms do 58% ustawionej
+  nieprzezroczystości. Otwarcie pisania przywraca pełną ustawioną wartość.
+- Ustawienia pod zębatką mają jeden suwak wysokości. Natywna historia,
+  limity, podpisy, usuwanie i czyszczenie wiadomości pozostają zachowane.
+- Zachowano poprawkę odstępu od captu z 0.1.34. Protokół 19, schemat danych 4.

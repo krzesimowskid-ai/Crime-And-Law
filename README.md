@@ -1,7 +1,7 @@
 # Crime And Law
 
 Autorski mod gangsterski: panel gangów, członkostwo i własny wygląd menu.
-Wersja **0.1.34**.
+Wersja **0.1.35**.
 
 Pierwsza propozycja własnej ekonomii w dolarach i rozwoju terenów:
 [Balans terytoriów](docs/BALANS_TERYTORIOW.md) oraz
@@ -15,9 +15,9 @@ Przejmowanie terenów, zegar świata oraz oznaczenia mapy już działają:
 ## Uruchomienie
 
 - Minecraft **1.21.1**, Java **21**, NeoForge **21.1.248**.
-- Włóż `crimeandlaw-0.1.34.jar` do `mods`, zastępując poprzedni JAR tego moda.
+- Włóż `crimeandlaw-0.1.35.jar` do `mods`, zastępując poprzedni JAR tego moda.
 - W rozgrywce sieciowej mod musi być **u graczy i na serwerze**.
-  **0.1.34 korzysta z protokołu 19** — wymaga tej samej wersji na obu stronach.
+  **0.1.35 korzysta z protokołu 19** — wymaga tej samej wersji na obu stronach.
   Starsze wersje od 0.1.26 do 0.1.28 używają protokołu 16.
 - W świecie jednoosobowym część serwerowa działa razem ze światem.
 - **G** otwiera panel; skrót można zmienić w sterowaniu. Esc lub X zamyka okno.
@@ -65,6 +65,11 @@ respektowane. Zmiana GUI zachowuje szkic. Podczas pisania minimapa, salda
 i zegar nie znikają. Pasek captu uwzględnia szerokość czatu: przy małym
 oknie zajmuje wolne miejsce po prawej, zwęża się i dopasowuje napisy.
 Pozostaje widoczny po otwarciu czatu. Szczegóły: [Czat](docs/CZAT.md).
+
+Po zakończeniu pisania wiadomości pozostają widoczne. Cały panel płynnie
+staje się bardziej przezroczysty, zachowując wysokość i położenie wierszy.
+Historia nie wygasza się po dziesięciu sekundach. Wysokość czatu jest wspólna
+dla obu stanów i regulowana jednym suwakiem w ustawieniach pod zębatką.
 
 ## Panel gangu
 
@@ -240,7 +245,7 @@ Windows: gradlew.bat build
 Linux/macOS: ./gradlew build
 ```
 
-Wynik: `build/libs/crimeandlaw-0.1.34.jar`.
+Wynik: `build/libs/crimeandlaw-0.1.35.jar`.
 Gradle Wrapper 9.2.1, ModDevGradle 2.0.148, NeoForge 21.1.248.
 `./gradlew test` sprawdza model, migrację zapisów, duże listy i prywatność
 zgłoszeń, walidację/edycję logo, kolory oraz skalowanie menu.
