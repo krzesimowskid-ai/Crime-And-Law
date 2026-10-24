@@ -13,12 +13,13 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 public final class FinanceServerSmoke {
     private static final UUID OWNER=id("Owner29"),MEMBER=id("Member29"),FRIEND=id("Friend29");
     private static final Path OUT=Path.of(System.getProperty("crimeandlaw.financeOutput","build/finance-smoke"));
-    private static long start;private static boolean done,deathDone,commandsDone;
+    private static long start;private static boolean done,deathDone,commandsDone;private static int clockStage;
     private static UUID id(String name){return UUID.nameUUIDFromBytes(("OfflinePlayer:"+name).getBytes(java.nio.charset.StandardCharsets.UTF_8));}
     @SubscribeEvent public static void started(ServerStartedEvent event){
         if(!Boolean.getBoolean("crimeandlaw.financeSmoke"))return;
         try{
             Files.createDirectories(OUT);start=System.nanoTime();var d=GangSavedData.get(event.getServer()).directory;
+            var clock=pl.crimeandlaw.territory.CaptureSavedData.get(event.getServer());clock.rules=clock.rules.zone("Europe/Warsaw");clock.setDirty();
             if(Boolean.getBoolean("crimeandlaw.financeRestart")){
                 verify(d);check(!d.needsMigration(),"Current schema reloads without another migration");
                 Files.writeString(OUT.resolve("restart.PASS"),"Actual world reload preserves accounts, ledger and rank permissions.\n");done=true;event.getServer().halt(false);return;
@@ -48,6 +49,8 @@ public final class FinanceServerSmoke {
                 check(denied,"Non-operator cannot grant money");owner.teleportTo(0.5,owner.serverLevel().getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING,0,0),0.5);commandsDone=true;
             }
             if(!deathDone&&member!=null&&Files.exists(OUT.resolve("member-death.ready"))){member.kill();deathDone=true;}
+            if(clockStage==0&&Files.exists(OUT.resolve("clock-change.ready"))){var clock=pl.crimeandlaw.territory.CaptureSavedData.get(event.getServer());clock.rules=clock.rules.zone("Pacific/Auckland");clock.setDirty();clockStage=1;}
+            if(clockStage==1&&Files.exists(OUT.resolve("clock-restore.ready"))){var clock=pl.crimeandlaw.territory.CaptureSavedData.get(event.getServer());clock.rules=clock.rules.zone("Europe/Warsaw");clock.setDirty();clockStage=2;}
             if(!Files.exists(OUT.resolve("owner.PASS"))||!Files.exists(OUT.resolve("member.PASS")))return;
             var saved=GangSavedData.get(event.getServer());verify(saved.directory);saved.setDirty();event.getServer().saveEverything(true,true,true);
             Files.writeString(OUT.resolve("server.PASS"),"TCP payouts, denied operations, replay rejection and conserved bank/treasury total of $100000 plus $1802 cash verified.\n");done=true;event.getServer().halt(false);

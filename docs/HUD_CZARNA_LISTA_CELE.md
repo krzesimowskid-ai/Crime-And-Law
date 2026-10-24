@@ -1,11 +1,11 @@
-# HUD, czarna lista i cele — 0.1.31
+# HUD, czarna lista i cele — 0.1.32
 
 ## Minimapka i liczniki
 
 Minimapka działa bez członkostwa w gangu i bez otwierania menu. Pokazuje
 rzeczywiście załadowany teren klienta, obraca się zgodnie z kierunkiem gracza
-i ma wskaźnik północy przy krawędzi mapy. Stonowana szarość lądu i niebieska
-woda zastępują jaskrawe kolory biomów. Teren ma krycie 176/255 (około 69%);
+i ma wskaźnik północy przy krawędzi mapy. Oryginalne barwy bloków i biomów
+są zachowane. Teren ma krycie 176/255 (około 69%);
 bez nieprzezroczystego podkładu. Filtracja dwuliniowa wygładza obrót i piksele.
 Brakujące dane pozostają delikatnie przyciemnione. Nie pobiera ziarna
 świata, nie generuje chunków i nie wysyła ciągłych zapytań o mapę na serwer.
@@ -19,16 +19,35 @@ Zmiana wymiaru i wyjście z serwera czyszczą pamięć oraz teksturę.
 Obok mapki: oryginalne symbole banknotu i karty oraz dwa małe wiersze kwot,
 bez dużych kafli i etykiet. Gotówka jest jasnozielona, bank jasnoniebieski.
 Kwoty i litera N korzystają z dołączonego, ograniczonego podzbioru DejaVu Sans
-Bold (około 6 KB, licencja dołączona). Największa kwota jest automatycznie
+Bold (około 10 KB, licencja dołączona). Największa kwota jest automatycznie
 skalowana, aby pozostała pełna i mieściła się w dostępnej szerokości.
 Nie są to znaki z przypadkowej czcionki. Symbole są rysowane wektorowo na
 płótnie 128 jednostek i skalowane wraz z całym HUD-em. Układ uwzględnia
-faktyczny rozmiar waniliowego hotbara, serc i pancerza. Nieaktywny czat jest
+faktyczny rozmiar waniliowego hotbara, serc i pancerza, a pozycję dobiera
+do rzeczywistej szerokości kwot i daty. Wiersz licznika ma odstęp 14 jednostek,
+ikona 14 jednostek, tekst skaluje się do 0,70 względem czcionki HUD.
+Są znacznie mniejsze od 0.1.31; chip i ramka banknotu mają dodatkowe detale. Nieaktywny czat jest
 odsunięty ponad HUD; po otwarciu czatu jego zwykłe położenie pozostaje.
 
 Nowy HUD jest ukryty przy F1 oraz w otwartych ekranach. Waniliowe serca,
 głód i hotbar pozostają dostępne. Dane pieniędzy są oddzielnym prywatnym
 pakietem dwóch liczb, bez retransmisji logo czy banera.
+
+
+## Zegar serwera
+
+Nad saldami są godzina HH:mm, data dd.MM.rrrr i polski dzień tygodnia.
+Zegar dostaje czas oraz strefę serwera, zgodną z `/crimeandlaw czas`,
+niezależnie od otwarcia panelu i członkostwa w gangu. Po zalogowaniu,
+odrodzeniu i zmianie wymiaru dostaje pełną synchronizację; dalej co około
+30 sekund i po zmianie strefy. Między pakietami korzysta z monotonicznego
+licznika klienta, więc zmiana zegara systemowego gracza go nie przestawia.
+Strefa java.time uwzględnia zmianę dnia i czasu letniego/zimowego.
+
+Nowy, niewielki pakiet zegara nie zawiera sald. Protokół 19 wymaga nowego
+JAR-u na serwerze i u wszystkich graczy. Schemat zapisu pozostaje 4.
+Temperatura i pogoda pozostają kolejnym etapem; HUD nie pokazuje fikcyjnych
+wartości tych parametrów.
 
 ## Gotówka i bank
 

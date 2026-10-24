@@ -5,13 +5,9 @@ public final class MinimapStyle {
     public static final int OPACITY=176,FOG=0x58474440;
     private MinimapStyle(){}
     public record Point(float x,float y){}
-    public static int terrain(int abgr,boolean water){
-        int r=abgr&255,g=abgr>>>8&255,b=abgr>>>16&255;
-        int luminance=(54*r+183*g+19*b)>>>8;
-        // Restrained grey terrain with a blue tint for water; no saturated biome colors.
-        int base=52+luminance*3/5;
-        r=water?62+base/5:base;g=water?83+base/4:base+4;b=water?99+base/3:base+3;
-        return OPACITY<<24|b<<16|g<<8|r;
+    public static int terrain(int abgr){
+        // Transparency is independent of the terrain palette. Keep every original RGB channel.
+        return OPACITY<<24|abgr&0x00FFFFFF;
     }
     public static Point north(float x,float y,int width,int height,float playerX,float playerY,float angle){
         double radians=Math.toRadians(angle),dx=Math.sin(radians),dy=-Math.cos(radians);

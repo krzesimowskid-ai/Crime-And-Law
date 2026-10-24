@@ -10,10 +10,16 @@ class PlayerHudLayoutTest {
         for(int[] nativeGui:new int[][]{{960,540},{640,360},{480,270},{800,450},{534,300},{400,225},{320,240},{344,258}}){
             var layout=PlayerHudLayout.of(nativeGui[0],nativeGui[1]);double scale=layout.canvas().scale();
             assertTrue(layout.mapX()*scale>=0);assertTrue((layout.mapY()+PlayerHudLayout.MAP_HEIGHT+2)*scale<nativeGui[1]);
-            assertTrue(layout.moneyY()*scale>=0);assertTrue((layout.moneyX()+PlayerHudLayout.MONEY_WIDTH)*scale<nativeGui[0]);
-            if((layout.moneyX()+PlayerHudLayout.MONEY_WIDTH)*scale>nativeGui[0]/2.0-111)assertTrue((layout.moneyY()+PlayerHudLayout.MONEY_HEIGHT)*scale<=nativeGui[1]-59.9);
-            assertTrue(nativeGui[1]-40+layout.chatShift()<=Math.min(layout.moneyY(),layout.mapY())*scale-9);
+            assertTrue(layout.clockY()*scale>=0);assertTrue((layout.moneyX()+PlayerHudLayout.MONEY_WIDTH)*scale<nativeGui[0]);
+            if((layout.moneyX()+PlayerHudLayout.MONEY_WIDTH)*scale>nativeGui[0]/2.0-96)assertTrue((layout.moneyY()+PlayerHudLayout.MONEY_HEIGHT)*scale<=nativeGui[1]-59.9);
+            assertTrue(nativeGui[1]-40+layout.chatShift()<=Math.min(layout.clockY(),layout.mapY())*scale-9);
         }
+    }
+    @Test void compactNormalAmountsCanStayBesideTheMapAtLargeGuiScale(){
+        var compact=PlayerHudLayout.of(480,270,68);
+        assertEquals(compact.mapY()+PlayerHudLayout.MAP_HEIGHT,compact.moneyY()+PlayerHudLayout.MONEY_HEIGHT);
+        var maximum=PlayerHudLayout.of(480,270,PlayerHudLayout.MONEY_WIDTH);
+        assertTrue(maximum.moneyY()<compact.moneyY());
     }
     @Test void northFollowsTheEdgeInsteadOfCrossingTheMap(){
         int x=14,y=200,w=136,h=86;float px=x+w/2f,py=y+h*.58f;

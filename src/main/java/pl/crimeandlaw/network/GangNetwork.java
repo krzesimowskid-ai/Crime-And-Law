@@ -19,7 +19,9 @@ public final class GangNetwork {
     public static final int STATE_MAX_JSON=GangLogo.MAX_ENCODED_LENGTH+GangBanner.MAX_ENCODED_LENGTH+200_000;
     private static final Gson JSON=new Gson();
     public static Consumer<Money> moneyReceiver=ignored->{};
+    public static Consumer<Clock> clockReceiver=ignored->{};
     private static final Map<ServerPlayer,Money> moneySent=new WeakHashMap<>();
+    private static final Map<ServerPlayer,Clock> clocksSent=new WeakHashMap<>();
     private static final Map<ServerPlayer,BlacklistView.Query> blacklistViews=new WeakHashMap<>();
     private static final Map<ServerPlayer,String> activePanels=new WeakHashMap<>();
     public static Consumer<String> clientReceiver=ignored->{};
@@ -68,6 +70,18 @@ public final class GangNetwork {
         };
         @Override public Type<? extends CustomPacketPayload> type(){return TYPE;}
     }
+    public record Clock(long epochMillis,String zone) implements CustomPacketPayload {
+        public Clock {
+            if(epochMillis<0||epochMillis>253_402_300_799_999L||zone==null||zone.length()>96)throw new IllegalArgumentException("Nieprawidłowy czas serwera.");
+            java.time.ZoneId.of(zone);
+        }
+        public static final Type<Clock> TYPE=new Type<>(ResourceLocation.fromNamespaceAndPath("crimeandlaw","clock"));
+        public static final StreamCodec<RegistryFriendlyByteBuf,Clock> CODEC=new StreamCodec<>(){
+            public Clock decode(RegistryFriendlyByteBuf b){return new Clock(b.readLong(),b.readUtf(96));}
+            public void encode(RegistryFriendlyByteBuf b,Clock value){b.writeLong(value.epochMillis());b.writeUtf(value.zone(),96);}
+        };
+        @Override public Type<? extends CustomPacketPayload> type(){return TYPE;}
+    }
     public record Capture(String json) implements CustomPacketPayload {
         public static final int MAX_JSON=131_072;
         public static final Type<Capture> TYPE=new Type<>(ResourceLocation.fromNamespaceAndPath("crimeandlaw","capture"));
@@ -96,9 +110,10 @@ public final class GangNetwork {
         @Override public Type<? extends CustomPacketPayload> type(){return TYPE;}
     }
     public static void register(RegisterPayloadHandlersEvent event){
-        var registrar=event.registrar("18");
+        var registrar=event.registrar("19");
         registrar.playToServer(Action.TYPE,Action.CODEC,GangNetwork::handle);
         registrar.playToClient(Money.TYPE,Money.CODEC,(p,c)->moneyReceiver.accept(p));
+        registrar.playToClient(Clock.TYPE,Clock.CODEC,(p,c)->clockReceiver.accept(p));
         registrar.playToClient(State.TYPE,State.CODEC,(p,c)->clientReceiver.accept(p.json));
         registrar.playToClient(Terrain.TYPE,Terrain.CODEC,(p,c)->terrainReceiver.accept(p.json));
         registrar.playToClient(Capture.TYPE,Capture.CODEC,(p,c)->captureReceiver.accept(p.json));
@@ -277,6 +292,11 @@ public final class GangNetwork {
         else PacketDistributor.sendToPlayer(player,new State(json));
     }
     public static void syncMoney(net.minecraft.server.MinecraftServer server){for(var player:server.getPlayerList().getPlayers())sendMoney(player,false);}
+    public static void syncClock(net.minecraft.server.MinecraftServer server){for(var player:server.getPlayerList().getPlayers())sendClock(player,false);}
+    public static void sendClock(ServerPlayer player,boolean force){
+        var next=new Clock(System.currentTimeMillis(),pl.crimeandlaw.territory.CaptureSavedData.get(player.server).rules.zone());var old=clocksSent.get(player);
+        if(force||old==null||old.epochMillis()/30_000!=next.epochMillis()/30_000||!old.zone().equals(next.zone())){PacketDistributor.sendToPlayer(player,next);clocksSent.put(player,next);}
+    }
     public static void sendMoney(ServerPlayer player,boolean force){
         var finances=GangSavedData.get(player.server).directory.finances;var next=new Money(finances.cash(player.getUUID()),finances.bank(player.getUUID()));
         if(force||!next.equals(moneySent.get(player))){PacketDistributor.sendToPlayer(player,next);moneySent.put(player,next);}
@@ -288,7 +308,7 @@ public final class GangNetwork {
     }
     public static void presenceChanged(ServerPlayer player,boolean joined){
         if(!joined){uploads.remove(player);rates.remove(player);views.remove(player);financeViews.remove(player);financeTokens.remove(player);}
-        if(joined){rememberProfile(player);sendMoney(player,true);}else{moneySent.remove(player);blacklistViews.remove(player);activePanels.remove(player);}
+        if(joined){rememberProfile(player);sendMoney(player,true);sendClock(player,true);}else{moneySent.remove(player);clocksSent.remove(player);blacklistViews.remove(player);activePanels.remove(player);}
         var gang=GangSavedData.get(player.server).directory.of(player.getUUID());if(gang==null)return;
         for(var viewer:player.server.getPlayerList().getPlayers())if(viewer!=player&&gang.members.containsKey(viewer.getUUID())&&views.containsKey(viewer))sendState(viewer,"",joined?null:player.getUUID());
     }

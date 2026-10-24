@@ -62,7 +62,7 @@ final class ClientMinimap {
         if(color==MapColor.NONE)return MinimapStyle.FOG;
         int west=chunk.getHeight(Heightmap.Types.WORLD_SURFACE,Math.max(0,x-1),z),east=chunk.getHeight(Heightmap.Types.WORLD_SURFACE,Math.min(15,x+1),z);
         var shade=west>east?MapColor.Brightness.LOW:west<east?MapColor.Brightness.HIGH:MapColor.Brightness.NORMAL;
-        return MinimapStyle.terrain(MapColor.getColorFromPackedId(color.getPackedId(shade)),color==MapColor.WATER);
+        return MinimapStyle.terrain(MapColor.getColorFromPackedId(color.getPackedId(shade)));
     }
     private static void upload(){
         if(texture==null){texture=new DynamicTexture(new NativeImage(SIDE,SIDE,false));Minecraft.getInstance().getTextureManager().register(ID,texture);}

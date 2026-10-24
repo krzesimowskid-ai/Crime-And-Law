@@ -14,6 +14,14 @@ import pl.crimeandlaw.gang.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class GangNetworkTest {
+    @Test void clockPacketKeepsTheServerDateAndTimezoneWithoutFinancialState(){
+        var expected=new GangNetwork.Clock(java.time.Instant.parse("2026-10-25T01:00:00Z").toEpochMilli(),"Europe/Warsaw");
+        var buffer=new RegistryFriendlyByteBuf(Unpooled.buffer(),RegistryAccess.EMPTY);
+        try{GangNetwork.Clock.CODEC.encode(buffer,expected);assertTrue(buffer.readableBytes()<128);assertEquals(expected,GangNetwork.Clock.CODEC.decode(buffer));assertFalse(buffer.isReadable());}
+        finally{buffer.release();}
+        assertThrows(RuntimeException.class,()->new GangNetwork.Clock(-1,"UTC"));
+        assertThrows(RuntimeException.class,()->new GangNetwork.Clock(0,"invalid-zone"));
+    }
     @Test void detailedLogoSurvivesActionStorageAndStateCodecs()throws Exception {
         BufferedImage image=new BufferedImage(2048,2048,BufferedImage.TYPE_INT_ARGB);Random random=new Random(22);
         for(int y=0;y<2048;y++)for(int x=0;x<2048;x++)image.setRGB(x,y,random.nextInt()|0xFF000000);

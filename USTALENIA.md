@@ -713,3 +713,17 @@ gdy właściwe systemy własności oraz mapy będą rozwijane.
   i karty, gładką czcionką oraz cieniem. Zachowana pełna kwota bez skrótów.
 - Zmiana dotyczy wyglądu klienta; ekonomia, zapis i pakiety są bez zmian.
   Protokół 18, schemat danych 4.
+
+
+## Kolory, mniejsze salda i zegar — 0.1.32
+
+- Użytkownik doprecyzował: mapa ma zachować naturalne kolory terenu oraz
+  przezroczystość. Szara paleta 0.1.31 była błędną interpretacją stylu GTA.
+- Liczniki i ikony mają być małe jak na drugim zrzucie 24 października,
+  ze szczegółami czytelnymi przy małym rozmiarze, jak symbole McArk.
+- Godzina, data i dzień tygodnia znajdują się nad saldami. Temperatura
+  i pogoda są propozycją na później, poza bieżącą implementacją.
+- Użytkownik najpierw wstrzymał pracę z uwagi na limit, następnie polecił
+  wznowić wykonanie ustalonego zakresu.
+- Zegar pochodzi z czasu i strefy serwera. Ma osobny mały pakiet.
+  Protokół 19, schemat zapisu 4.

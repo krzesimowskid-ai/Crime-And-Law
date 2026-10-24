@@ -65,7 +65,7 @@ public final class FinanceClientSmoke {
             case 18->{if(ClientState.state==previous)return;check(FinanceClient.money("gangBalance")==79650,"Fraction rejected");var request=payments(FinanceClient.token(),1);request.getAsJsonArray("payments").add(request.getAsJsonArray("payments").get(0).deepCopy());previous=ClientState.state;GangNetwork.send(request);step=19;}
             case 19->{if(ClientState.state==previous)return;check(ClientState.message.contains("więcej niż raz")&&FinanceClient.money("gangBalance")==79650,"Duplicate recipient rejected");Files.writeString(OUT.resolve("owner-payments.PASS"),"Owner UI and raw invalid packet checks pass\n");step=20;}
             case 20->{if(!Files.exists(OUT.resolve("member.PASS")))return;ClientState.message="";mc.setScreen(null);pending="hud-scale2";step=21;}
-            case 21->{check(HudMoney.ready&&HudMoney.cash==1235&&HudMoney.bank==19500,"HUD receives actual independent accounts");check(ClientMinimap.cacheSize()>0&&ClientMinimap.cacheSize()<=256,"Minimap samples loaded terrain within its cache bound");mc.options.guiScale().set(4);mc.resizeDisplay();pending="hud-scale4";step=22;}
+            case 21->{check(HudMoney.ready&&HudMoney.cash==1235&&HudMoney.bank==19500,"HUD receives actual independent accounts");check(HudClock.INSTANCE.ready()&&HudClock.INSTANCE.zoneId().equals("Europe/Warsaw"),"HUD receives the actual server clock");check(ClientMinimap.cacheSize()>0&&ClientMinimap.cacheSize()<=256,"Minimap samples loaded terrain within its cache bound");mc.options.guiScale().set(4);mc.resizeDisplay();pending="hud-scale4";step=22;}
             case 22->{mc.setScreen(new GangScreen());previous=ClientState.state;ClientState.refresh("",0);step=23;}
             case 23->{if(ClientState.state==previous)return;press(mc,"Czarna lista");step=24;}
             case 24->{if(!ClientState.state.has("blacklist"))return;press(mc,"Dodaj do listy");fields(mc,"Friend29","Test blokady");pending="blacklist-add";step=25;}
@@ -84,16 +84,18 @@ public final class FinanceClientSmoke {
             case 37->{mc.options.hideGui=true;pending="hud-hidden-f1";step=38;}
             case 38->{mc.options.hideGui=false;mc.setScreen(new ChatScreen(""));pending="hud-open-chat";step=39;}
             case 39->{mc.setScreen(null);HudMoney.ready=false;pending="hud-loading-balances";step=40;}
-            case 40->{HudMoney.receive(new GangNetwork.Money(1235,19500));Files.writeString(OUT.resolve("owner.PASS"),"Financial TCP checks; actual cash/bank HUD at GUI 2/4; synthetic client-only representative and maximum values; four compass headings; F1, open chat, loading state; live minimap, blacklist, goals.\n");done=true;mc.stop();}
+            case 40->{HudMoney.receive(new GangNetwork.Money(1235,19500));Files.writeString(OUT.resolve("clock-change.ready"),"ready");step=41;}
+            case 41->{if(!HudClock.INSTANCE.zoneId().equals("Pacific/Auckland"))return;pending="hud-server-timezone";Files.writeString(OUT.resolve("clock-restore.ready"),"ready");step=42;}
+            case 42->{if(!HudClock.INSTANCE.zoneId().equals("Europe/Warsaw"))return;Files.writeString(OUT.resolve("owner.PASS"),"Financial TCP checks; compact cash/bank HUD at GUI 2/4; actual server clock and live timezone changes; synthetic client-only representative and maximum values; four compass headings; F1, chat, loading; live minimap, blacklist, goals.\n");done=true;mc.stop();}
         }
     }
     private static void look(Minecraft mc,float yaw){mc.player.setYRot(yaw);mc.player.yRotO=yaw;mc.player.setXRot(38);mc.player.xRotO=38;}
     private static void checkIcons(Minecraft mc,com.mojang.blaze3d.platform.NativeImage image){
-        var layout=PlayerHudLayout.of(mc.getWindow().getGuiScaledWidth(),mc.getWindow().getGuiScaledHeight());
+        var layout=PlayerHud.layout(mc.getWindow().getGuiScaledWidth(),mc.getWindow().getGuiScaledHeight());
         double scale=layout.canvas().scale()*image.getWidth()/mc.getWindow().getGuiScaledWidth();
-        for(int row=0;row<2;row++){int count=0,x=(int)(layout.moneyX()*scale),y=(int)((layout.moneyY()+24*row)*scale);
-            for(int dy=0;dy<22*scale;dy++)for(int dx=0;dx<22*scale;dx++){int c=image.getPixelRGBA(x+dx,y+dy),r=c&255,g=c>>>8&255,b=c>>>16&255;if(g>160&&b>150&&r>130)count++;}
-            check(count>80,"Actual rendered "+(row==0?"banknote":"credit card")+" must contain visible vector pixels: "+count);
+        for(int row=0;row<2;row++){int count=0,x=(int)(layout.moneyX()*scale),y=(int)((layout.moneyY()+PlayerHudLayout.ROW_STEP*row)*scale);
+            for(int dy=0;dy<PlayerHudLayout.ICON_SIZE*scale;dy++)for(int dx=0;dx<PlayerHudLayout.ICON_SIZE*scale;dx++){int c=image.getPixelRGBA(x+dx,y+dy),r=c&255,g=c>>>8&255,b=c>>>16&255;if(g>160&&b>150&&r>130)count++;}
+            check(count>40,"Actual rendered "+(row==0?"banknote":"credit card")+" must contain visible vector pixels: "+count);
         }
     }
     private static void member(Minecraft mc)throws Exception{
