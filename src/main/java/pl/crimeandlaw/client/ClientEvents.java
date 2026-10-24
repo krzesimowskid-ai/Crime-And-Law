@@ -20,6 +20,7 @@ public final class ClientEvents {
     }
     @EventBusSubscriber(modid="crimeandlaw",value=Dist.CLIENT)
     public static final class Gameplay {
+        @SubscribeEvent public static void screen(ScreenEvent.Opening event){if(event.getNewScreen()!=null&&event.getNewScreen().getClass()==net.minecraft.client.gui.screens.ChatScreen.class)event.setNewScreen(new RpChatScreen(((pl.crimeandlaw.mixin.client.ChatScreenAccess)event.getNewScreen()).crimeandlaw$initial()));}
         @SubscribeEvent public static void tick(ClientTickEvent.Post event){
             Minecraft mc=Minecraft.getInstance();
             if(mc.player!=null&&mc.level!=null&&!mc.options.hideGui)ClientMinimap.tick();
@@ -29,7 +30,7 @@ public final class ClientEvents {
             }
         }
         @SubscribeEvent public static void logout(ClientPlayerNetworkEvent.LoggingOut event){
-            HudClock.INSTANCE.clear();HudMoney.clear();ClientMinimap.clear();ClientState.state=new com.google.gson.JsonObject();ClientState.message="";GangNetwork.clearClientTransfers();LogoTexture.clear();BannerTexture.clear();TerrainClient.clear();CaptureClient.clear();
+            ChatView.clear();HudClock.INSTANCE.clear();HudMoney.clear();ClientMinimap.clear();ClientState.state=new com.google.gson.JsonObject();ClientState.message="";GangNetwork.clearClientTransfers();LogoTexture.clear();BannerTexture.clear();TerrainClient.clear();CaptureClient.clear();
         }
     }
 }

@@ -1,7 +1,7 @@
 # Crime And Law
 
 Autorski mod gangsterski: panel gangów, członkostwo i własny wygląd menu.
-Wersja **0.1.32**.
+Wersja **0.1.33**.
 
 Pierwsza propozycja własnej ekonomii w dolarach i rozwoju terenów:
 [Balans terytoriów](docs/BALANS_TERYTORIOW.md) oraz
@@ -15,9 +15,9 @@ Przejmowanie terenów, zegar świata oraz oznaczenia mapy już działają:
 ## Uruchomienie
 
 - Minecraft **1.21.1**, Java **21**, NeoForge **21.1.248**.
-- Włóż `crimeandlaw-0.1.32.jar` do `mods`, zastępując poprzedni JAR tego moda.
+- Włóż `crimeandlaw-0.1.33.jar` do `mods`, zastępując poprzedni JAR tego moda.
 - W rozgrywce sieciowej mod musi być **u graczy i na serwerze**.
-  **0.1.32 korzysta z protokołu 19** — wymaga tej samej wersji na obu stronach.
+  **0.1.33 korzysta z protokołu 19** — wymaga tej samej wersji na obu stronach.
   Starsze wersje od 0.1.26 do 0.1.28 używają protokołu 16.
 - W świecie jednoosobowym część serwerowa działa razem ze światem.
 - **G** otwiera panel; skrót można zmienić w sterowaniu. Esc lub X zamyka okno.
@@ -33,8 +33,8 @@ z gładką czcionką i szczegółowymi ikonami. Nad nimi są godzina, data i pol
 dzień tygodnia, według czasu i strefy serwera. Serwer synchronizuje zegar
 co około 30 sekund oraz po zmianie strefy. Temperatura i pogoda są planowane
 na później. Nie wymaga otwierania panelu ani członkostwa w gangu. HUD jest
-ukryty przy F1 i w otwartych ekranach. W grze nieaktywne wiadomości czatu
-są przesunięte ponad nowy HUD; otwarty czat zachowuje zwykłe położenie.
+ukryty przy F1 i w menu, a pozostaje widoczny podczas pisania na czacie.
+Mapa i liczniki są bliżej lewego dolnego narożnika: margines sześciu jednostek.
 Rozmiar minimapy jest niezależny od skali menu, a pozycja pieniędzy uwzględnia
 faktyczną skalę waniliowego hotbara i statystyk.
 
@@ -50,6 +50,19 @@ Nie ma jeszcze przelewów między gotówką i bankiem. Komendy administratora:
 Poprzednia postać komendy bez nazwy konta nadal dodaje środki do banku.
 Wpłaty i wypłaty gangu oraz premie korzystają z banku. Szczegóły nowych
 paneli: [HUD, czarna lista i cele](docs/HUD_CZARNA_LISTA_CELE.md).
+
+
+## Czat
+
+Czat ma kompaktowy układ w lewym górnym rogu, gładką czcionkę, godziny
+wiadomości, kolory i półprzezroczyste tło. T otwiera pisanie, / rozpoczyna
+komendę. Enter albo strzałka przy polu wysyła, Esc zamyka. Strzałki góra/dół
+przeglądają wysłane teksty, kółko i Page Up/Down przewijają historię.
+Pasek historii można przeciągać. Tab podpowiada nazwy i komendy serwera.
+Klikalne komponenty i ich podpowiedzi są zachowane. Zębatka otwiera
+ustawienia czatu; szerokość, skala, odstępy, kolory i przezroczystość są
+respektowane. Zmiana GUI zachowuje szkic. Podczas pisania minimapa, salda
+i zegar nie znikają. Szczegóły: [Czat](docs/CZAT.md).
 
 ## Panel gangu
 
@@ -225,7 +238,7 @@ Windows: gradlew.bat build
 Linux/macOS: ./gradlew build
 ```
 
-Wynik: `build/libs/crimeandlaw-0.1.32.jar`.
+Wynik: `build/libs/crimeandlaw-0.1.33.jar`.
 Gradle Wrapper 9.2.1, ModDevGradle 2.0.148, NeoForge 21.1.248.
 `./gradlew test` sprawdza model, migrację zapisów, duże listy i prywatność
 zgłoszeń, walidację/edycję logo, kolory oraz skalowanie menu.

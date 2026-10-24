@@ -1,4 +1,4 @@
-Subset of DejaVu Sans Bold used only by the Crime And Law HUD.
+Subsets of DejaVu Sans Bold (HUD) and DejaVu Sans Regular (chat).
 Source: DejaVu fonts, https://dejavu-fonts.github.io/
 Glyph subset generated with fontTools; outlines unchanged.
 

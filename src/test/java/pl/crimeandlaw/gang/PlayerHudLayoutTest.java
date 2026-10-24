@@ -12,7 +12,7 @@ class PlayerHudLayoutTest {
             assertTrue(layout.mapX()*scale>=0);assertTrue((layout.mapY()+PlayerHudLayout.MAP_HEIGHT+2)*scale<nativeGui[1]);
             assertTrue(layout.clockY()*scale>=0);assertTrue((layout.moneyX()+PlayerHudLayout.MONEY_WIDTH)*scale<nativeGui[0]);
             if((layout.moneyX()+PlayerHudLayout.MONEY_WIDTH)*scale>nativeGui[0]/2.0-96)assertTrue((layout.moneyY()+PlayerHudLayout.MONEY_HEIGHT)*scale<=nativeGui[1]-59.9);
-            assertTrue(nativeGui[1]-40+layout.chatShift()<=Math.min(layout.clockY(),layout.mapY())*scale-9);
+            assertEquals(6,layout.mapX());assertEquals(6,layout.canvas().canvasHeight()-layout.mapY()-PlayerHudLayout.MAP_HEIGHT);
         }
     }
     @Test void compactNormalAmountsCanStayBesideTheMapAtLargeGuiScale(){

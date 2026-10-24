@@ -727,3 +727,17 @@ gdy właściwe systemy własności oraz mapy będą rozwijane.
   wznowić wykonanie ustalonego zakresu.
 - Zegar pochodzi z czasu i strefy serwera. Ma osobny mały pakiet.
   Protokół 19, schemat zapisu 4.
+
+
+## Czat u góry i HUD podczas pisania — 0.1.33
+
+- Użytkownik zamówił czat w stylu Majestic RP, w lewym górnym rogu,
+  z działającą obsługą pisania i historii. Wybrany układ to klasyczna lista
+  wiadomości i pole poniżej. Nie dodawać pozornych kanałów frakcji, których
+  mechaniki nie istnieją jeszcze w modzie.
+- Otwarty czat nie ma ukrywać minimapy, gotówki, banku ani zegara.
+- Cały dolny HUD przesunięto bliżej lewego dolnego rogu: margines 6
+  zamiast 14 jednostek od lewej i 18 od dołu.
+- Zachowano natywny transport czatu, komendy, podpisy wiadomości, historię,
+  usuwanie wiadomości, klikalne komponenty i kolejkę opóźnionych wiadomości.
+- Protokół 19 i schemat zapisu 4 pozostają.

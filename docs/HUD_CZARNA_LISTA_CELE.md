@@ -1,4 +1,4 @@
-# HUD, czarna lista i cele — 0.1.32
+# HUD, czarna lista i cele — 0.1.33
 
 ## Minimapka i liczniki
 
@@ -26,10 +26,10 @@ płótnie 128 jednostek i skalowane wraz z całym HUD-em. Układ uwzględnia
 faktyczny rozmiar waniliowego hotbara, serc i pancerza, a pozycję dobiera
 do rzeczywistej szerokości kwot i daty. Wiersz licznika ma odstęp 14 jednostek,
 ikona 14 jednostek, tekst skaluje się do 0,70 względem czcionki HUD.
-Są znacznie mniejsze od 0.1.31; chip i ramka banknotu mają dodatkowe detale. Nieaktywny czat jest
-odsunięty ponad HUD; po otwarciu czatu jego zwykłe położenie pozostaje.
+Są znacznie mniejsze od 0.1.31; chip i ramka banknotu mają dodatkowe detale. Czat jest
+w lewym górnym rogu, a otwarcie pisania zachowuje cały dolny HUD.
 
-Nowy HUD jest ukryty przy F1 oraz w otwartych ekranach. Waniliowe serca,
+Nowy HUD jest ukryty przy F1 i w menu; jest widoczny w otwartym czacie. Waniliowe serca,
 głód i hotbar pozostają dostępne. Dane pieniędzy są oddzielnym prywatnym
 pakietem dwóch liczb, bez retransmisji logo czy banera.
 

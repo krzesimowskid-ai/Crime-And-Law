@@ -9,9 +9,7 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RenderGuiEvent;
-import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
-import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
-import net.neoforged.bus.api.EventPriority;
+import net.minecraft.client.gui.screens.ChatScreen;
 import pl.crimeandlaw.gang.GangFinances;
 
 @EventBusSubscriber(modid="crimeandlaw",value=Dist.CLIENT)
@@ -20,16 +18,11 @@ public final class PlayerHud {
     private static final float MONEY_SCALE=.70f;
     private PlayerHud(){}
     @SubscribeEvent public static void render(RenderGuiEvent.Post event){
-        var mc=Minecraft.getInstance();if(mc.player==null||mc.level==null||mc.screen!=null||mc.options.hideGui)return;
+        var mc=Minecraft.getInstance();if(mc.player==null||mc.level==null||mc.screen!=null&&!(mc.screen instanceof ChatScreen)||mc.options.hideGui)return;
         var g=event.getGuiGraphics();var hud=layout(g);var layout=hud.canvas();int x=hud.mapX(),y=hud.mapY();
         g.pose().pushPose();g.pose().scale(layout.scale(),layout.scale(),1);
         try{ClientMinimap.draw(g,x,y,PlayerHudLayout.MAP_WIDTH,PlayerHudLayout.MAP_HEIGHT,layout.scale(),event.getPartialTick().getGameTimeDeltaPartialTick(false));clock(g,hud.moneyX(),hud.clockY());money(g,hud.moneyX(),hud.moneyY(),false);money(g,hud.moneyX(),hud.moneyY()+PlayerHudLayout.ROW_STEP,true);}
         finally{g.pose().popPose();}
-    }
-    @SubscribeEvent(priority=EventPriority.LOWEST) public static void chat(RenderGuiLayerEvent.Pre event){
-        var mc=Minecraft.getInstance();if(!event.getName().equals(VanillaGuiLayers.CHAT)||mc.player==null||mc.screen!=null||mc.options.hideGui)return;
-        var g=event.getGuiGraphics();int shift=layout(g).chatShift();if(shift==0)return;
-        event.setCanceled(true);g.pose().pushPose();try{g.pose().translate(0,shift,0);event.getLayer().render(g,event.getPartialTick());}finally{g.pose().popPose();}
     }
     private static Component amount(boolean bank){return Component.literal(HudMoney.ready?GangFinances.format(bank?HudMoney.bank:HudMoney.cash):"—").setStyle(HUD_FONT);}
     static PlayerHudLayout layout(GuiGraphics g){

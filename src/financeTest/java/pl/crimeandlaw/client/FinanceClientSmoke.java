@@ -9,6 +9,10 @@ import net.minecraft.client.gui.components.*;
 import net.minecraft.client.gui.screens.*;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.multiplayer.resolver.ServerAddress;
+import net.minecraft.network.chat.*;
+import net.minecraft.ChatFormatting;
+import org.lwjgl.glfw.GLFW;
+import pl.crimeandlaw.mixin.client.ChatComponentAccess;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -29,7 +33,7 @@ public final class FinanceClientSmoke {
             if(start==0){start=System.nanoTime();Files.createDirectories(OUT);}
             check(System.nanoTime()-start<360_000_000_000L,"Client timeout stage "+step+" / "+ClientState.message);
             if(++frames%6!=0)return;
-            if(!pending.isEmpty()){try(var image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(OUT.resolve(ROLE+"-"+pending+".png"));if(pending.equals("hud-clean-scale2"))checkIcons(mc,image);}pending="";}
+            if(!pending.isEmpty()){try(var image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(OUT.resolve(ROLE+"-"+pending+".png"));if(pending.equals("hud-clean-scale2")||pending.equals("chat-open-scale2")||pending.equals("chat-open-scale4"))checkIcons(mc,image);}pending="";}
             if(mc.screen instanceof AccessibilityOnboardingScreen onboarding){mc.options.onboardingAccessibilityFinished();onboarding.onClose();return;}
             if(mc.screen instanceof DisconnectedScreen)throw new AssertionError("Disconnected at stage "+step);
             if(step<0){
@@ -86,10 +90,27 @@ public final class FinanceClientSmoke {
             case 39->{mc.setScreen(null);HudMoney.ready=false;pending="hud-loading-balances";step=40;}
             case 40->{HudMoney.receive(new GangNetwork.Money(1235,19500));Files.writeString(OUT.resolve("clock-change.ready"),"ready");step=41;}
             case 41->{if(!HudClock.INSTANCE.zoneId().equals("Pacific/Auckland"))return;pending="hud-server-timezone";Files.writeString(OUT.resolve("clock-restore.ready"),"ready");step=42;}
-            case 42->{if(!HudClock.INSTANCE.zoneId().equals("Europe/Warsaw"))return;Files.writeString(OUT.resolve("owner.PASS"),"Financial TCP checks; compact cash/bank HUD at GUI 2/4; actual server clock and live timezone changes; synthetic client-only representative and maximum values; four compass headings; F1, chat, loading; live minimap, blacklist, goals.\n");done=true;mc.stop();}
+            case 42->{if(!HudClock.INSTANCE.zoneId().equals("Europe/Warsaw"))return;mc.options.guiScale().set(2);mc.resizeDisplay();mc.setScreen(new ChatScreen(""));check(mc.screen instanceof RpChatScreen,"T opens the custom upper-left chat");((ChatScreen)mc.screen).handleChatInput("Test czatu 033 — ąćęłńóśźż",true);mc.setScreen(null);mc.setScreen(new ChatScreen("robocza wiadomość"));seedChat(mc);pending="chat-open-scale2";step=43;}
+            case 43->{if(!hasChat(mc,"Test czatu 033"))return;var chat=(ChatScreen)mc.screen;chat.keyPressed(GLFW.GLFW_KEY_UP,0,0);check(chatInput(mc).getValue().contains("Test czatu 033"),"Up recalls the actual sent message");chat.keyPressed(GLFW.GLFW_KEY_DOWN,0,0);check(chatInput(mc).getValue().equals("robocza wiadomość"),"Down restores the draft");chatInput(mc).setValue("/crimeandlaw p");step=44;}
+            case 44->{pending="chat-command-suggestions";step=45;}
+            case 45->{mc.screen.keyPressed(GLFW.GLFW_KEY_TAB,0,0);check(chatInput(mc).getValue().contains("pieniadze"),"Native command completion works in the new input");chatInput(mc).setValue("robocza wiadomość");mc.gui.getChat().scrollChat(7);check(ChatView.scrollOffset()==7,"Wheel/page scroll changes the visible history");pending="chat-scroll";step=46;}
+            case 46->{mc.gui.getChat().addMessage(Component.literal("Nowa wiadomość podczas czytania historii."));step=47;}
+            case 47->{check(ChatView.scrollOffset()>=7,"Incoming messages preserve the reading position");mc.options.guiScale().set(4);mc.resizeDisplay();check(chatInput(mc).getValue().equals("robocza wiadomość"),"Changing GUI scale preserves the draft");pending="chat-open-scale4";step=48;}
+            case 48->{chatInput(mc).setValue("x".repeat(300));check(chatInput(mc).getValue().length()==256,"Chat preserves the real packet text limit");chatInput(mc).setValue("robocza wiadomość");mc.gui.getChat().resetChatScroll();mc.gui.getChat().addMessage(Component.literal("Kliknij: ").append(Component.literal("pomoc").withStyle(s->s.withColor(0x9DCBEA).withUnderlined(true).withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND,"/help")).withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,Component.literal("Podpowiedź polecenia"))))));pending="chat-link";step=49;}
+            case 49->{var l=ChatView.layout(true);double x=(l.x()+43+ChatFonts.get().width("Kliknij: ")+5)*l.scale(),y=(l.historyY()+(l.lines()-1)*l.lineHeight()+6)*l.scale();mc.screen.mouseClicked(x,y,0);check(chatInput(mc).getValue().equals("/help"),"Clicking a message preserves its suggestion action");mc.screen.keyPressed(GLFW.GLFW_KEY_ESCAPE,0,0);check(mc.screen==null,"Escape closes chat");pending="chat-closed";step=50;}
+            case 50->{mc.setScreen(new ChatScreen("/"));check(chatInput(mc).getValue().equals("/"),"Slash shortcut preserves its initial command prefix");chatInput(mc).setValue("Test przycisku wysyłania 033");var l=ChatView.layout(true);mc.screen.mouseClicked((l.x()+l.width()-12)*l.scale(),(l.inputY()+12)*l.scale(),0);check(mc.screen==null,"Send button submits and closes once");step=51;}
+            case 51->{if(!hasChat(mc,"Test przycisku wysyłania 033"))return;pending="chat-sent";step=52;}
+            case 52->{mc.setScreen(new ChatScreen("szkic po ustawieniach"));var signature=new MessageSignature(new byte[256]);mc.gui.getChat().addMessage(Component.literal("Usuwalna wiadomość testowa 033"),signature,null);mc.gui.getChat().deleteMessage(signature);step=53;}
+            case 53->{if(hasChat(mc,"Usuwalna wiadomość testowa 033"))return;pending="chat-deleted-message";step=54;}
+            case 54->{var l=ChatView.layout(true);mc.screen.mouseClicked((l.x()+l.width()-12)*l.scale(),(l.y()+6)*l.scale(),0);check(mc.screen instanceof net.minecraft.client.gui.screens.options.ChatOptionsScreen,"Gear opens real chat settings");mc.screen.onClose();check(mc.screen instanceof RpChatScreen&&chatInput(mc).getValue().equals("szkic po ustawieniach"),"Returning from settings keeps the input draft");step=55;}
+            case 55->{var l=ChatView.layout(true);mc.screen.mouseClicked((l.x()+l.width()+4)*l.scale(),(l.historyY()+2)*l.scale(),0);check(ChatView.scrollOffset()>0,"Scrollbar click selects older history");mc.screen.mouseDragged((l.x()+l.width()+4)*l.scale(),(l.historyY()+l.historyHeight())*l.scale(),0,0,20);mc.screen.mouseReleased(0,0,0);check(ChatView.scrollOffset()==0,"Dragging the scrollbar reaches the newest row");pending="chat-settings-return";step=56;}
+            case 56->{Files.writeString(OUT.resolve("owner.PASS"),"Financial TCP checks; HUD/clock/minimap at GUI 2/4 with focused chat; actual native chat sends and echo; history/draft; completion; wheel and scrollbar; clickable component; native message deletion; GUI resize; settings round trip; send button; clock zone changes; blacklist and goals.\n");done=true;mc.stop();}
         }
     }
     private static void look(Minecraft mc,float yaw){mc.player.setYRot(yaw);mc.player.yRotO=yaw;mc.player.setXRot(38);mc.player.xRotO=38;}
+    private static EditBox chatInput(Minecraft mc){return mc.screen.children().stream().filter(EditBox.class::isInstance).map(EditBox.class::cast).findFirst().orElseThrow();}
+    private static boolean hasChat(Minecraft mc,String text){return ((ChatComponentAccess)mc.gui.getChat()).crimeandlaw$messages().stream().anyMatch(m->m.content().getString().contains(text));}
+    private static void seedChat(Minecraft mc){for(int i=0;i<20;i++)mc.gui.getChat().addMessage(Component.literal("Gracz "+i+": ").withStyle(ChatFormatting.AQUA).append(Component.literal(i%4==0?"Dłuższa wiadomość po polsku: spotykamy się przy bazie, sprawdzamy teren i ruszamy razem. Łódź, środa, zażółć gęślą jaźń.":"Spotykamy się przy bazie. Wiadomość "+i).withStyle(ChatFormatting.WHITE)));}
     private static void checkIcons(Minecraft mc,com.mojang.blaze3d.platform.NativeImage image){
         var layout=PlayerHud.layout(mc.getWindow().getGuiScaledWidth(),mc.getWindow().getGuiScaledHeight());
         double scale=layout.canvas().scale()*image.getWidth()/mc.getWindow().getGuiScaledWidth();

@@ -1,0 +1,21 @@
+{
+  "tests": 159,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "version": "0.1.33",
+  "protocol": 19,
+  "schema": 4,
+  "bytes": 2120793,
+  "sha256": "fca43da09c76a8b6bd3fd69add2bd9be09099230fede965e385169557cfa44ef",
+  "nested_libraries": 15,
+  "network": "PASS",
+  "restart": "PASS",
+  "focused_chat_hud": "GUI 2/4; rendered icons verified",
+  "native_chat_send_echo": "PASS",
+  "history_draft_tab": "PASS",
+  "clickable_component": "PASS",
+  "native_message_deletion": "PASS",
+  "settings_and_scrollbar": "PASS",
+  "hud_margin_logical": 6
+}
