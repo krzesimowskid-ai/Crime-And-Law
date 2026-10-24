@@ -1,0 +1,75 @@
+{
+  "version": "0.1.34",
+  "minecraft": "1.21.1",
+  "neoforge": "21.1.248",
+  "java": 21,
+  "protocol": 19,
+  "dataSchema": 4,
+  "build": "PASS",
+  "junit": {
+    "tests": 162,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "renderer": {
+    "result": "PASS",
+    "type": "Actual Minecraft renderer, real window resizing, one localhost TCP client and dedicated server; local capture display payload fixture",
+    "cases": [
+      {
+        "case": "hidden-chat",
+        "geometry": "CaptureHudLayout[x=74, y=12, width=280, height=40] image=855x481 gui=428x241",
+        "result": "PASS"
+      },
+      {
+        "case": "large-gui2",
+        "geometry": "CaptureHudLayout[x=361, y=12, width=280, height=40] image=1920x1080 gui=960x540",
+        "result": "PASS"
+      },
+      {
+        "case": "large-gui4",
+        "geometry": "CaptureHudLayout[x=184, y=12, width=280, height=40] image=1920x1080 gui=480x270",
+        "result": "PASS"
+      },
+      {
+        "case": "minimum-closed",
+        "geometry": "CaptureHudLayout[x=125, y=12, width=185, height=40] image=640x480 gui=320x240",
+        "result": "PASS"
+      },
+      {
+        "case": "minimum-open",
+        "geometry": "CaptureHudLayout[x=125, y=12, width=185, height=40] image=640x480 gui=320x240",
+        "result": "PASS"
+      },
+      {
+        "case": "small-closed",
+        "geometry": "CaptureHudLayout[x=164, y=12, width=254, height=40] image=855x481 gui=428x241",
+        "result": "PASS"
+      },
+      {
+        "case": "small-open",
+        "geometry": "CaptureHudLayout[x=164, y=12, width=254, height=40] image=855x481 gui=428x241",
+        "result": "PASS"
+      }
+    ],
+    "pixelChecks": [
+      "Capture border visible",
+      "Both money icons visible with threshold proportional to pixel area"
+    ],
+    "screenshotsInspected": [
+      "small-closed",
+      "small-open",
+      "minimum-open",
+      "large-gui4"
+    ]
+  },
+  "jar": {
+    "name": "crimeandlaw-0.1.34.jar",
+    "bytes": 2122623,
+    "sha256": "268e47b34bc2c1abbeff715ea0efdb3f8e32c618d2b0f7034f1147aa511f9aea",
+    "crc": "PASS",
+    "nestedJars": 15,
+    "nestedCrc": "PASS",
+    "smokeClasses": 0
+  }
+}

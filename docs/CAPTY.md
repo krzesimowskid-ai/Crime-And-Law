@@ -39,6 +39,10 @@ złotą obramówką mapy. Uczestnicy mają HUD z fazą i czasem oraz kolorowe na
 gangu i symbol sojusznika/wroga nad postaciami. Brak obrażeń PvP od graczy
 niezapisanych do wydarzenia, friendly fire i PvP przed fazą walki.
 
+Pasek fazy i czasu pozostaje widoczny po otwarciu czatu. Przy małym oknie
+uwzględnia kolumnę wiadomości, przesuwa się w wolne miejsce po prawej
+i dopasowuje szerokość oraz tekst, aby oba elementy nie nachodziły na siebie.
+
 ## Domyślne ustawienia
 
 | Parametr | Wartość |

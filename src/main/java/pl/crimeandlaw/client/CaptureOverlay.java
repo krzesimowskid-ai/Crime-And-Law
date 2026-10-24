@@ -1,6 +1,9 @@
 package pl.crimeandlaw.client;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.api.distmarker.Dist;
@@ -14,15 +17,22 @@ public final class CaptureOverlay {
     private CaptureOverlay(){}
     @SubscribeEvent public static void hud(RenderGuiEvent.Post event){
         var mc=Minecraft.getInstance();var b=CaptureClient.ownBattle();
-        if(mc.player==null||mc.screen!=null||mc.options.hideGui||b==null)return;
-        var g=event.getGuiGraphics();int width=Math.min(280,g.guiWidth()-20),x=(g.guiWidth()-width)/2,y=12;
+        if(mc.player==null||mc.screen!=null&&!(mc.screen instanceof ChatScreen)||mc.options.hideGui||b==null)return;
+        var g=event.getGuiGraphics();var layout=CaptureHudLayout.of(g.guiWidth(),ChatView.hidden()?null:ChatView.layout(false));
+        int width=layout.width(),x=layout.x(),y=layout.y();
         var gang=ClientState.gang();int color=gang==null?0xA3425D:gang.mapColor;
-        g.fill(x,y,x+width,y+40,0xDD181A23);g.fill(x,y,x+width,y+2,0xFF000000|color);
+        g.fill(x,y,x+width,y+layout.height(),0xDD181A23);g.fill(x,y,x+width,y+2,0xFF000000|color);
         String phase=switch(b.get("phase").getAsString()){case "CLAIMING"->"Przejmowanie terenu";case "PREPARING"->"Przygotowanie do walki";default->"Walka o teren";};
-        g.drawCenteredString(mc.font,phase+" · "+CaptureClient.duration(b.get("remaining").getAsLong()),x+width/2,y+8,0xFFF0EBF1);
+        fitted(g,mc.font,phase+" · "+CaptureClient.duration(b.get("remaining").getAsLong()),x,y+8,width,0xFFF0EBF1);
         String status=b.get("eliminated").getAsBoolean()?"Wyeliminowano — poczekaj na koniec captu":!b.get("present").getAsBoolean()?"Wróć do strefy "+b.get("x")+", "+b.get("z"):
             b.get("holding").getAsLong()>0?"Utrzymanie: "+b.get("holding")+" / "+b.get("holdRequired")+" s":"Chunk "+b.get("x")+", "+b.get("z");
-        g.drawCenteredString(mc.font,mc.font.plainSubstrByWidth(status,width-12),x+width/2,y+24,0xFFBDB5C7);
+        fitted(g,mc.font,status,x,y+24,width,0xFFBDB5C7);
+    }
+    private static void fitted(GuiGraphics g,Font font,String text,int x,int y,int width,int color){
+        float scale=Math.min(1,Math.max(1,width-12)/(float)Math.max(1,font.width(text)));
+        g.pose().pushPose();
+        try{g.pose().translate(x+width/2f,y+(1-scale)*font.lineHeight/2,0);g.pose().scale(scale,scale,1);g.drawCenteredString(font,text,0,0,color);}
+        finally{g.pose().popPose();}
     }
     @SubscribeEvent public static void name(RenderNameTagEvent event){
         if(!(event.getEntity() instanceof Player target))return;

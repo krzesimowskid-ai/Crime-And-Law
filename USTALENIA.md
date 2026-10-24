@@ -741,3 +741,12 @@ gdy właściwe systemy własności oraz mapy będą rozwijane.
 - Zachowano natywny transport czatu, komendy, podpisy wiadomości, historię,
   usuwanie wiadomości, klikalne komponenty i kolejkę opóźnionych wiadomości.
 - Protokół 19 i schemat zapisu 4 pozostają.
+
+## Czat i pasek captu przy małym oknie — 0.1.34
+
+- Zrzut użytkownika 855×481 pokazał nakładanie się wiadomości na pasek captu.
+- Panel captu rezerwuje kolumnę czatu, przesuwa się w prawo i zwęża,
+  gdy brakuje miejsca. Długie napisy dopasowują skalę do panelu.
+- Capt pozostaje widoczny podczas pisania, w tej samej pozycji co przed
+  otwarciem czatu. Ukryty czat nie rezerwuje miejsca.
+- Zmiana dotyczy układu i widoczności klienta. Protokół 19, schemat danych 4.

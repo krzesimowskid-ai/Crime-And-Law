@@ -1,4 +1,4 @@
-# Czat — 0.1.33
+# Czat — 0.1.34
 
 Klasyczny kompaktowy układ w lewym górnym rogu, inspirowany Majestic RP:
 gładka czcionka, godziny wiadomości, kolory, półprzezroczystość i pole pod
@@ -19,6 +19,12 @@ Nie dodano pozornych kanałów frakcji lub rodziny bez odpowiednich mechanik.
 Minimapa, pieniądze i zegar pozostają widoczne podczas pisania. Dolny HUD
 ma margines sześciu jednostek od lewej i od dołu. F1 i pozostałe menu nadal
 kontrolują widoczność HUD-u. Nie ma przyciemnienia całego świata przy czacie.
+
+Pasek captu rezerwuje miejsce na całą szerokość czatu wraz z tłem i paskiem
+przewijania. Gdy wyśrodkowany panel by nachodził na czat, przesuwa się
+w prawo i w razie potrzeby zwęża. Nagłówek i status mieszczą się w jego
+szerokości dzięki dopasowaniu skali tekstu. Otwieranie czatu nie przesuwa
+ani nie ukrywa captu. Przy ukrytym czacie panel pozostaje wyśrodkowany.
 
 ## Zgodność i granice
 
