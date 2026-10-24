@@ -28,7 +28,15 @@ public final class WorldTimeCommands {
                 .executes(c->show(c.getSource()))
                 .then(Commands.argument("parametr",StringArgumentType.word()).suggests((c,b)->SharedSuggestionProvider.suggest(KEYS,b))
                     .then(Commands.argument("wartosc",IntegerArgumentType.integer(0,2592000))
-                        .executes(c->change(c.getSource(),StringArgumentType.getString(c,"parametr"),IntegerArgumentType.getInteger(c,"wartosc")))))));
+                        .executes(c->change(c.getSource(),StringArgumentType.getString(c,"parametr"),IntegerArgumentType.getInteger(c,"wartosc"))))))
+            .then(Commands.literal("lupy").executes(c->{
+                var player=c.getSource().getPlayerOrException();var directory=pl.crimeandlaw.gang.GangSavedData.get(player.server).directory;var gang=directory.of(player.getUUID());
+                if(!pl.crimeandlaw.gang.GangDirectory.allowed(gang,player.getUUID(),pl.crimeandlaw.gang.GangDirectory.Permission.ACCESS_STORAGE)){
+                    c.getSource().sendFailure(Component.literal("Nie masz dostępu do depozytu łupów gangu."));return 0;
+                }
+                var loot=CaptureLoot.get(player.server);int claimed=loot.claim(player,gang.id),remaining=loot.count(gang.id);
+                c.getSource().sendSuccess(()->Component.literal("Odebrano "+claimed+" szt. łupów. W depozycie pozostało "+remaining+" szt."),false);return claimed;
+            })));
     }
     private static List<String> zones(){var result=new ArrayList<>(ZoneId.getAvailableZoneIds());result.add("off");Collections.sort(result);return result;}
     private static int show(CommandSourceStack source){

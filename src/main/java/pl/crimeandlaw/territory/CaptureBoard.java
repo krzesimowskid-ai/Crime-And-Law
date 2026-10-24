@@ -10,7 +10,7 @@ public final class CaptureBoard {
     private static final Gson JSON=new Gson();
     public enum Phase { CLAIMING, PREPARING, FIGHTING }
     public record Person(UUID gang,boolean present){}
-    public record Result(TerrainKey key,UUID previous,UUID winner,Set<UUID> gangs,String reason){}
+    public record Result(TerrainKey key,UUID event,UUID previous,UUID winner,Set<UUID> gangs,String reason){}
     public static final class Fighter {
         public UUID player,gang;public boolean eliminated;
         Fighter(UUID player,UUID gang){this.player=player;this.gang=gang;}
@@ -125,7 +125,7 @@ public final class CaptureBoard {
     private Result finish(Battle b,UUID winner,long now,String reason){
         for(UUID gang:b.absences.keySet())cooldowns.put(gang,Math.max(cooldowns.getOrDefault(gang,0L),now+b.rules.cooldownSeconds()*1000L));
         if(winner!=null)protections.put(b.key.storageKey(),now+b.rules.protectionSeconds()*1000L);
-        return new Result(b.key,b.previousOwner,winner,b.teams(),reason);
+        return new Result(b.key,b.id,b.previousOwner,winner,b.teams(),reason);
     }
     public String toJson(){return JSON.toJson(this);}
     public void cleanup(Set<UUID> existing){unlocked.retainAll(existing);cooldowns.keySet().removeIf(id->!existing.contains(id));}

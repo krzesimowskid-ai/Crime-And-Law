@@ -6,6 +6,8 @@ modId="crimeandlaw"
 version="0.1.25"
 displayName="Crime And Law"
 description='''Gangi graczy: własne logo, członkostwo i kompaktowy panel.'''
+[[mixins]]
+config="crimeandlaw.mixins.json"
 [[dependencies.crimeandlaw]]
 modId="neoforge"
 type="required"

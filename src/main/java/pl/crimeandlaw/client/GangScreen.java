@@ -346,7 +346,9 @@ public final class GangScreen extends Screen {
         var battle=current&&CaptureClient.state.has("battle")?CaptureClient.state.getAsJsonObject("battle"):null;
         if(battle!=null){
             boolean joined=battle.get("joined").getAsBoolean(),eliminated=battle.get("eliminated").getAsBoolean(),closed=battle.get("phase").getAsString().equals("FIGHTING");
-            button(right,bottom,space,eliminated?"Wyeliminowano":joined?"Uczestniczysz w capcie":closed?"Zapisy zakończone":"Dołącz do captu",b->CaptureClient.action("capture_join")).centered().active=!joined&&!closed&&CaptureClient.flag("present")&&can(Permission.JOIN_TERRITORY_ATTACK);
+            if(!CaptureClient.flag("unlocked")&&!joined&&!gang().id.toString().equals(CaptureClient.text("owner")))
+                button(right,bottom,space,"Aktywuj kontrolę terytoriów",b->CaptureClient.action("capture_unlock")).centered().active=isLeader()&&!closed;
+            else button(right,bottom,space,eliminated?"Wyeliminowano":joined?"Uczestniczysz w capcie":closed?"Zapisy zakończone":"Dołącz do captu",b->CaptureClient.action("capture_join")).centered().active=!joined&&!closed&&CaptureClient.flag("present")&&can(Permission.JOIN_TERRITORY_ATTACK);
         }else if(!CaptureClient.flag("unlocked")){
             button(right,bottom,space,"Aktywuj kontrolę terytoriów",b->CaptureClient.action("capture_unlock")).centered().active=current&&isLeader();
         }else{

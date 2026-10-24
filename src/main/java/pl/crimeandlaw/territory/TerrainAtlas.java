@@ -13,6 +13,7 @@ public final class TerrainAtlas {
     public boolean remember(TerrainProfile profile){return profiles.putIfAbsent(profile.key().storageKey(),profile)==null;}
     public UUID owner(TerrainKey key){return owners.get(key.storageKey());}
     public boolean hasLand(UUID gang,String dimension){return owners.entrySet().stream().anyMatch(e->e.getKey().startsWith(dimension+"|")&&e.getValue().equals(gang));}
+    public boolean releaseMissingOwners(Set<UUID> existing){return owners.values().removeIf(id->!existing.contains(id));}
     /** Only the authoritative capture controller may change ownership. */
     public void setOwner(TerrainKey key,UUID gang){
         if(get(key)==null)throw new IllegalArgumentException("Teren nie został jeszcze rozpoznany.");

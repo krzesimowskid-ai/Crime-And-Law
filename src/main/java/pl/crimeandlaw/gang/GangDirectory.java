@@ -21,7 +21,7 @@ public final class GangDirectory {
         MANAGE_THEME("Wygląd i logo gangu",PermissionGroup.PROPERTY,true),
         ASSIGN_ROLES("Zmiana rang członków",PermissionGroup.PERSONNEL,true),
         WARN_MEMBERS("Wydawanie ostrzeżeń",PermissionGroup.PERSONNEL,false),
-        ACCESS_STORAGE("Dostęp do magazynu",PermissionGroup.PROPERTY,false),
+        ACCESS_STORAGE("Dostęp do magazynu / depozytu łupów",PermissionGroup.PROPERTY,true),
         CRAFT_EQUIPMENT("Tworzenie przedmiotów z materiałów",PermissionGroup.PROPERTY,false),
         DEPOSIT_FUNDS("Wpłata środków na saldo",PermissionGroup.FINANCES,false),
         WITHDRAW_FUNDS("Wypłata środków z salda",PermissionGroup.FINANCES,false),

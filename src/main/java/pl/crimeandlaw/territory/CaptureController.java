@@ -11,6 +11,7 @@ import net.minecraft.world.level.GameRules;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
 import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
@@ -24,7 +25,9 @@ public final class CaptureController {
     private record Watch(TerrainKey key,TerrainViewport viewport,long tick){}
     private static final Map<ServerPlayer,Watch> watchers=new WeakHashMap<>();
     private static final Map<ServerPlayer,Boolean> audience=new WeakHashMap<>();
+    private static final Map<ServerPlayer,UUID> pendingDrops=new WeakHashMap<>();
     private static final Map<MinecraftServer,Long> lastTick=new WeakHashMap<>();
+    private static final Map<MinecraftServer,Set<UUID>> knownGangs=new WeakHashMap<>();
     private static final Gson JSON=new Gson();
     private CaptureController(){}
     public static void watch(ServerPlayer player,TerrainKey key,TerrainViewport viewport){watchers.put(player,new Watch(key,viewport,player.server.getTickCount()));send(player,key,"");}
@@ -101,6 +104,7 @@ public final class CaptureController {
             while(level.hasNext()){var next=level.next();if(next.dimension().location().toString().equals(result.key().dimension())){target=next;break;}}
             if(result.winner()!=null&&target!=null){
                 var terrain=TerrainSavedData.get(target);terrain.atlas.setOwner(result.key(),result.winner());terrain.setDirty();
+                CaptureLoot.get(server).collect(target,result.key(),result.event(),result.winner());
             }
             for(var gangId:result.gangs()){
                 var gang=directory.get(gangId);if(gang==null)continue;
@@ -112,6 +116,10 @@ public final class CaptureController {
         if(busy||!results.isEmpty())saved.setDirty();
         if(server.getTickCount()%20!=0)return;
         board.cleanup(existing);
+        if(!existing.equals(knownGangs.get(server))){
+            for(var level:server.getAllLevels()){var terrain=TerrainSavedData.get(level);if(terrain.atlas.releaseMissingOwners(existing))terrain.setDirty();}
+            knownGangs.put(server,Set.copyOf(existing));
+        }
         watchers.entrySet().removeIf(e->e.getKey().server==server&&(server.getTickCount()-e.getValue().tick()>100||e.getKey().hasDisconnected()||!e.getKey().serverLevel().dimension().location().toString().equals(e.getValue().key().dimension())));
         Set<ServerPlayer> sent=new HashSet<>();
         for(var e:watchers.entrySet())if(e.getKey().server==server){send(e.getKey(),e.getValue().key(),"");sent.add(e.getKey());}
@@ -177,7 +185,20 @@ public final class CaptureController {
         var directory=GangSavedData.get(server).directory;Set<UUID> teams=new HashSet<>(b.teams());if(b.previousOwner!=null)teams.add(b.previousOwner);
         for(UUID team:teams){var gang=directory.get(team);if(gang!=null)for(UUID id:gang.members.keySet()){var player=server.getPlayerList().getPlayer(id);if(player!=null)player.sendSystemMessage(Component.literal(text));}}
     }
-    @SubscribeEvent public static void death(LivingDeathEvent event){if(event.getEntity() instanceof ServerPlayer player)CaptureSavedData.get(player.server).board.eliminate(player.getUUID());}
+    @SubscribeEvent(priority=net.neoforged.bus.api.EventPriority.LOWEST) public static void death(LivingDeathEvent event){
+        if(!(event.getEntity() instanceof ServerPlayer player))return;
+        var board=CaptureSavedData.get(player.server).board;
+        for(var battle:board.battles()){
+            var fighter=battle.fighters.get(player.getUUID());
+            if(fighter!=null&&!fighter.eliminated&&player.chunkPosition().x==battle.key.x()&&player.chunkPosition().z==battle.key.z()
+                &&player.serverLevel().dimension().location().toString().equals(battle.key.dimension()))pendingDrops.put(player,battle.id);
+        }
+        board.eliminate(player.getUUID());
+    }
+    @SubscribeEvent(priority=net.neoforged.bus.api.EventPriority.LOWEST) public static void drops(LivingDropsEvent event){
+        if(!(event.getEntity() instanceof ServerPlayer player))return;UUID id=pendingDrops.remove(player);
+        if(id!=null)for(var drop:event.getDrops())drop.getPersistentData().putUUID(CaptureLoot.EVENT,id);
+    }
     @SubscribeEvent public static void damage(LivingIncomingDamageEvent event){
         if(!(event.getEntity() instanceof ServerPlayer victim)||!(event.getSource().getEntity() instanceof ServerPlayer attacker))return;
         for(var b:CaptureSavedData.get(victim.server).board.battles()){
@@ -187,6 +208,6 @@ public final class CaptureController {
             return;
         }
     }
-    @SubscribeEvent public static void stop(ServerStoppedEvent event){lastTick.remove(event.getServer());watchers.entrySet().removeIf(e->e.getKey().server==event.getServer());audience.keySet().removeIf(p->p.server==event.getServer());}
+    @SubscribeEvent public static void stop(ServerStoppedEvent event){lastTick.remove(event.getServer());knownGangs.remove(event.getServer());watchers.entrySet().removeIf(e->e.getKey().server==event.getServer());audience.keySet().removeIf(p->p.server==event.getServer());pendingDrops.keySet().removeIf(p->p.server==event.getServer());}
     private static void require(boolean condition,String text){if(!condition)throw new IllegalArgumentException(text);}
 }

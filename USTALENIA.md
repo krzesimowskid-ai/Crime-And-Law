@@ -1,10 +1,10 @@
 # Crime And Law — ustalenia projektu
 
-Stan projektu: 22 października 2026.
+Stan projektu: 24 października 2026.
 
 ## Status i sposób dalszej pracy
 
-To zapis pomysłów i decyzji użytkownika, a nie opis gotowego moda. Powstaje prototyp panelu gangów, obecnie wersja 0.1.17. 19 października użytkownik odłożył DarkPerazera i wrócił do Crime And Law. Zaakceptował rozpoczęcie od podstaw panelu gangów; obecnie doprecyzowuje jego wygląd. Dla pierwszego prototypu przyjęto Minecraft 1.21.1 i NeoForge 21.1.248: użytkownik polecił rozpoczęcie bez wskazania innej platformy. Jest to jawne założenie wykonawcze, nie wcześniejsza deklaracja użytkownika.
+To zapis pomysłów i decyzji użytkownika, a nie opis gotowego moda. Powstaje prototyp panelu gangów, obecnie wersja 0.1.25. 19 października użytkownik odłożył DarkPerazera i wrócił do Crime And Law. Zaakceptował rozpoczęcie od podstaw panelu gangów; obecnie doprecyzowuje jego wygląd. Dla pierwszego prototypu przyjęto Minecraft 1.21.1 i NeoForge 21.1.248: użytkownik polecił rozpoczęcie bez wskazania innej platformy. Jest to jawne założenie wykonawcze, nie wcześniejsza deklaracja użytkownika.
 
 Crime And Law jest nowym, osobnym modem. McArk pozostaje odłożony, zachowując cel odwzorowania ASA 1:1. Nie zmieniać projektu McArk w Crime And Law ani nie usuwać jego materiałów w ramach tej pracy.
 
@@ -607,3 +607,22 @@ gdy właściwe systemy własności oraz mapy będą rozwijane.
   nie zeruje zajętego slotu przed końcem operacji. Nadmiar zadań jest pomijany.
 - Protokół 14: numer żądania oraz większy bufor/limit JSON. Aktualizacja
   jest wymagana po stronie serwera i wszystkich klientów.
+
+
+## Capty, zegar i oznaczenia — 0.1.25
+
+- Użytkownik zlecił wdrożenie ustalonego przejmowania terenów: wydarzenie
+  czasowe, fizyczna obecność, rywalizacja PvP, ochrona i cooldown. Nie kupujemy
+  neutralnego chunka za surowce ani walutę. Brak NPC do obrony pustego pola.
+- Przyjęte czasy są roboczymi ustawieniami naszego moda, dostępnymi administratorowi,
+  a nie potwierdzeniem konfiguracji Majestic. Szczegóły: docs/CAPTY.md.
+- Polecenie strefy czasowej jest dla konsoli / istniejącego OP / właściciela
+  świata solo, bez własnej konfiguracji UUID. Doba świata może odpowiadać 24 h
+  w wybranej strefie; zwykłe tempo gry jest zachowane.
+- Prywatne i gangowe oznaczenia chunków z kołem kolorów współistnieją.
+  Nie odkrywają ani nie obrysowują automatycznie ukrytych baz.
+- Aktywacja kontroli pozostaje bezpłatna, dopóki nie ma ekonomii/reputacji.
+  Zamiast nieistniejącego magazynu w bazie działa trwały depozyt łupów,
+  odbierany komendą /crimeandlaw lupy zgodnie z uprawnieniami rangi.
+- Poziomy gangów, dolary, kwalifikacja bonusów, fizyczny magazyn oraz pozostałe
+  wcześniej zaplanowane systemy pozostają kolejnymi etapami. Transport ukryty.

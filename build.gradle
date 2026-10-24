@@ -14,12 +14,33 @@ def serverSmokeId = providers.gradleProperty('serverSmokeId').getOrElse('current
 def uiSmokeId = providers.gradleProperty('uiSmokeId').getOrElse('current')
 def networkSmoke = providers.gradleProperty('networkSmoke').isPresent()
 def networkSmokeId = providers.gradleProperty('networkSmokeId').getOrElse('net16a')
+def captureSmoke = providers.gradleProperty('captureSmoke').isPresent()
+def captureRole = providers.gradleProperty('captureRole').getOrElse('owner')
+if (captureSmoke) sourceSets.main.java.srcDir('src/captureTest/java')
 if (uiSmoke) sourceSets.main.java.srcDir('src/uiTest/java')
 if (serverSmoke) sourceSets.main.java.srcDir('src/serverTest/java')
 if (networkSmoke) sourceSets.main.java.srcDir('src/networkTest/java')
 neoForge {
     version = '21.1.248'
     runs {
+        if (captureSmoke) {
+            captureServer {
+                server(); programArgument '--nogui'
+                gameDirectory = file('run-capture-server')
+                jvmArgument '-Xmx1500m'
+                systemProperty 'crimeandlaw.captureSmoke', 'true'
+                systemProperty 'crimeandlaw.captureRestart', providers.gradleProperty('captureRestart').getOrElse('false')
+                systemProperty 'crimeandlaw.captureOutput', file('build/capture-smoke').absolutePath
+            }
+            captureClient {
+                client(); gameDirectory = file('run-capture-'+captureRole)
+                jvmArgument '-Xmx1300m'
+                systemProperty 'crimeandlaw.captureRole', captureRole
+                systemProperty 'crimeandlaw.captureOutput', file('build/capture-smoke').absolutePath
+                def user = captureRole == 'owner' ? 'CaptureOwner' : 'CaptureRival'
+                programArguments.addAll '--username', user, '--uuid', java.util.UUID.nameUUIDFromBytes(('OfflinePlayer:'+user).getBytes('UTF-8')).toString(), '--width', '1600', '--height', '900'
+            }
+        }
         client {
             client()
             if (uiSmoke) {
@@ -105,7 +126,8 @@ tasks.named('test') {
 // Keep fixture automation out of releases even after a prior smoke-test compile.
 tasks.named('jar') {
     exclude 'pl/crimeandlaw/client/GangUiSmokeTest*', 'pl/crimeandlaw/territory/TerrainServerSmoke*',
-        'pl/crimeandlaw/client/GangMultiplayerSmoke*', 'pl/crimeandlaw/gang/GangNetworkPersistenceSmoke*'
+        'pl/crimeandlaw/client/GangMultiplayerSmoke*', 'pl/crimeandlaw/gang/GangNetworkPersistenceSmoke*',
+        'pl/crimeandlaw/client/CaptureClientSmoke*', 'pl/crimeandlaw/territory/CaptureServerSmoke*'
 }
 tasks.named('wrapper') { distributionType = Wrapper.DistributionType.BIN }
 
