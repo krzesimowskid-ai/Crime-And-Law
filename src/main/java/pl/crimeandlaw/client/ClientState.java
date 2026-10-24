@@ -25,6 +25,7 @@ public final class ClientState {
         state=JsonParser.parseString(data).getAsJsonObject();message=state.get("message").getAsString();
         if(Minecraft.getInstance().screen instanceof GangScreen screen)screen.updated();
         else if(Minecraft.getInstance().screen instanceof FinanceResponseScreen screen)screen.updated();
+        else if(Minecraft.getInstance().screen instanceof BlacklistAddScreen screen)screen.updated();
     }
     public static void action(String action,JsonObject data){
         if(Minecraft.getInstance().getConnection()==null || !Minecraft.getInstance().getConnection().hasChannel(GangNetwork.Action.TYPE)){

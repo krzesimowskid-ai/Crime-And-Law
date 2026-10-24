@@ -4,7 +4,7 @@ Stan projektu: 24 października 2026.
 
 ## Status i sposób dalszej pracy
 
-To zapis pomysłów i decyzji użytkownika, a nie opis gotowego moda. Powstaje prototyp panelu gangów, obecnie wersja 0.1.29. 19 października użytkownik odłożył DarkPerazera i wrócił do Crime And Law. Zaakceptował rozpoczęcie od podstaw panelu gangów; obecnie doprecyzowuje jego wygląd. Dla pierwszego prototypu przyjęto Minecraft 1.21.1 i NeoForge 21.1.248: użytkownik polecił rozpoczęcie bez wskazania innej platformy. Jest to jawne założenie wykonawcze, nie wcześniejsza deklaracja użytkownika.
+To zapis pomysłów i decyzji użytkownika, a nie opis gotowego moda. Powstaje prototyp panelu gangów, obecnie wersja 0.1.30. 19 października użytkownik odłożył DarkPerazera i wrócił do Crime And Law. Zaakceptował rozpoczęcie od podstaw panelu gangów; obecnie doprecyzowuje jego wygląd. Dla pierwszego prototypu przyjęto Minecraft 1.21.1 i NeoForge 21.1.248: użytkownik polecił rozpoczęcie bez wskazania innej platformy. Jest to jawne założenie wykonawcze, nie wcześniejsza deklaracja użytkownika.
 
 Crime And Law jest nowym, osobnym modem. McArk pozostaje odłożony, zachowując cel odwzorowania ASA 1:1. Nie zmieniać projektu McArk w Crime And Law ani nie usuwać jego materiałów w ramach tej pracy.
 
@@ -676,3 +676,30 @@ gdy właściwe systemy własności oraz mapy będą rozwijane.
   z Majestic nie został wprowadzony. Limit 100 odbiorców jest limitem jednej
   transakcji, nie limitem liczebności gangu.
 - Schemat zapisu gangów 3; protokół sieciowy 17.
+
+
+## HUD, konta, czarna lista i cele — 0.1.30
+
+- Użytkownik zamówił minimapkę w stylu GTA V i obok osobne liczniki gotówki
+  oraz banku. Symbole: autorski banknot i karta kredytowa, czytelne jak
+  wcześniejsze symbole statystyk McArk. Nie przenosić całego HUD-u ASA.
+- Na tym etapie tylko wyświetlanie sald i zasilanie komendami, bez przelewów
+  między gotówką a bankiem. Istniejące operacje gangu pozostają bankowe.
+- Dotychczasowe saldo osobiste migruje do banku; gotówka zaczyna od zera.
+- Komentarz transakcji pozostaje opcjonalny: użytkownik rozważał jego
+  potrzebę, ale nie polecił usunięcia.
+- Użytkownik wybrał w pytaniu „Cele gangu”: **Postęp bez nagród**. Panel jest
+  tygodniowy; działa rekrutacja, udział w zakończonych captach i wygrane.
+  Robocze wymagania wykonawcze: odpowiednio 5 unikalnych osób, 5 akcji i 3 wygrane.
+  Nie są zatwierdzonym ostatecznym balansem. Brak nagród pieniężnych i rzeczowych.
+- Czarna lista jest przypisana do konkretnego gangu i do UUID. Obejmuje
+  dodawanie, zdejmowanie blokady, powód, autora, datę i osobną historię.
+  Blokuje zgłoszenie i przyjęcie; zmiana nicku nie obchodzi wpisu.
+- Użytkownik zlecił przegląd ekonomii pod kątem mnożenia pieniędzy. Sprawdzane
+  są kwoty, uprawnienia, tożsamość, powtórzenia, całość wypłat, granice sald,
+  migracja i cykl śmierć/respawn/restart. Nie obiecywać wykluczenia każdego
+  możliwego błędu na podstawie samych testów.
+- Publiczne materiały Majestic nie dały jednoznacznego potwierdzenia zasady
+  utraty zwykłych pieniędzy przy śmierci. W tym modzie oba salda są zachowane;
+  nie przedstawiać tego jako zweryfikowanej reguły Majestic.
+- Schemat danych 4, protokół 18.

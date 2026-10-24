@@ -18,6 +18,10 @@ public final class GangNetwork {
     public static final int ACTION_MAX_JSON=Math.max(GangLogo.MAX_ENCODED_LENGTH,GangBanner.MAX_ENCODED_LENGTH)+1024;
     public static final int STATE_MAX_JSON=GangLogo.MAX_ENCODED_LENGTH+GangBanner.MAX_ENCODED_LENGTH+200_000;
     private static final Gson JSON=new Gson();
+    public static Consumer<Money> moneyReceiver=ignored->{};
+    private static final Map<ServerPlayer,Money> moneySent=new WeakHashMap<>();
+    private static final Map<ServerPlayer,BlacklistView.Query> blacklistViews=new WeakHashMap<>();
+    private static final Map<ServerPlayer,String> activePanels=new WeakHashMap<>();
     public static Consumer<String> clientReceiver=ignored->{};
     public static Consumer<String> terrainReceiver=ignored->{};
     public static Consumer<String> captureReceiver=ignored->{};
@@ -55,6 +59,15 @@ public final class GangNetwork {
         };
         @Override public Type<? extends CustomPacketPayload> type(){return TYPE;}
     }
+    public record Money(long cash,long bank) implements CustomPacketPayload {
+        public Money {if(cash<0||bank<0||cash>GangFinances.MAX_BALANCE||bank>GangFinances.MAX_BALANCE)throw new IllegalArgumentException("Nieprawidłowe saldo.");}
+        public static final Type<Money> TYPE=new Type<>(ResourceLocation.fromNamespaceAndPath("crimeandlaw","money"));
+        public static final StreamCodec<RegistryFriendlyByteBuf,Money> CODEC=new StreamCodec<>(){
+            public Money decode(RegistryFriendlyByteBuf b){return new Money(b.readLong(),b.readLong());}
+            public void encode(RegistryFriendlyByteBuf b,Money value){b.writeLong(value.cash());b.writeLong(value.bank());}
+        };
+        @Override public Type<? extends CustomPacketPayload> type(){return TYPE;}
+    }
     public record Capture(String json) implements CustomPacketPayload {
         public static final int MAX_JSON=131_072;
         public static final Type<Capture> TYPE=new Type<>(ResourceLocation.fromNamespaceAndPath("crimeandlaw","capture"));
@@ -83,8 +96,9 @@ public final class GangNetwork {
         @Override public Type<? extends CustomPacketPayload> type(){return TYPE;}
     }
     public static void register(RegisterPayloadHandlersEvent event){
-        var registrar=event.registrar("17");
+        var registrar=event.registrar("18");
         registrar.playToServer(Action.TYPE,Action.CODEC,GangNetwork::handle);
+        registrar.playToClient(Money.TYPE,Money.CODEC,(p,c)->moneyReceiver.accept(p));
         registrar.playToClient(State.TYPE,State.CODEC,(p,c)->clientReceiver.accept(p.json));
         registrar.playToClient(Terrain.TYPE,Terrain.CODEC,(p,c)->terrainReceiver.accept(p.json));
         registrar.playToClient(Capture.TYPE,Capture.CODEC,(p,c)->captureReceiver.accept(p.json));
@@ -165,8 +179,13 @@ public final class GangNetwork {
             }
             if(action.equals("finance_view")){
                 if(d.of(actor)==null)throw new IllegalArgumentException("Najpierw dołącz do gangu.");
-                financeViews.put(player,financeViews.getOrDefault(player,FinanceView.Query.DEFAULT).update(a));sendState(player,"");return;
+                activePanels.put(player,"finances");financeViews.put(player,financeViews.getOrDefault(player,FinanceView.Query.DEFAULT).update(a));sendState(player,"");return;
             }
+            if(action.equals("blacklist_view")){
+                if(d.of(actor)==null)throw new IllegalArgumentException("Najpierw dołącz do gangu.");
+                activePanels.put(player,"blacklist");blacklistViews.put(player,blacklistViews.getOrDefault(player,BlacklistView.Query.DEFAULT).update(a));sendState(player,"");return;
+            }
+            if(action.equals("goals_view")){if(d.of(actor)==null)throw new IllegalArgumentException("Najpierw dołącz do gangu.");sendState(player,"");return;}
             if(Set.of("finance_deposit","finance_withdraw","finance_pay").contains(action)){
                 String token=financeTokens.get(player);
                 if(token==null||!token.equals(text(a,"financeToken")))throw new IllegalArgumentException("Odśwież dane przed następną transakcją.");
@@ -185,9 +204,14 @@ public final class GangNetwork {
                     }
                     d.finances.pay(d,actor,payments,text(a,"comment"));
                 }
+                case "blacklist_add" -> d.blacklistAdd(actor,d.resolvePlayer(text(a,"player")),text(a,"reason"));
+                case "blacklist_remove" -> d.blacklistRemove(actor,uuid(a,"target"));
                 case "create" -> d.create(actor,player.getGameProfile().getName(),text(a,"name"),GangLogo.validate(text(a,"logo")));
                 case "request" -> d.request(actor,player.getGameProfile().getName(),uuid(a,"id"));
-                case "accept" -> d.accept(actor,uuid(a,"target"));
+                case "accept" -> {
+                    UUID target=uuid(a,"target");d.accept(actor,target);
+                    d.goals.recruit(d.of(actor).id,target,java.time.Instant.now(),java.time.ZoneId.of(pl.crimeandlaw.territory.CaptureSavedData.get(player.server).rules.zone()));
+                }
                 case "reject" -> d.reject(actor,uuid(a,"target"));
                 case "leave" -> d.leave(actor);
                 case "kick" -> d.kick(actor,uuid(a,"target"));
@@ -209,7 +233,7 @@ public final class GangNetwork {
             }
             rememberProfile(player);
             if(action.equals("accept")){var accepted=player.server.getPlayerList().getPlayer(uuid(a,"target"));if(accepted!=null)rememberProfile(accepted);}
-            saved.setDirty();
+            saved.setDirty();syncMoney(player.server);
             // Every viewer receives authoritative membership/permissions, including kicked members.
             for(ServerPlayer online:player.server.getPlayerList().getPlayers()){
                 if(online==player || views.containsKey(online))sendState(online,online==player?"Zapisano.":"");
@@ -224,12 +248,17 @@ public final class GangNetwork {
         GangDirectory d=GangSavedData.get(player.server).directory;
         View view=views.computeIfAbsent(player,p->new View("",0,0,0,0));
         JsonObject result=new JsonObject();result.addProperty("player",player.getUUID().toString());result.addProperty("message",message);
-        result.addProperty("walletBalance",d.finances.wallet(player.getUUID()));
+        result.addProperty("walletBalance",d.finances.bank(player.getUUID()));
+        result.addProperty("bankBalance",d.finances.bank(player.getUUID()));result.addProperty("cashBalance",d.finances.cash(player.getUUID()));
+        sendMoney(player,false);
         result.addProperty("financeToken",financeTokens.computeIfAbsent(player,p->UUID.randomUUID().toString()));
         Gang current=d.of(player.getUUID());
         if(current!=null){
             result.addProperty("gangBalance",d.finances.balance(current.id));
-            if(financeViews.containsKey(player))result.add("finances",FinanceView.snapshot(d,player.getUUID(),financeViews.get(player)));
+            result.add("goals",d.goals.snapshot(current.id,java.time.Instant.now(),java.time.ZoneId.of(pl.crimeandlaw.territory.CaptureSavedData.get(player.server).rules.zone())));
+            if(d.goals.takeDirty())GangSavedData.get(player.server).setDirty();
+            if("blacklist".equals(activePanels.get(player)))result.add("blacklist",BlacklistView.snapshot(d,player.getUUID(),blacklistViews.getOrDefault(player,BlacklistView.Query.DEFAULT)));
+            if("finances".equals(activePanels.get(player))&&financeViews.containsKey(player))result.add("finances",FinanceView.snapshot(d,player.getUUID(),financeViews.get(player)));
             JsonObject snapshot=GangView.snapshot(current,player.getUUID(),view.memberPage,view.requestPage,view.historyPage,
                 player.server.getPlayerList().getPlayers().stream().map(ServerPlayer::getUUID).filter(id->!id.equals(disconnected)).collect(java.util.stream.Collectors.toSet()));
             for(var entry:snapshot.entrySet())result.add(entry.getKey(),entry.getValue());
@@ -247,6 +276,11 @@ public final class GangNetwork {
         if(json.length()>MessageChunks.PART_BYTES/3){for(var part:MessageChunks.split(json,STATE_MAX_BYTES))PacketDistributor.sendToPlayer(player,new StateChunk(part));}
         else PacketDistributor.sendToPlayer(player,new State(json));
     }
+    public static void syncMoney(net.minecraft.server.MinecraftServer server){for(var player:server.getPlayerList().getPlayers())sendMoney(player,false);}
+    public static void sendMoney(ServerPlayer player,boolean force){
+        var finances=GangSavedData.get(player.server).directory.finances;var next=new Money(finances.cash(player.getUUID()),finances.bank(player.getUUID()));
+        if(force||!next.equals(moneySent.get(player))){PacketDistributor.sendToPlayer(player,next);moneySent.put(player,next);}
+    }
     public static void rememberProfile(ServerPlayer player){
         var property=player.getGameProfile().getProperties().get("textures").stream().findFirst().orElse(null);
         var saved=GangSavedData.get(player.server);
@@ -254,7 +288,7 @@ public final class GangNetwork {
     }
     public static void presenceChanged(ServerPlayer player,boolean joined){
         if(!joined){uploads.remove(player);rates.remove(player);views.remove(player);financeViews.remove(player);financeTokens.remove(player);}
-        if(joined)rememberProfile(player);
+        if(joined){rememberProfile(player);sendMoney(player,true);}else{moneySent.remove(player);blacklistViews.remove(player);activePanels.remove(player);}
         var gang=GangSavedData.get(player.server).directory.of(player.getUUID());if(gang==null)return;
         for(var viewer:player.server.getPlayerList().getPlayers())if(viewer!=player&&gang.members.containsKey(viewer.getUUID())&&views.containsKey(viewer))sendState(viewer,"",joined?null:player.getUUID());
     }

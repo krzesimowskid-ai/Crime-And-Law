@@ -1,7 +1,7 @@
 # Crime And Law
 
 Autorski mod gangsterski: panel gangów, członkostwo i własny wygląd menu.
-Wersja **0.1.29**.
+Wersja **0.1.30**.
 
 Pierwsza propozycja własnej ekonomii w dolarach i rozwoju terenów:
 [Balans terytoriów](docs/BALANS_TERYTORIOW.md) oraz
@@ -15,12 +15,36 @@ Przejmowanie terenów, zegar świata oraz oznaczenia mapy już działają:
 ## Uruchomienie
 
 - Minecraft **1.21.1**, Java **21**, NeoForge **21.1.248**.
-- Włóż `crimeandlaw-0.1.29.jar` do `mods`, zastępując poprzedni JAR tego moda.
+- Włóż `crimeandlaw-0.1.30.jar` do `mods`, zastępując poprzedni JAR tego moda.
 - W rozgrywce sieciowej mod musi być **u graczy i na serwerze**.
-  **0.1.29 korzysta z protokołu 17** — wymaga tej samej wersji na obu stronach.
+  **0.1.30 korzysta z protokołu 18** — wymaga tej samej wersji na obu stronach.
   Starsze wersje od 0.1.26 do 0.1.28 używają protokołu 16.
 - W świecie jednoosobowym część serwerowa działa razem ze światem.
 - **G** otwiera panel; skrót można zmienić w sterowaniu. Esc lub X zamyka okno.
+
+## Minimapka i pieniądze
+
+Podczas gry, w lewym dolnym rogu, widać minimapkę rzeczywistego załadowanego
+terenu, strzałkę gracza i północ. Obok są autorskie ikony banknotu i karty
+oraz osobne kwoty **Gotówka** i **Bank**. Mapa podąża za graczem i kierunkiem
+patrzenia. Nie wymaga otwierania panelu ani członkostwa w gangu. HUD jest
+ukryty przy F1 i w otwartych ekranach. W grze nieaktywne wiadomości czatu
+są przesunięte ponad nowy HUD; otwarty czat zachowuje zwykłe położenie.
+Rozmiar minimapy jest niezależny od skali menu, a pozycja pieniędzy uwzględnia
+faktyczną skalę waniliowego hotbara i statystyk.
+
+Istniejące pieniądze osobiste pozostają w banku, nowa gotówka wynosi 0 $.
+Śmierć i odrodzenie nie odbierają ani nie kopiują żadnego z sald.
+Nie ma jeszcze przelewów między gotówką i bankiem. Komendy administratora:
+
+```
+/crimeandlaw pieniadze dodaj NazwaGracza gotowka 1000
+/crimeandlaw pieniadze dodaj NazwaGracza bank 1000
+```
+
+Poprzednia postać komendy bez nazwy konta nadal dodaje środki do banku.
+Wpłaty i wypłaty gangu oraz premie korzystają z banku. Szczegóły nowych
+paneli: [HUD, czarna lista i cele](docs/HUD_CZARNA_LISTA_CELE.md).
 
 ## Panel gangu
 
@@ -57,7 +81,8 @@ Transport ma wyłącznie ukrytą definicję kategorii w kodzie. Nie ma przycisku
 widoku, zadań działających w tle ani mechanik transportu. Próba wybrania jego
 nieaktywnego identyfikatora wraca do głównej zakładki. Saldo gangu i premie
 mają działające formularze oraz wyszukiwaną, stronicowaną historię. Czarna lista
-i cele pozostają panelami w przygotowaniu. Tworzenie i edycję zestawów ubrań
+blokuje zgłoszenia i przyjęcie po UUID gracza oraz ma własną historię. Cele
+pokazują tygodniowy postęp istniejących mechanik, na razie bez nagród. Tworzenie i edycję zestawów ubrań
 usunięto z katalogu uprawnień; starsze zapisy są migrowane automatycznie.
 
 Własne rangi tworzy się w **Rangi → + Nowa ranga**. Osobne okno „Nowa ranga”
@@ -195,7 +220,7 @@ Windows: gradlew.bat build
 Linux/macOS: ./gradlew build
 ```
 
-Wynik: `build/libs/crimeandlaw-0.1.29.jar`.
+Wynik: `build/libs/crimeandlaw-0.1.30.jar`.
 Gradle Wrapper 9.2.1, ModDevGradle 2.0.148, NeoForge 21.1.248.
 `./gradlew test` sprawdza model, migrację zapisów, duże listy i prywatność
 zgłoszeń, walidację/edycję logo, kolory oraz skalowanie menu.

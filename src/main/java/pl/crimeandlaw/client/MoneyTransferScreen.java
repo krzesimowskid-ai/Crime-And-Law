@@ -23,7 +23,7 @@ final class MoneyTransferScreen extends FinanceResponseScreen {
         button(left+18,top+191,100,"Anuluj",b->onClose());updateButton();
     }
     @Override protected void paint(GuiGraphics g,int x,int y,float delta){
-        g.drawString(font,"Twoje konto: "+GangFinances.format(FinanceClient.money("walletBalance")),left+18,top+49,0xFFE9E8EC,false);
+        g.drawString(font,"Bank: "+GangFinances.format(FinanceClient.money("walletBalance")),left+18,top+49,0xFFE9E8EC,false);
         g.drawString(font,"Saldo gangu: "+GangFinances.format(FinanceClient.money("gangBalance")),left+270,top+49,0xFFE9E8EC,false);
         g.drawString(font,"Kwota ($)",left+18,top+80,0xFFAAA3B3,false);g.drawString(font,"Komentarz (opcjonalnie)",left+18,top+128,0xFFAAA3B3,false);
         String status=!allowed()?"Nie masz uprawnienia do tej czynności.":ClientState.message;

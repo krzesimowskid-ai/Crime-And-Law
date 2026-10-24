@@ -7,17 +7,21 @@ import pl.crimeandlaw.gang.GangDirectory.*;
 public final class GangFinances {
     public static final long MAX_BALANCE=1_000_000_000_000L;
     public static final int MAX_RECIPIENTS=100,MAX_COMMENT=128;
+    public enum Account { CASH, BANK }
     public enum Kind {
         DEPOSIT("Wpłata"),WITHDRAWAL("Wypłata"),BONUS("Premia");
         public final String label;Kind(String label){this.label=label;}
     }
     public record Entry(long timestamp,Kind kind,UUID actor,String actorName,String actorRole,
                         UUID recipient,String recipientName,String recipientRole,long amount,String comment){}
-    private Map<UUID,Long> wallets=new LinkedHashMap<>();
+    private Map<UUID,Long> wallets=new LinkedHashMap<>(); // Existing personal funds migrate to BANK, once.
+    private Map<UUID,Long> cash=new LinkedHashMap<>();
     private Map<UUID,Long> balances=new LinkedHashMap<>();
     private Map<UUID,List<Entry>> history=new LinkedHashMap<>();
 
     public long wallet(UUID player){return wallets.getOrDefault(player,0L);}
+    public long bank(UUID player){return wallet(player);}
+    public long cash(UUID player){return cash.getOrDefault(player,0L);}
     public long balance(UUID gang){return balances.getOrDefault(gang,0L);}
     public List<Entry> history(UUID gang){return Collections.unmodifiableList(history.getOrDefault(gang,List.of()));}
     public static String format(long amount){return "$ "+String.format(Locale.ROOT,"%,d",amount).replace(',',' ');}
@@ -28,8 +32,11 @@ public final class GangFinances {
         try{long amount=Long.parseLong(digits);amount(amount);return amount;}
         catch(NumberFormatException error){throw new IllegalArgumentException("Nieprawidłowa kwota.");}
     }
-    public void credit(UUID player,long amount){
-        Objects.requireNonNull(player);amount(amount);capacity(wallet(player),amount);wallets.put(player,wallet(player)+amount);
+    public void credit(UUID player,long amount){credit(player,Account.BANK,amount);}
+    public void credit(UUID player,Account account,long amount){
+        Objects.requireNonNull(player);Objects.requireNonNull(account);amount(amount);
+        var accounts=account==Account.CASH?cash:wallets;long current=accounts.getOrDefault(player,0L);
+        capacity(current,amount);accounts.put(player,current+amount);
     }
     public void deposit(GangDirectory directory,UUID actor,long amount,String comment){
         Gang gang=authorized(directory,actor,Permission.DEPOSIT_FUNDS);amount(amount);comment=comment(comment);
@@ -46,6 +53,7 @@ public final class GangFinances {
     public void pay(GangDirectory directory,UUID actor,Map<UUID,Long> payments,String comment){
         Gang gang=authorized(directory,actor,Permission.PAY_BONUSES);comment=comment(comment);
         require(payments!=null&&!payments.isEmpty()&&payments.size()<=MAX_RECIPIENTS,"Wybierz od 1 do 100 odbiorców.");
+        payments=new LinkedHashMap<>(payments);
         long total=0;
         for(var payment:payments.entrySet()){
             UUID recipient=payment.getKey();Long amount=payment.getValue();
@@ -79,9 +87,19 @@ public final class GangFinances {
     public static void amount(long amount){require(amount>0&&amount<=MAX_BALANCE,"Kwota musi wynosić od 1 do "+format(MAX_BALANCE)+".");}
     private static void capacity(long current,long added){require(current>=0&&current<=MAX_BALANCE&&added<=MAX_BALANCE-current,"Przekroczono maksymalne saldo konta.");}
     private static void require(boolean ok,String message){if(!ok)throw new IllegalArgumentException(message);}
+    static void validateJson(com.google.gson.JsonObject data){
+        for(String key:List.of("wallets","cash","balances"))if(data.has(key)){
+            require(data.get(key).isJsonObject(),"Uszkodzony zapis kont.");
+            for(var entry:data.getAsJsonObject(key).entrySet()){
+                var value=entry.getValue();require(value.isJsonPrimitive()&&value.getAsJsonPrimitive().isNumber(),"Uszkodzona kwota w zapisie.");
+                try{long amount=value.getAsBigDecimal().longValueExact();require(amount>=0&&amount<=MAX_BALANCE,"Uszkodzone saldo konta.");}
+                catch(ArithmeticException e){throw new IllegalArgumentException("Uszkodzona kwota w zapisie.");}
+            }
+        }
+    }
     void validate(){
-        require(wallets!=null&&balances!=null&&history!=null,"Uszkodzony zapis finansów.");
-        for(var map:List.of(wallets,balances))for(var e:map.entrySet())
+        require(wallets!=null&&cash!=null&&balances!=null&&history!=null,"Uszkodzony zapis finansów.");
+        for(var map:List.of(wallets,cash,balances))for(var e:map.entrySet())
             require(e.getKey()!=null&&e.getValue()!=null&&e.getValue()>=0&&e.getValue()<=MAX_BALANCE,"Uszkodzone saldo konta.");
         for(var ledger:history.entrySet()){
             require(ledger.getKey()!=null&&ledger.getValue()!=null&&ledger.getValue().size()<=GangDirectory.HISTORY_LIMIT,"Uszkodzona historia finansowa.");

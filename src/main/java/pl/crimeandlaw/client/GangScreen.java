@@ -60,12 +60,18 @@ public final class GangScreen extends Screen {
     private String financeSearch="";
     private int financeFilter,requestedFinanceTab=-1,lastFinancePage=-1;
     private FinanceTable financeTable;
+    private final ScrollPosition blacklistScroll=new ScrollPosition();
+    private boolean blacklistHistory;
+    private String blacklistSearch="";
+    private int requestedBlacklist=-1,lastBlacklistPage=-1,goalPoll;
+    private GoalsPanel goalsPanel;
 
 
     public GangScreen(){super(Component.literal("Crime And Law"));}
     public void terrainUpdated(){if(tab==2){if(terrainPanel!=null&&terrainPanel.dragging())terrainPanel.update(TerrainClient.view);else rebuildWidgets();}}
     public void captureUpdated(){if(tab==2){if(terrainPanel!=null&&terrainPanel.dragging())terrainPanel.update(TerrainClient.view);else rebuildWidgets();}}
-    @Override public void tick(){super.tick();if(gang()!=null&&tab==2){TerrainClient.tick();if(++terrainTicks%20==0)CaptureClient.request();if(terrainTicks%40==0)TerrainClient.request();}}
+    @Override public void tick(){
+        if(tab==9&&goalsPanel!=null&&goalsPanel.remaining()==0&&++goalPoll%100==1)send("goals_view",new JsonObject());super.tick();if(gang()!=null&&tab==2){TerrainClient.tick();if(++terrainTicks%20==0)CaptureClient.request();if(terrainTicks%40==0)TerrainClient.request();}}
     private void scrollDraggedRole(){
         if(draggedRole.isEmpty()||!roleMoved){roleScrollTime=0;return;}
         long now=System.nanoTime();double seconds=roleScrollTime==0?0:Math.min(.05,(now-roleScrollTime)/1_000_000_000.0);roleScrollTime=now;
@@ -97,7 +103,7 @@ public final class GangScreen extends Screen {
         layout=GangLayout.of(width,height);w=layout.panelWidth();h=layout.panelHeight();
         left=(layout.canvasWidth()-w)/2;top=(layout.canvasHeight()-h)/2;
         labels.clear();historyRows.clear();roleButtons.clear();listRows.clear();directoryRows.clear();activeList=null;
-        createGangButton=null;saveRoleButton=null;memberCard=null;financeTable=null;
+        createGangButton=null;saveRoleButton=null;memberCard=null;financeTable=null;goalsPanel=null;
         Gang g=gang();
         if(!ClientState.ready()){addRenderableWidget(new CloseButton(left+w-30,top+11,b->onClose(),this::theme));return;}
         if(g!=null)tab=GangCategory.visibleOrOverview(tab).tabId();
@@ -112,15 +118,15 @@ public final class GangScreen extends Screen {
             cx=left+116;cy=top+55;cw=w-130;
             addRenderableWidget(new CloseButton(left+w-30,top+11,b->onClose(),this::theme));
             for(int i=0;i<TABS.size();i++){
-                final GangCategory category=TABS.get(i);final int chosen=category.tabId();button(left+10,cy+i*24,96,category==GangCategory.BALANCE?"Saldo gangu":category.label(),b->{tab=chosen;memberPage=0;bodyScroll=0;historyScroll.reset();rebuildWidgets();},tab==chosen);
+                final GangCategory category=TABS.get(i);final int chosen=category.tabId();button(left+10,cy+i*24,96,category==GangCategory.BALANCE?"Saldo gangu":category.label(),b->{tab=chosen;requestedFinanceTab=-1;requestedBlacklist=-1;memberPage=0;bodyScroll=0;historyScroll.reset();if(chosen==9)send("goals_view",new JsonObject());rebuildWidgets();},tab==chosen);
             }
             button(left+10,top+h-75,96,"Ustawienia",b->{tab=3;bodyScroll=0;rebuildWidgets();},tab==3);
             String leaveMessage=ClientState.memberCount()==1?"Ostatni członek opuszcza gang — gang zostanie usunięty.":isLeader()?"Lider musi najpierw przekazać przywództwo.":"Czy chcesz opuścić ten gang?";
             button(left+10,top+h-48,96,"Opuść gang",b->confirm("Opuścić gang?",leaveMessage,()->send("leave",new JsonObject())));
-            switch(tab){case 1->buildMembers();case 2->buildMap();case 3->buildSettings();case 4->buildRegister();case 6,7->buildFinance();case 8,9->buildPlannedCategory();case 10->buildRoles();}
+            switch(tab){case 1->buildMembers();case 2->buildMap();case 3->buildSettings();case 4->buildRegister();case 6,7->buildFinance();case 8->buildBlacklist();case 9->buildGoals();case 10->buildRoles();}
         }
         if(activeList!=null){positionListRows();maxBodyScroll=0;bodyScroll=0;return;}
-        if(g!=null&&(tab==4||tab==6||tab==7)){maxBodyScroll=0;bodyScroll=0;return;}
+        if(g!=null&&(tab==4||tab==6||tab==7||tab==8||tab==9)){maxBodyScroll=0;bodyScroll=0;return;}
         int bottom=cy;
         for(var child:children())if(child instanceof AbstractWidget widget && widget.getX()>=cx && widget.getY()>=cy)bottom=Math.max(bottom,widget.getY()+widget.getHeight());
         for(Label line:labels)bottom=Math.max(bottom,line.y()+10);
@@ -336,7 +342,7 @@ public final class GangScreen extends Screen {
             button(cx+cw-148,cy-5,70,"Wpłać",b->minecraft.setScreen(new MoneyTransferScreen(this,true))).active=can(Permission.DEPOSIT_FUNDS);
             button(cx+cw-72,cy-5,72,"Wypłać",b->minecraft.setScreen(new MoneyTransferScreen(this,false))).active=can(Permission.WITHDRAW_FUNDS);
         }
-        label(cx,cy+22,"Twoje konto: "+pl.crimeandlaw.gang.GangFinances.format(FinanceClient.money("walletBalance")),0xFFAAA3B3);
+        label(cx,cy+22,"Bank: "+pl.crimeandlaw.gang.GangFinances.format(FinanceClient.money("walletBalance")),0xFFAAA3B3);
         int page=matching?FinanceClient.number("page",0):0,pages=matching?FinanceClient.number("pages",1):1;
         if(lastFinancePage!=page){lastFinancePage=page;financeScroll.reset();}
         String pageText="Strona "+(page+1)+" / "+pages;int pageX=cx+cw-font.width(pageText);
@@ -351,9 +357,27 @@ public final class GangScreen extends Screen {
         financeTable=addRenderableWidget(new FinanceTable(cx,tableTop,cw,tableHeight,rows,tab==6,financeScroll,this::theme,layout.scale()));
         addRenderableWidget(new RegisterScrollBar(cx+cw-10,tableTop+22,tableHeight-22,financeScroll,this::theme,"Przewijanie historii finansowej"));
     }
-    private void buildPlannedCategory(){
-        label(cx,cy,GangCategory.visibleOrOverview(tab).label());
+    private void blacklistRequest(int page){
+        blacklistScroll.reset();var args=new JsonObject();args.addProperty("history",blacklistHistory);args.addProperty("search",blacklistSearch);args.addProperty("page",page);send("blacklist_view",args);
     }
+    private void buildBlacklist(){
+        label(cx,cy,"Czarna lista");
+        if(requestedBlacklist<0){requestedBlacklist=0;blacklistRequest(0);}
+        var data=ClientState.state.has("blacklist")?ClientState.state.getAsJsonObject("blacklist"):new JsonObject();
+        int page=data.has("page")?data.get("page").getAsInt():0,pages=data.has("pages")?data.get("pages").getAsInt():1;
+        if(lastBlacklistPage!=page){lastBlacklistPage=page;blacklistScroll.reset();}
+        String text="Strona "+(page+1)+" / "+pages;int px=cx+cw-font.width(text);label(px,cy,text,0xFFAAA3B3);
+        button(px-54,cy-5,23,"‹",b->blacklistRequest(page-1)).active=page>0;button(px-28,cy-5,23,"›",b->blacklistRequest(page+1)).active=page+1<pages;
+        button(cx,cy+20,80,"Lista",b->{blacklistHistory=false;blacklistRequest(0);rebuildWidgets();},!blacklistHistory);
+        button(cx+86,cy+20,86,"Historia",b->{blacklistHistory=true;blacklistRequest(0);rebuildWidgets();},blacklistHistory);
+        button(cx+cw-112,cy+20,112,"Dodaj do listy",b->minecraft.setScreen(new BlacklistAddScreen(this))).active=can(Permission.MANAGE_BLACKLIST);
+        field(cx,cy+49,cw-70,64,blacklistSearch,value->blacklistSearch=value);button(cx+cw-64,cy+49,64,"Szukaj",b->blacklistRequest(0));
+        var entries=data.has("entries")&&data.get("history").getAsBoolean()==blacklistHistory?data.getAsJsonArray("entries"):new JsonArray();
+        int tableTop=cy+77,height=top+h-26-tableTop;
+        addRenderableWidget(new BlacklistTable(cx,tableTop,cw,height,entries,blacklistHistory,blacklistScroll,this::theme,layout.scale(),!blacklistHistory&&can(Permission.MANAGE_BLACKLIST)?id->confirm("Usunąć blokadę?","Gracz będzie mógł ponownie zgłosić się do gangu.",()->target("blacklist_remove",id)):null));
+        addRenderableWidget(new RegisterScrollBar(cx+cw-10,tableTop+22,height-22,blacklistScroll,this::theme,"Przewijanie czarnej listy"));
+    }
+    private void buildGoals(){label(cx,cy,"Tygodniowe cele gangu");var data=ClientState.state.has("goals")?ClientState.state.getAsJsonObject("goals"):new JsonObject();goalsPanel=addRenderableWidget(new GoalsPanel(cx,cy+23,cw,top+h-30-cy-23,data));}
     private void buildMap(){
         label(cx,cy,"Mapa świata");var view=TerrainClient.view;if(view==null)TerrainClient.request();
         if(view!=null){
@@ -569,12 +593,6 @@ public final class GangScreen extends Screen {
         if(gang!=null&&tab==0)drawGangOverview(g,gang,texture);
         if(gang!=null&&tab==4)drawRegister(g);
         if(gang==null&&find)drawDirectory(g);
-        if(gang!=null&&(tab==8||tab==9)){
-            int y=cy+30,height=126;
-            g.fill(cx,y,cx+cw,y+height,0x18000000);g.renderOutline(cx,y,cw,height,0x44000000|t.border());
-            g.fill(cx+cw/2-18,y+28,cx+cw/2+18,y+30,t.borderArgb());
-            g.drawCenteredString(font,"W przygotowaniu",cx+cw/2,y+55,0xFFE9E8EC);
-        }
         clip(g,cx,cy,cx+cw,top+h-24);
         for(Label line:labels)g.drawString(font,font.plainSubstrByWidth(line.value(),line.width()),line.x(),line.y()-bodyScroll,line.color(),false);
         g.disableScissor();
@@ -678,7 +696,7 @@ public final class GangScreen extends Screen {
         if(activeList!=null&&x>=cx&&x<cx+(gang()==null?cw:Math.min(150,(cw-12)/2))&&y>=listTop&&y<listBottom){
             activeList.scroll(-vertical*23);positionListRows();return true;
         }
-        if(gang()!=null&&(tab==2||tab==6||tab==7))return super.mouseScrolled(x,y,horizontal,vertical);
+        if(gang()!=null&&(tab==2||tab==6||tab==7||tab==8||tab==9))return super.mouseScrolled(x,y,horizontal,vertical);
         if(gang()!=null&&tab==4){
             if(x>=cx&&x<cx+cw&&y>=historyTop&&y<historyBottom){historyScroll.scroll(-vertical*24);return true;}
             return super.mouseScrolled(x,y,horizontal,vertical);
@@ -689,6 +707,7 @@ public final class GangScreen extends Screen {
         return super.mouseScrolled(x,y,horizontal,vertical);
     }
     @Override public boolean keyPressed(int key,int scanCode,int modifiers){
+        if(gang()!=null&&tab==8&&getFocused() instanceof EditBox&&(key==org.lwjgl.glfw.GLFW.GLFW_KEY_ENTER||key==org.lwjgl.glfw.GLFW.GLFW_KEY_KP_ENTER)){blacklistRequest(0);return true;}
         if(gang()!=null&&(tab==6||tab==7)&&getFocused() instanceof EditBox&&(key==org.lwjgl.glfw.GLFW.GLFW_KEY_ENTER||key==org.lwjgl.glfw.GLFW.GLFW_KEY_KP_ENTER)){financeRequest(0);return true;}
         if(memberCard!=null&&key==org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE){selectedMember="";rebuildWidgets();return true;}
         if(gang()!=null&&tab==2&&!(getFocused() instanceof RegisterScrollBar)){

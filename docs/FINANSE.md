@@ -1,7 +1,7 @@
-# Finanse — 0.1.29
+# Finanse — 0.1.30
 
 Zakładka **Saldo gangu** pokazuje wspólne saldo i własne konto gracza.
-**Wpłać** przenosi pieniądze z własnego konta do gangu; **Wypłać** robi przelew
+**Wpłać** przenosi pieniądze z własnego konta bankowego do gangu; **Wypłać** robi przelew
 w przeciwną stronę. Można dodać komentarz. Każda czynność wymaga osobnego prawa
 rangi; lider posiada wszystkie działające prawa. Historia salda zawiera także
 koszt wypłaconych premii. Zwykły Rejestr zachowuje zdarzenia niefinansowe.
@@ -46,5 +46,23 @@ i `Zrzut ekranu 2026-10-21 182152(1).png` (premie). Opis premii sprawdzono
 Układ dostosowano do zaakceptowanego rozmiaru menu Minecrafta. Kwoty i progi
 Majestic nie są przenoszone do autorskiego balansu Crime And Law.
 
-Wersja 0.1.29 wymaga tego samego JAR-u na kliencie i serwerze (protokół 17).
+Wersja 0.1.30 wymaga tego samego JAR-u na kliencie i serwerze (protokół 18).
 Starszy zapis świata jest odczytywany i migrowany; nie trzeba zakładać nowego świata.
+
+## Osobna gotówka i bank od 0.1.30
+
+Stare pole salda osobistego zachowuje wszystkie środki jako bank. Nie są
+kopiowane do gotówki. Nowa gotówka zaczyna od 0 $. Oddzielne komendy
+`pieniadze dodaj NazwaGracza gotowka KWOTA` i `pieniadze dodaj NazwaGracza bank KWOTA`
+mają te same wymagania uprawnień co dotychczasowe przyznawanie środków.
+Nie istnieje akcja przelewu gotówka ↔ bank. Operacje gangu oraz premie
+korzystają z banku; komentarz nadal jest opcjonalny.
+
+Dane finansowe należą do świata i UUID, nie do ekwipunku ani klonowanej
+encji gracza. Śmierć, respawn, przejście między wymiarami i ponowne wejście
+nie naliczają pieniędzy. HUD otrzymuje prywatny pakiet dwóch sald, również
+bez otwierania menu i przy otrzymaniu premii przez gracza z zamkniętym panelem.
+
+Walidacja odczytu odrzuca także ułamkowe i przekroczone kwoty w pliku kont,
+zamiast pozwalać Gsonowi obcinać je przy konwersji na long. Lista wypłat
+jest kopiowana przed sprawdzeniem i wykonaniem całej transakcji.

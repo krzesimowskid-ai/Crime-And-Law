@@ -64,8 +64,19 @@ public final class FinanceClientSmoke {
             case 17->{if(ClientState.state==previous)return;check(FinanceClient.money("gangBalance")==79650,"Negative amount rejected");badWithdraw(0.5);step=18;}
             case 18->{if(ClientState.state==previous)return;check(FinanceClient.money("gangBalance")==79650,"Fraction rejected");var request=payments(FinanceClient.token(),1);request.getAsJsonArray("payments").add(request.getAsJsonArray("payments").get(0).deepCopy());previous=ClientState.state;GangNetwork.send(request);step=19;}
             case 19->{if(ClientState.state==previous)return;check(ClientState.message.contains("więcej niż raz")&&FinanceClient.money("gangBalance")==79650,"Duplicate recipient rejected");Files.writeString(OUT.resolve("owner-payments.PASS"),"Owner UI and raw invalid packet checks pass\n");step=20;}
-            case 20->{if(!Files.exists(OUT.resolve("member.PASS")))return;ClientState.message="";mc.options.guiScale().set(4);mc.resizeDisplay();pending="bonuses-scale4";step=21;}
-            case 21->{Files.writeString(OUT.resolve("owner.PASS"),"Deposit, withdrawal, individual/mass bonuses, replay/negative/fraction/overdraft/duplicate rejection over TCP; GUI 2 and 4.\n");done=true;mc.stop();}
+            case 20->{if(!Files.exists(OUT.resolve("member.PASS")))return;ClientState.message="";mc.setScreen(null);pending="hud-scale2";step=21;}
+            case 21->{check(HudMoney.ready&&HudMoney.cash==1235&&HudMoney.bank==19500,"HUD receives actual independent accounts");check(ClientMinimap.cacheSize()>0&&ClientMinimap.cacheSize()<=256,"Minimap samples loaded terrain within its cache bound");mc.options.guiScale().set(4);mc.resizeDisplay();pending="hud-scale4";step=22;}
+            case 22->{mc.setScreen(new GangScreen());previous=ClientState.state;ClientState.refresh("",0);step=23;}
+            case 23->{if(ClientState.state==previous)return;press(mc,"Czarna lista");step=24;}
+            case 24->{if(!ClientState.state.has("blacklist"))return;press(mc,"Dodaj do listy");fields(mc,"Friend29","Test blokady");pending="blacklist-add";step=25;}
+            case 25->{press(mc,"Dodaj do listy");step=26;}
+            case 26->{if(ClientState.memberCount()!=2)return;var data=ClientState.state.getAsJsonObject("blacklist");check(data.getAsJsonArray("entries").size()==1,"Blacklist operation removes a current member");pending="blacklist-list";step=27;}
+            case 27->{var table=mc.screen.children().stream().filter(BlacklistTable.class::isInstance).map(BlacklistTable.class::cast).findFirst().orElseThrow();table.mouseClicked(table.getX()+table.getWidth()-26,table.getY()+35,0);check(mc.screen instanceof ConfirmScreen,"Removing the blacklist entry opens confirmation");press(mc,"Yes");step=28;}
+            case 28->{if(!ClientState.state.getAsJsonObject("blacklist").getAsJsonArray("entries").isEmpty())return;press(mc,"Historia");step=29;}
+            case 29->{var data=ClientState.state.getAsJsonObject("blacklist");if(!data.get("history").getAsBoolean())return;check(data.getAsJsonArray("entries").size()==2,"Blacklist history shows add and remove");pending="blacklist-history";step=30;}
+            case 30->{press(mc,"Cele");pending="weekly-goals";step=31;}
+            case 31->{check(ClientState.state.getAsJsonObject("goals").getAsJsonArray("cards").size()==3,"Three current-mechanic goals are visible");mc.setScreen(null);HudMoney.receive(new GangNetwork.Money(1_000_000_000_000L,1_000_000_000_000L));pending="hud-max-values";step=32;}
+            case 32->{HudMoney.receive(new GangNetwork.Money(1235,19500));Files.writeString(OUT.resolve("owner.PASS"),"Financial TCP checks, cash/bank HUD at GUI 2/4 and maximum values, live minimap, blacklist add/remove/history, weekly goals.\n");done=true;mc.stop();}
         }
     }
     private static void member(Minecraft mc)throws Exception{
@@ -76,7 +87,9 @@ public final class FinanceClientSmoke {
             case 4->{if(ClientState.state==previous)return;check(ClientState.message.contains("uprawnień")&&FinanceClient.money("gangBalance")==79650,"Forged bonus request denied");press(mc,"Saldo gangu");step=5;}
             case 5->{if(!kind("balance"))return;check(button(mc,"Wpłać").active&&!button(mc,"Wypłać").active,"Deposit and withdrawal permissions are separate");press(mc,"Wpłać");fields(mc,"50","Zwrot do gangu");pending="member-deposit";step=6;}
             case 6->{press(mc,"Wpłać");step=7;}
-            case 7->{if(FinanceClient.money("walletBalance")!=500)return;check(FinanceClient.money("gangBalance")==79700,"Member deposit authoritative");Files.writeString(OUT.resolve("member.PASS"),"Permission controls, forged packet rejection, received bonuses and authorized deposit over TCP.\n");done=true;mc.stop();}
+            case 7->{if(FinanceClient.money("walletBalance")!=500)return;check(FinanceClient.money("gangBalance")==79700,"Member deposit authoritative");Files.writeString(OUT.resolve("member-death.ready"),"ready");step=8;}
+            case 8->{if(!mc.player.isDeadOrDying())return;mc.player.respawn();mc.setScreen(null);step=9;}
+            case 9->{if(mc.player.isDeadOrDying())return;check(HudMoney.cash==567&&HudMoney.bank==500,"Actual death and respawn preserve both balances");Files.writeString(OUT.resolve("member.PASS"),"Permissions, received bonuses, authorized bank deposit, actual death/respawn and cash/bank synchronization.\n");done=true;mc.stop();}
         }
     }
     private static void badWithdraw(Number amount){var request=new JsonObject();request.addProperty("action","finance_withdraw");request.addProperty("amount",amount);request.addProperty("comment","");request.addProperty("financeToken",FinanceClient.token());previous=ClientState.state;GangNetwork.send(request);}

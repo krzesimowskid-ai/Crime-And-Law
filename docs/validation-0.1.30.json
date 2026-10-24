@@ -1,0 +1,17 @@
+{
+  "tests": 151,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "version": "0.1.30",
+  "protocol": 18,
+  "schema": 4,
+  "bytes": 1999078,
+  "sha256": "f4dc0e0d8d2084179ba973308aadd01b8f5be1f251f0aafb29a734fbdb0a1c27",
+  "nested_libraries": 15,
+  "random_money_operations": 10000,
+  "network": "PASS",
+  "death_respawn": "PASS",
+  "restart": "PASS",
+  "hud": "1920x1080; GUI 2 and 4; normal and maximum balances"
+}

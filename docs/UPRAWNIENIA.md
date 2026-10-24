@@ -1,4 +1,4 @@
-# Katalog uprawnień — 0.1.29
+# Katalog uprawnień — 0.1.30
 
 Opcje z referencyjnych ekranów rang, dopasowane do gangu w Minecraft.
 Dodatkowo zachowane prawo wyglądu menu/logo/baneru.
@@ -22,7 +22,7 @@ Serwer odrzuca próbę nadania takiego prawa również w ręcznie wysłanym paki
 | Rozpoczynanie ataku na terytorium | Aktywności | Działa |
 | Dostęp do napadu na bank | Aktywności | W przygotowaniu |
 | Udział w ataku na terytorium | Aktywności | Działa |
-| Zarządzanie czarną listą | Personel | W przygotowaniu |
+| Zarządzanie czarną listą | Personel | Działa |
 | Otwarcie AirDrop | Aktywności | W przygotowaniu |
 | Zarządzanie szybkimi zestawami | Mienie i zaopatrzenie | W przygotowaniu |
 | Otwieranie / zamykanie szybkich zestawów | Mienie i zaopatrzenie | W przygotowaniu |
@@ -47,3 +47,6 @@ oznaczenia gangowe może edytować każdy obecny członek tego gangu.
 W neutralnym capcie rozpoczęcie udziału nowego gangu wymaga decyzji lidera
 i własnego terenu w jednym z ośmiu sąsiednich chunków. Prawo udziału pozwala
 członkom dołączyć do już zapisanej drużyny; nie zastępuje decyzji lidera.
+
+Czarna lista usuwa obecnego członka tylko wtedy, gdy działająca osoba ma
+również prawo usuwania członków. Lidera ani siebie nie można zablokować.

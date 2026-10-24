@@ -109,6 +109,7 @@ public final class CaptureController {
         boolean busy=!board.battles().isEmpty();
         var results=board.tick(now,(nano-previous)/1_000_000,people,existing);
         for(var result:results){
+            directory.goals.capture(result.event(),result.winner(),result.gangs().stream().filter(existing::contains).toList(),Instant.ofEpochMilli(now),java.time.ZoneId.of(saved.rules.zone()));
             var level=server.getAllLevels().iterator();net.minecraft.server.level.ServerLevel target=null;
             while(level.hasNext()){var next=level.next();if(next.dimension().location().toString().equals(result.key().dimension())){target=next;break;}}
             if(result.winner()!=null&&target!=null){

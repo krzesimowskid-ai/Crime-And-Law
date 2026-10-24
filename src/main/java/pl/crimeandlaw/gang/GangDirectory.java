@@ -30,7 +30,7 @@ public final class GangDirectory {
         START_TERRITORY_ATTACK("Rozpoczynanie ataku na terytorium",PermissionGroup.ACTIVITIES,true),
         BANK_ROBBERY("Dostęp do napadu na bank",PermissionGroup.ACTIVITIES,false),
         JOIN_TERRITORY_ATTACK("Udział w ataku na terytorium",PermissionGroup.ACTIVITIES,true),
-        MANAGE_BLACKLIST("Zarządzanie czarną listą",PermissionGroup.PERSONNEL,false),
+        MANAGE_BLACKLIST("Zarządzanie czarną listą",PermissionGroup.PERSONNEL,true),
         OPEN_AIRDROP("Otwarcie AirDrop",PermissionGroup.ACTIVITIES,false),
         MANAGE_QUICK_SETS("Zarządzanie szybkimi zestawami",PermissionGroup.PROPERTY,false),
         OPEN_CLOSE_QUICK_SETS("Otwieranie / zamykanie szybkich zestawów",PermissionGroup.PROPERTY,false),
@@ -74,10 +74,13 @@ public final class GangDirectory {
         public Map<String,Role> roles=new LinkedHashMap<>();
         public Map<UUID,String> requests=new LinkedHashMap<>();
         public List<Event> history=new ArrayList<>();
+        public GangBlacklist blacklist=new GangBlacklist();
     }
     private final Map<UUID,Gang> gangs=new LinkedHashMap<>();
     public GangFinances finances=new GangFinances();
-    private int schemaVersion=3;
+    public GangGoals goals=new GangGoals();
+    private Map<UUID,String> profiles=new LinkedHashMap<>();
+    private int schemaVersion=4;
     private transient boolean migrated;
     public boolean needsMigration(){return migrated;}
     public Collection<Gang> gangs(){return Collections.unmodifiableCollection(gangs.values());}
@@ -101,17 +104,20 @@ public final class GangDirectory {
         require(gangs.size()<MAX_GANGS,"Osiągnięto limit gangów tego świata.");
         final String chosen=name;
         require(gangs.values().stream().noneMatch(g->g.name.equalsIgnoreCase(chosen)),"Ta nazwa jest już zajęta.");
+        profiles.put(actor,playerName);
         Gang g=new Gang();g.id=UUID.randomUUID();g.owner=actor;g.name=name;g.logo=logo;
         defaultRoles(g);g.members.put(actor,new Member(actor,playerName,"leader"));g.members.get(actor).joinedAt=System.currentTimeMillis();gangs.put(g.id,g);record(g,playerName+" tworzy gang.");return g;
     }
     public void request(UUID actor,String name,UUID id){
         require(of(actor)==null,"Należysz już do gangu.");Gang g=required(id);
-        g.requests.put(actor,name);
+        require(!g.blacklist.contains(actor),"Jesteś na czarnej liście tego gangu.");
+        profiles.put(actor,name);g.requests.put(actor,name);
     }
     public void accept(UUID actor,UUID target){
         Gang g=own(actor,Permission.INVITE);
         String name=g.requests.get(target);require(name!=null,"Nie ma takiego zgłoszenia.");
         require(of(target)==null,"Ten gracz należy już do gangu.");
+        require(!g.blacklist.contains(target),"Ten gracz jest na czarnej liście gangu.");
         g.members.put(target,new Member(target,name));g.members.get(target).joinedAt=System.currentTimeMillis();record(g,name+" dołącza do gangu.");
         for(Gang other:gangs.values())other.requests.remove(target);
     }
@@ -121,7 +127,7 @@ public final class GangDirectory {
         require(!g.owner.equals(actor) || g.members.size()==1,"Najpierw przekaż przywództwo innemu członkowi.");
         require(g.members.size()!=1||finances.balance(g.id)==0,"Najpierw wypłać pozostałe środki gangu.");
         record(g,g.members.get(actor).name+" opuszcza gang.");
-        g.members.remove(actor);if(g.members.isEmpty()){finances.forgetEmptyGang(g.id);gangs.remove(g.id);}
+        g.members.remove(actor);if(g.members.isEmpty()){finances.forgetEmptyGang(g.id);goals.forget(g.id);gangs.remove(g.id);}
     }
     public void kick(UUID actor,UUID target){
         Gang g=own(actor,Permission.MANAGE_MEMBERS);
@@ -169,12 +175,14 @@ public final class GangDirectory {
         g.banner=new GangBanner(GangBanner.validateImage(banner.image()),banner.color(),banner.opacity());
     }
     public boolean rememberProfile(UUID player,String name,String textures,String signature){
-        Gang g=of(player);if(g==null)return false;Member m=g.members.get(player);
+        boolean known=!Objects.equals(profiles.put(player,name),name);
+        Gang g=of(player);if(g==null)return known;Member m=g.members.get(player);
         if(textures==null||textures.length()>8192||signature==null||signature.length()>2048)return false;
         boolean changed=!Objects.equals(m.name,name)||!Objects.equals(m.textures,textures)||!Objects.equals(m.textureSignature,signature);
-        m.name=name;m.textures=textures;m.textureSignature=signature;return changed;
+        m.name=name;m.textures=textures;m.textureSignature=signature;return changed||known;
     }
     public void renameSeenPlayer(UUID player,String name){
+        profiles.put(player,name);
         Gang g=of(player);if(g!=null)g.members.get(player).name=name;
         for(Gang other:gangs.values())if(other.requests.containsKey(player))other.requests.put(player,name);
     }
@@ -184,6 +192,21 @@ public final class GangDirectory {
     }
     public void addEvent(Gang gang,String text){if(text!=null&&text.length()<=256)record(gang,text);}
     public void mapColor(UUID actor,int color){own(actor,Permission.MANAGE_THEME).mapColor=color&0xFFFFFF;}
+    public UUID resolvePlayer(String value){
+        require(value!=null,"Podaj nick lub UUID.");value=value.strip();
+        try{UUID id=UUID.fromString(value);if(id.toString().equalsIgnoreCase(value))return id;}catch(IllegalArgumentException ignored){}
+        final String name=value;var matches=profiles.entrySet().stream().filter(e->e.getValue().equalsIgnoreCase(name)).map(Map.Entry::getKey).toList();
+        require(matches.size()==1,"Podaj nick znany serwerowi albo pełny UUID gracza.");return matches.getFirst();
+    }
+    public void blacklistAdd(UUID actor,UUID target,String reason){
+        Gang g=own(actor,Permission.MANAGE_BLACKLIST);require(target!=null&&!target.equals(g.owner),"Nie można dodać lidera gangu.");
+        require(!actor.equals(target),"Nie możesz dodać siebie do czarnej listy.");
+        require(!g.members.containsKey(target)||allowed(g,actor,Permission.MANAGE_MEMBERS),"Do usunięcia członka potrzebujesz także prawa usuwania członków.");
+        String name=profiles.getOrDefault(target,target.toString().substring(0,8));
+        g.blacklist.add(target,name,actor,g.members.get(actor).name,reason);
+        if(g.members.containsKey(target))kick(actor,target);g.requests.remove(target);
+    }
+    public void blacklistRemove(UUID actor,UUID target){Gang g=own(actor,Permission.MANAGE_BLACKLIST);g.blacklist.remove(target,actor,g.members.get(actor).name);}
     private Gang own(UUID actor,Permission permission){
         Gang g=of(actor);require(allowed(g,actor,permission),"Nie masz uprawnień do tej czynności.");return g;
     }
@@ -212,11 +235,14 @@ public final class GangDirectory {
                 }
             }
         }
+        if(document.getAsJsonObject().has("finances")&&!document.getAsJsonObject().get("finances").isJsonNull())GangFinances.validateJson(document.getAsJsonObject().getAsJsonObject("finances"));
         GangDirectory directory=JSON.fromJson(document,GangDirectory.class);
         if(directory==null || directory.gangs==null || directory.gangs.size()>MAX_GANGS)throw new IllegalArgumentException("Nieprawidłowy zapis gangów.");
-        directory.migrated=legacy||removedOutfits||directory.schemaVersion!=3||!document.getAsJsonObject().has("finances");directory.schemaVersion=3;
+        directory.migrated=legacy||removedOutfits||directory.schemaVersion!=4||!document.getAsJsonObject().has("finances");directory.schemaVersion=4;
         if(directory.finances==null)throw new IllegalArgumentException("Uszkodzony zapis finansów.");
-        directory.finances.validate();
+        directory.finances.validate();require(directory.goals!=null,"Uszkodzony zapis celów.");directory.goals.validate();
+        require(directory.profiles!=null,"Uszkodzony katalog graczy.");
+        for(var profile:directory.profiles.entrySet())require(profile.getKey()!=null&&profile.getValue()!=null&&profile.getValue().length()<=32,"Uszkodzony profil gracza.");
         Set<UUID> seen=new HashSet<>();
         for(var entry:directory.gangs.entrySet()){
             Gang g=entry.getValue();
@@ -225,6 +251,7 @@ public final class GangDirectory {
             if(g.banner==null)g.banner=GangBanner.DEFAULT;
             String banner=GangBanner.validateImage(g.banner.image());
             if(!banner.equals(g.banner.image())){g.banner=new GangBanner(banner,g.banner.color(),g.banner.opacity());directory.migrated=true;}
+            if(g.blacklist==null)throw new IllegalArgumentException("Uszkodzona czarna lista.");g.blacklist.validate();
             if(g.history==null)g.history=new ArrayList<>();
             for(Event event:g.history)require(event!=null&&event.timestamp()>=0&&event.text()!=null&&event.text().length()<=256,"Uszkodzony rejestr gangu.");
             if(g.history.size()>HISTORY_LIMIT)g.history.subList(0,g.history.size()-HISTORY_LIMIT).clear();
@@ -243,6 +270,7 @@ public final class GangDirectory {
             for(var member:g.members.entrySet()){
                 require(member.getValue()!=null && member.getKey().equals(member.getValue().id) && seen.add(member.getKey()),"Powielone członkostwo.");
                 Member m=member.getValue();
+                require(m.name!=null&&m.name.length()<=32,"Uszkodzona nazwa członka.");directory.profiles.put(m.id,m.name);
                 if(m.joinedAt==0)for(int i=g.history.size()-1;i>=0;i--){
                     Event event=g.history.get(i);String eventText=event.text();
                     if(eventText.equals(m.name+" opuszcza gang.")||eventText.endsWith(" usuwa gracza "+m.name+" z gangu."))break;
@@ -258,6 +286,7 @@ public final class GangDirectory {
             }
             require(g.theme!=null && g.requests!=null && g.logo!=null && g.logo.length()<=GangLogo.MAX_ENCODED_LENGTH,"Uszkodzone ustawienia gangu.");
         }
+        for(var gang:directory.gangs.values())gang.requests.forEach(directory.profiles::put);
         return directory;
     }
 }
