@@ -646,3 +646,11 @@ gdy właściwe systemy własności oraz mapy będą rozwijane.
   kolumny, pod przyciski kadrowania, z zawijaniem dłuższego błędu.
 - Sprawdzono rzeczywisty render dla logo i banera, również przy GUI 2 i 4.
   Protokół sieciowy pozostaje 16.
+
+
+## Znacznik gracza na mapie — 0.1.28
+
+- Cała ikonka ma symetryczne stopnie względem osi obrotu i pełną,
+  nieprzezroczystą czarną obwódkę, także wokół dolnego czubka.
+- Pozycja na mapie i kierunek obrotu korzystają z dotychczasowych danych.
+  Protokół sieciowy pozostaje 16.

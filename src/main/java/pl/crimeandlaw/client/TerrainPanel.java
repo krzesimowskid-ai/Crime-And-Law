@@ -116,7 +116,10 @@ final class TerrainPanel extends AbstractWidget {
             int py=y+(int)Math.round((view.playerZ()-(view.centerZ()-radius)*16.0)*GRID/blocks);
             if(px>=x-8&&px<=x+GRID+8&&py>=y-8&&py<=y+GRID+8){
                 g.pose().pushPose();g.pose().translate(px,py,0);g.pose().mulPose(com.mojang.math.Axis.ZP.rotationDegrees(view.yaw()));
-                g.fill(-3,-3,4,3,0xEE17191F);g.fill(-2,-2,3,3,0xFFF5EFF4);g.fill(-1,3,2,5,0xFFF5EFF4);g.fill(0,5,1,6,0xFFF5EFF4);g.pose().popPose();
+                // Every tier shares the rotation axis; the opaque one-pixel contour
+                // surrounds the complete silhouette, including the pointed end.
+                g.fill(-4,-4,4,4,0xFF000000);g.fill(-3,4,3,6,0xFF000000);g.fill(-2,6,2,7,0xFF000000);
+                g.fill(-3,-3,3,3,0xFFF5EFF4);g.fill(-2,3,2,5,0xFFF5EFF4);g.fill(-1,5,1,6,0xFFF5EFF4);g.pose().popPose();
             }
             g.pose().popPose();g.disableScissor();
             g.fill(x+4,y+4,x+17,y+17,0xAA17191F);g.drawString(font,"N",x+8,y+7,0xFFEFE9F3,false);
