@@ -20,6 +20,7 @@ public final class GangNetwork {
     private static final Gson JSON=new Gson();
     public static Consumer<String> clientReceiver=ignored->{};
     public static Consumer<String> terrainReceiver=ignored->{};
+    public static Consumer<String> captureReceiver=ignored->{};
     private static final Map<ServerPlayer,View> views=new WeakHashMap<>();
     private static final Map<ServerPlayer,Rate> rates=new WeakHashMap<>();
     public static final int ACTION_MAX_BYTES=ACTION_MAX_JSON+2048,STATE_MAX_BYTES=STATE_MAX_JSON+400_000;
@@ -52,6 +53,15 @@ public final class GangNetwork {
         };
         @Override public Type<? extends CustomPacketPayload> type(){return TYPE;}
     }
+    public record Capture(String json) implements CustomPacketPayload {
+        public static final int MAX_JSON=131_072;
+        public static final Type<Capture> TYPE=new Type<>(ResourceLocation.fromNamespaceAndPath("crimeandlaw","capture"));
+        public static final StreamCodec<RegistryFriendlyByteBuf,Capture> CODEC=new StreamCodec<>(){
+            public Capture decode(RegistryFriendlyByteBuf b){return new Capture(b.readUtf(MAX_JSON));}
+            public void encode(RegistryFriendlyByteBuf b,Capture p){b.writeUtf(p.json,MAX_JSON);}
+        };
+        @Override public Type<? extends CustomPacketPayload> type(){return TYPE;}
+    }
     private static MessageChunks.Part readPart(RegistryFriendlyByteBuf b){return new MessageChunks.Part(b.readUUID(),b.readVarInt(),b.readVarInt(),b.readByteArray(MessageChunks.PART_BYTES));}
     private static void writePart(RegistryFriendlyByteBuf b,MessageChunks.Part part){b.writeUUID(part.id());b.writeVarInt(part.length());b.writeVarInt(part.offset());b.writeByteArray(part.data());}
     public record ActionChunk(MessageChunks.Part part) implements CustomPacketPayload {
@@ -71,10 +81,11 @@ public final class GangNetwork {
         @Override public Type<? extends CustomPacketPayload> type(){return TYPE;}
     }
     public static void register(RegisterPayloadHandlersEvent event){
-        var registrar=event.registrar("14");
+        var registrar=event.registrar("15");
         registrar.playToServer(Action.TYPE,Action.CODEC,GangNetwork::handle);
         registrar.playToClient(State.TYPE,State.CODEC,(p,c)->clientReceiver.accept(p.json));
         registrar.playToClient(Terrain.TYPE,Terrain.CODEC,(p,c)->terrainReceiver.accept(p.json));
+        registrar.playToClient(Capture.TYPE,Capture.CODEC,(p,c)->captureReceiver.accept(p.json));
         registrar.playToServer(ActionChunk.TYPE,ActionChunk.CODEC,GangNetwork::upload);
         registrar.playToClient(StateChunk.TYPE,StateChunk.CODEC,(p,c)->{
             String complete=download.accept(p.part(),STATE_MAX_BYTES,System.nanoTime());
@@ -115,6 +126,20 @@ public final class GangNetwork {
         GangSavedData saved=GangSavedData.get(player.server);GangDirectory d=saved.directory;UUID actor=player.getUUID();
         try{
             JsonObject a=JsonParser.parseString(packet.json).getAsJsonObject();String action=text(a,"action");
+            if(action.startsWith("capture_")||action.startsWith("marker_")){
+                var key=pl.crimeandlaw.territory.TerrainKey.at(player.serverLevel().dimension().location().toString(),player.getBlockX(),player.getBlockZ());
+                try{
+                    key=new pl.crimeandlaw.territory.TerrainKey(key.dimension(),exactInteger(a,"x"),exactInteger(a,"z"));
+                    if(d.of(actor)==null)throw new IllegalArgumentException("Najpierw dołącz do gangu.");
+                    if(action.equals("capture_view")){
+                        var viewport=new pl.crimeandlaw.territory.TerrainViewport(a.has("centerX")?exactInteger(a,"centerX"):key.x(),a.has("centerZ")?exactInteger(a,"centerZ"):key.z());
+                        pl.crimeandlaw.territory.CaptureController.watch(player,key,viewport);
+                    }
+                    else if(action.equals("marker_set")||action.equals("marker_remove"))pl.crimeandlaw.territory.CaptureController.marker(player,key,a.has("shared")&&a.get("shared").getAsBoolean(),action.equals("marker_set")?exactInteger(a,"color"):null);
+                    else pl.crimeandlaw.territory.CaptureController.action(player,action,key);
+                }catch(IllegalArgumentException error){pl.crimeandlaw.territory.CaptureController.respond(player,key,error.getMessage());}
+                return;
+            }
             if(action.equals("terrain_view")){
                 if(d.of(actor)==null)throw new IllegalArgumentException("Najpierw dołącz do gangu.");
                 boolean remote=a.has("centerX")||a.has("centerZ");
@@ -156,6 +181,7 @@ public final class GangNetwork {
                 case "theme" -> d.theme(actor,new Theme(integer(a,"background",Theme.DEFAULT.background()),integer(a,"border",Theme.DEFAULT.border()),integer(a,"opacity",235)));
                 case "banner" -> d.banner(actor,new GangBanner(text(a,"image"),integer(a,"color",0x15161C),integer(a,"opacity",255)));
                 case "logo" -> d.logo(actor,GangLogo.validate(text(a,"logo")));
+                case "map_color" -> d.mapColor(actor,exactInteger(a,"color"));
                 default -> throw new IllegalArgumentException("Nieznana czynność.");
             }
             rememberProfile(player);

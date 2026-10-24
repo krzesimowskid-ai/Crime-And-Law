@@ -60,7 +60,8 @@ public final class GangScreen extends Screen {
 
     public GangScreen(){super(Component.literal("Crime And Law"));}
     public void terrainUpdated(){if(tab==2){if(terrainPanel!=null&&terrainPanel.dragging())terrainPanel.update(TerrainClient.view);else rebuildWidgets();}}
-    @Override public void tick(){super.tick();if(gang()!=null&&tab==2){TerrainClient.tick();if(++terrainTicks%40==0)TerrainClient.request();}}
+    public void captureUpdated(){if(tab==2){if(terrainPanel!=null&&terrainPanel.dragging())terrainPanel.update(TerrainClient.view);else rebuildWidgets();}}
+    @Override public void tick(){super.tick();if(gang()!=null&&tab==2){TerrainClient.tick();if(++terrainTicks%20==0)CaptureClient.request();if(terrainTicks%40==0)TerrainClient.request();}}
     private void scrollDraggedRole(){
         if(draggedRole.isEmpty()||!roleMoved){roleScrollTime=0;return;}
         long now=System.nanoTime();double seconds=roleScrollTime==0?0:Math.min(.05,(now-roleScrollTime)/1_000_000_000.0);roleScrollTime=now;
@@ -329,11 +330,35 @@ public final class GangScreen extends Screen {
         button(cx+114,cy-5,66,"Siatka",b->{terrainGrid=!terrainGrid;rebuildWidgets();},terrainGrid).centered().strongSelection();
         button(cx+186,cy-5,22,"−",b->{terrainRadius=Math.min(pl.crimeandlaw.territory.TerrainView.RADIUS,terrainRadius+1);rebuildWidgets();}).active=terrainRadius<pl.crimeandlaw.territory.TerrainView.RADIUS;
         button(cx+212,cy-5,22,"+",b->{terrainRadius=Math.max(2,terrainRadius-1);rebuildWidgets();}).active=terrainRadius>2;
-        int mapTop=cy+25,mapHeight=top+h-26-mapTop;
+        button(cx+242,cy-5,82,"Zaznacz",b->minecraft.setScreen(new TerrainMarkScreen(this,terrainX,terrainZ))).centered();
+        CaptureClient.select(terrainX,terrainZ);
+        int mapTop=cy+25,mapHeight=top+h-76-mapTop;
         terrainPanel=addRenderableWidget(new TerrainPanel(cx,mapTop,cw,mapHeight,view,terrainX,terrainZ,terrainSelection,terrainRadius,terrainGrid,this::theme,terrainScroll,
             cell->{terrainX=cell.x();terrainZ=cell.z();terrainSelection=cell;terrainScroll.reset();rebuildWidgets();},
             direction->{terrainRadius=Math.clamp(terrainRadius+direction,2,pl.crimeandlaw.territory.TerrainView.RADIUS);rebuildWidgets();}));
         addRenderableWidget(new RegisterScrollBar(cx+cw-10,mapTop+6,mapHeight-12,terrainScroll,this::theme,"Przewijanie opisu terenu"));
+        int bottom=top+h-68;boolean current=CaptureClient.matches(terrainX,terrainZ);
+        if(current){
+            labels.add(new Label(cx,bottom+24,CaptureClient.text("time")+" · "+CaptureClient.text("zone"),0xFFAAA3B3,TerrainPanel.GRID));
+            labels.add(new Label(cx,bottom+36,"Capty "+CaptureClient.number("opens")+":00–"+CaptureClient.number("closes")+":00 · min. "+CaptureClient.number("minimum"),0xFFAAA3B3,TerrainPanel.GRID));
+        }
+        int right=cx+TerrainPanel.DETAILS,space=cw-TerrainPanel.DETAILS;
+        var battle=current&&CaptureClient.state.has("battle")?CaptureClient.state.getAsJsonObject("battle"):null;
+        if(battle!=null){
+            boolean joined=battle.get("joined").getAsBoolean(),eliminated=battle.get("eliminated").getAsBoolean(),closed=battle.get("phase").getAsString().equals("FIGHTING");
+            button(right,bottom,space,eliminated?"Wyeliminowano":joined?"Uczestniczysz w capcie":closed?"Zapisy zakończone":"Dołącz do captu",b->CaptureClient.action("capture_join")).centered().active=!joined&&!closed&&CaptureClient.flag("present")&&can(Permission.JOIN_TERRITORY_ATTACK);
+        }else if(!CaptureClient.flag("unlocked")){
+            button(right,bottom,space,"Aktywuj kontrolę terytoriów",b->CaptureClient.action("capture_unlock")).centered().active=current&&isLeader();
+        }else{
+            button(right,bottom,space,"Rozpocznij przejęcie",b->confirm("Rozpocząć capt?","Chunk "+terrainX+", "+terrainZ+". Przejmowanie wymaga obecności w strefie.",()->CaptureClient.action("capture_start"))).centered().active=current&&CaptureClient.flag("open")&&CaptureClient.flag("present")&&CaptureClient.flag("adjacent")&&CaptureClient.flag("recognized")&&!CaptureClient.flag("busy")&&CaptureClient.number("eligible")>=CaptureClient.number("minimum")&&CaptureClient.number("cooldown")==0&&CaptureClient.number("protection")==0&&can(Permission.START_TERRITORY_ATTACK)&&!gang().id.toString().equals(CaptureClient.text("owner"));
+        }
+        if(battle!=null)label(right,bottom+25,CaptureClient.phase()+": "+CaptureClient.duration(battle.get("remaining").getAsLong()),0xFFE9E8EC);
+        else if(current&&CaptureClient.number("cooldown")>0)label(right,bottom+25,"Cooldown: "+CaptureClient.duration(CaptureClient.number("cooldown")/1000),0xFFAAA3B3);
+        else if(current&&CaptureClient.number("protection")>0)label(right,bottom+25,"Ochrona: "+CaptureClient.duration(CaptureClient.number("protection")/1000),0xFFAAA3B3);
+        else if(current){
+            String reason=!CaptureClient.flag("unlocked")?"Aktywacja jest obecnie bezpłatna.":!can(Permission.START_TERRITORY_ATTACK)?"Brak uprawnienia do rozpoczęcia captu.":CaptureClient.flag("busy")?"Twój gang uczestniczy już w capcie.":!CaptureClient.flag("open")?"Poza godzinami rozpoczynania captów.":!CaptureClient.flag("recognized")?"Poczekaj na rozpoznanie terenu.":gang().id.toString().equals(CaptureClient.text("owner"))?"To już jest teren twojego gangu.":!CaptureClient.flag("adjacent")?"Wybierz teren obok własnego terytorium.":!CaptureClient.flag("present")?"Stań w wybranym chunku.":CaptureClient.number("eligible")<CaptureClient.number("minimum")?"Za mało uprawnionych graczy w strefie.":"Przejęcie neutralnego terenu jest bezpłatne.";
+            label(right,bottom+25,reason,0xFFAAA3B3);
+        }
     }
     private Theme draftTheme(){return new Theme(Integer.parseInt(background.replace("#",""),16),Integer.parseInt(border.replace("#",""),16),opacity);}
     private void buildSettings(){
@@ -362,6 +387,7 @@ public final class GangScreen extends Screen {
             button(cx,y+141,cw,"Używaj wyglądu gangu",b->{
                 if(PersonalTheme.set(gang().id.toString(),null)){previewTheme=false;Theme t=gang().theme;background=String.format("%06X",t.background());border=String.format("%06X",t.border());opacity=t.opacity();rebuildWidgets();}
             });
+            button(cx,y+168,cw,"Kolor gangu na mapie i w capcie…",b->minecraft.setScreen(new ColorPickerScreen(this,"Kolor gangu",gang().mapColor,255,false,(color,alpha)->{JsonObject a=new JsonObject();a.addProperty("color",color);send("map_color",a);}))).centered().active=can(Permission.MANAGE_THEME);
         }else if(settingsSection==1){
             logoControls(cx,y,Math.min(cw-160,350),false);
             button(cx,y+56,Math.min(cw,230),"Zapisz logo gangu",b->{JsonObject a=new JsonObject();a.addProperty("logo",draftLogo);send("logo",a);}).active=can(Permission.MANAGE_THEME)&&!draftLogo.isBlank();

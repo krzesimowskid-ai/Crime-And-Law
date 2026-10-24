@@ -27,9 +27,9 @@ public final class GangDirectory {
         WITHDRAW_FUNDS("Wypłata środków z salda",PermissionGroup.FINANCES,false),
         PAY_BONUSES("Wypłacanie premii",PermissionGroup.FINANCES,false),
         RESET_VEHICLES("Resetowanie pojazdów gangowych",PermissionGroup.TRANSPORT,false),
-        START_TERRITORY_ATTACK("Rozpoczynanie ataku na terytorium",PermissionGroup.ACTIVITIES,false),
+        START_TERRITORY_ATTACK("Rozpoczynanie ataku na terytorium",PermissionGroup.ACTIVITIES,true),
         BANK_ROBBERY("Dostęp do napadu na bank",PermissionGroup.ACTIVITIES,false),
-        JOIN_TERRITORY_ATTACK("Udział w ataku na terytorium",PermissionGroup.ACTIVITIES,false),
+        JOIN_TERRITORY_ATTACK("Udział w ataku na terytorium",PermissionGroup.ACTIVITIES,true),
         MANAGE_BLACKLIST("Zarządzanie czarną listą",PermissionGroup.PERSONNEL,false),
         EDIT_OUTFITS("Edytowanie zestawów ubrań",PermissionGroup.PROPERTY,false),
         CREATE_OUTFITS("Tworzenie zestawów ubrań",PermissionGroup.PROPERTY,false),
@@ -71,6 +71,7 @@ public final class GangDirectory {
         public String name, logo="";
         public Theme theme=Theme.DEFAULT;
         public GangBanner banner=GangBanner.DEFAULT;
+        public int mapColor=0xA3425D;
         public Map<UUID,Member> members=new LinkedHashMap<>();
         public Map<String,Role> roles=new LinkedHashMap<>();
         public Map<UUID,String> requests=new LinkedHashMap<>();
@@ -181,6 +182,8 @@ public final class GangDirectory {
         g.history.add(new Event(System.currentTimeMillis(),text));
         if(g.history.size()>HISTORY_LIMIT)g.history.subList(0,g.history.size()-HISTORY_LIMIT).clear();
     }
+    public void addEvent(Gang gang,String text){if(text!=null&&text.length()<=256)record(gang,text);}
+    public void mapColor(UUID actor,int color){own(actor,Permission.MANAGE_THEME).mapColor=color&0xFFFFFF;}
     private Gang own(UUID actor,Permission permission){
         Gang g=of(actor);require(allowed(g,actor,permission),"Nie masz uprawnień do tej czynności.");return g;
     }

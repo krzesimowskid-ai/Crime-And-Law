@@ -73,6 +73,16 @@ final class TerrainPanel extends AbstractWidget {
         for(var trait:TerrainProfile.Trait.values())if(cell.traits().contains(trait))line("• "+trait.label(),0xFFD8D2DE);
         line("Bonusy terenu",0xFFEFE9F3);
         line("Brak przyznanych bonusów.",0xFFAAA3B3);
+        if(CaptureClient.matches(selectedX,selectedZ)){
+            if(!CaptureClient.text("ownerName").isEmpty())line("Właściciel: "+CaptureClient.text("ownerName"),0xFFC7B7C1);
+            if(CaptureClient.state.has("battle")){
+                line(CaptureClient.phase(),0xFFEFE9F3);
+                line("Pozostało: "+CaptureClient.duration(CaptureClient.state.getAsJsonObject("battle").get("remaining").getAsLong()),0xFFE9E8EC);
+                var participants=CaptureClient.state.getAsJsonObject("battle").getAsJsonArray("participants");
+                long active=participants.asList().stream().filter(p->!p.getAsJsonObject().get("eliminated").getAsBoolean()&&p.getAsJsonObject().get("present").getAsBoolean()).count();
+                line("Obecni uczestnicy: "+active,0xFFAAA3B3);
+            }
+        }
     }
     @Override protected void renderWidget(GuiGraphics g,int mx,int my,float delta){
         updateOffsets();
@@ -89,9 +99,15 @@ final class TerrainPanel extends AbstractWidget {
                 int px=x+(int)Math.round(col*cellSize),py=y+(int)Math.round(row*cellSize);
                 int w=(int)Math.round((col+1)*cellSize)-(px-x),h=(int)Math.round((row+1)*cellSize)-(py-y);
                 if(cell.owner()!=null){
-                    var gang=ClientState.gang();int color=gang!=null&&cell.owner().equals(gang.id)?0x3062BD86:0x30BD6A70;
+                    var gang=ClientState.gang();int color=gang!=null&&cell.owner().equals(gang.id)?0x30000000|gang.mapColor:0x30BD6A70;
                     g.fill(px,py,px+w,py+h,color);
                 }
+                for(var mark:CaptureClient.marks(cell.x(),cell.z())){
+                    int color=mark.get("color").getAsInt(),inset=mark.get("shared").getAsBoolean()?0:Math.min(2,w/4);
+                    g.fill(px+inset,py+inset,px+w-inset,py+h-inset,0x50000000|color);
+                    g.renderOutline(px+inset,py+inset,w-inset*2,h-inset*2,0xCC000000|color);
+                }
+                if(CaptureClient.event(cell.x(),cell.z()))g.renderOutline(px+1,py+1,Math.max(1,w-2),Math.max(1,h-2),0xFFFFCC71);
                 if(grid){g.fill(px,py,px+w,py+1,0x55303339);g.fill(px,py,px+1,py+h,0x55303339);}
                 if(cell.x()==selectedX&&cell.z()==selectedZ){g.renderOutline(px,py,w,h,0xDDFFFFFF);g.renderOutline(px+1,py+1,w-2,h-2,t.borderArgb());}
             }

@@ -12,7 +12,8 @@ public final class TerrainAtlas {
     public int size(){return profiles.size();}
     public boolean remember(TerrainProfile profile){return profiles.putIfAbsent(profile.key().storageKey(),profile)==null;}
     public UUID owner(TerrainKey key){return owners.get(key.storageKey());}
-    /** Integration point for a future server-side purchase/capture controller. No free-claim UI. */
+    public boolean hasLand(UUID gang,String dimension){return owners.entrySet().stream().anyMatch(e->e.getKey().startsWith(dimension+"|")&&e.getValue().equals(gang));}
+    /** Only the authoritative capture controller may change ownership. */
     public void setOwner(TerrainKey key,UUID gang){
         if(get(key)==null)throw new IllegalArgumentException("Teren nie został jeszcze rozpoznany.");
         if(gang==null)owners.remove(key.storageKey());else owners.put(key.storageKey(),gang);

@@ -21,6 +21,7 @@ public final class GangView {
         JsonObject result=new JsonObject(),gang=new JsonObject();
         gang.addProperty("id",source.id.toString());gang.addProperty("owner",source.owner.toString());
         gang.addProperty("name",source.name);gang.addProperty("logo",source.logo);gang.add("theme",JSON.toJsonTree(source.theme));
+        gang.addProperty("mapColor",source.mapColor);
         gang.add("roles",JSON.toJsonTree(source.roles));gang.add("banner",JSON.toJsonTree(source.banner));
         int mp=page(memberPage,source.members.size());Map<UUID,Member> members=new LinkedHashMap<>();JsonArray ids=new JsonArray();
         source.members.entrySet().stream().skip((long)mp*PAGE_SIZE).limit(PAGE_SIZE).forEach(e->{members.put(e.getKey(),e.getValue());ids.add(e.getKey().toString());});
