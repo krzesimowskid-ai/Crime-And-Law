@@ -23,16 +23,14 @@ public final class GangDirectory {
         WARN_MEMBERS("Wydawanie ostrzeżeń",PermissionGroup.PERSONNEL,false),
         ACCESS_STORAGE("Dostęp do magazynu / depozytu łupów",PermissionGroup.PROPERTY,true),
         CRAFT_EQUIPMENT("Tworzenie przedmiotów z materiałów",PermissionGroup.PROPERTY,false),
-        DEPOSIT_FUNDS("Wpłata środków na saldo",PermissionGroup.FINANCES,false),
-        WITHDRAW_FUNDS("Wypłata środków z salda",PermissionGroup.FINANCES,false),
-        PAY_BONUSES("Wypłacanie premii",PermissionGroup.FINANCES,false),
+        DEPOSIT_FUNDS("Wpłata środków na saldo",PermissionGroup.FINANCES,true),
+        WITHDRAW_FUNDS("Wypłata środków z salda",PermissionGroup.FINANCES,true),
+        PAY_BONUSES("Wypłacanie premii",PermissionGroup.FINANCES,true),
         RESET_VEHICLES("Resetowanie pojazdów gangowych",PermissionGroup.TRANSPORT,false),
         START_TERRITORY_ATTACK("Rozpoczynanie ataku na terytorium",PermissionGroup.ACTIVITIES,true),
         BANK_ROBBERY("Dostęp do napadu na bank",PermissionGroup.ACTIVITIES,false),
         JOIN_TERRITORY_ATTACK("Udział w ataku na terytorium",PermissionGroup.ACTIVITIES,true),
         MANAGE_BLACKLIST("Zarządzanie czarną listą",PermissionGroup.PERSONNEL,false),
-        EDIT_OUTFITS("Edytowanie zestawów ubrań",PermissionGroup.PROPERTY,false),
-        CREATE_OUTFITS("Tworzenie zestawów ubrań",PermissionGroup.PROPERTY,false),
         OPEN_AIRDROP("Otwarcie AirDrop",PermissionGroup.ACTIVITIES,false),
         MANAGE_QUICK_SETS("Zarządzanie szybkimi zestawami",PermissionGroup.PROPERTY,false),
         OPEN_CLOSE_QUICK_SETS("Otwieranie / zamykanie szybkich zestawów",PermissionGroup.PROPERTY,false),
@@ -78,7 +76,8 @@ public final class GangDirectory {
         public List<Event> history=new ArrayList<>();
     }
     private final Map<UUID,Gang> gangs=new LinkedHashMap<>();
-    private int schemaVersion=2;
+    public GangFinances finances=new GangFinances();
+    private int schemaVersion=3;
     private transient boolean migrated;
     public boolean needsMigration(){return migrated;}
     public Collection<Gang> gangs(){return Collections.unmodifiableCollection(gangs.values());}
@@ -120,8 +119,9 @@ public final class GangDirectory {
     public void leave(UUID actor){
         Gang g=of(actor);require(g!=null,"Nie należysz do gangu.");
         require(!g.owner.equals(actor) || g.members.size()==1,"Najpierw przekaż przywództwo innemu członkowi.");
+        require(g.members.size()!=1||finances.balance(g.id)==0,"Najpierw wypłać pozostałe środki gangu.");
         record(g,g.members.get(actor).name+" opuszcza gang.");
-        g.members.remove(actor);if(g.members.isEmpty())gangs.remove(g.id);
+        g.members.remove(actor);if(g.members.isEmpty()){finances.forgetEmptyGang(g.id);gangs.remove(g.id);}
     }
     public void kick(UUID actor,UUID target){
         Gang g=own(actor,Permission.MANAGE_MEMBERS);
@@ -198,9 +198,25 @@ public final class GangDirectory {
     public static GangDirectory fromJson(String text){
         var document=JsonParser.parseString(text);require(document.isJsonObject(),"Nieprawidłowy zapis gangów.");
         boolean legacy=!document.getAsJsonObject().has("schemaVersion");
+        boolean removedOutfits=false;
+        var storedGangs=document.getAsJsonObject().getAsJsonObject("gangs");
+        if(storedGangs!=null)for(var stored:storedGangs.entrySet()){
+            var roles=stored.getValue().getAsJsonObject().getAsJsonObject("roles");
+            if(roles!=null)for(var role:roles.entrySet()){
+                var permissions=role.getValue().getAsJsonObject().getAsJsonArray("permissions");
+                if(permissions!=null)for(int i=permissions.size()-1;i>=0;i--){
+                    var permission=permissions.get(i);
+                    if(permission.isJsonPrimitive()&&permission.getAsJsonPrimitive().isString()&&Set.of("EDIT_OUTFITS","CREATE_OUTFITS").contains(permission.getAsString())){
+                        permissions.remove(i);removedOutfits=true;
+                    }
+                }
+            }
+        }
         GangDirectory directory=JSON.fromJson(document,GangDirectory.class);
         if(directory==null || directory.gangs==null || directory.gangs.size()>MAX_GANGS)throw new IllegalArgumentException("Nieprawidłowy zapis gangów.");
-        directory.schemaVersion=2;directory.migrated=legacy;
+        directory.migrated=legacy||removedOutfits||directory.schemaVersion!=3||!document.getAsJsonObject().has("finances");directory.schemaVersion=3;
+        if(directory.finances==null)throw new IllegalArgumentException("Uszkodzony zapis finansów.");
+        directory.finances.validate();
         Set<UUID> seen=new HashSet<>();
         for(var entry:directory.gangs.entrySet()){
             Gang g=entry.getValue();

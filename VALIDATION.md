@@ -1,3 +1,5 @@
+Aktualne wydanie: [walidacja 0.1.29](docs/VALIDATION_0.1.29.md).
+
 # Weryfikacja 0.1.24
 
 Minecraft 1.21.1, NeoForge 21.1.248, Java 21, protokół 14.

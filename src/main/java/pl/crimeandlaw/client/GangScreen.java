@@ -56,6 +56,10 @@ public final class GangScreen extends Screen {
     private pl.crimeandlaw.territory.TerrainView.Cell terrainSelection;
     private TerrainPanel terrainPanel;
     private long roleScrollTime;
+    private final ScrollPosition financeScroll=new ScrollPosition();
+    private String financeSearch="";
+    private int financeFilter,requestedFinanceTab=-1,lastFinancePage=-1;
+    private FinanceTable financeTable;
 
 
     public GangScreen(){super(Component.literal("Crime And Law"));}
@@ -93,7 +97,7 @@ public final class GangScreen extends Screen {
         layout=GangLayout.of(width,height);w=layout.panelWidth();h=layout.panelHeight();
         left=(layout.canvasWidth()-w)/2;top=(layout.canvasHeight()-h)/2;
         labels.clear();historyRows.clear();roleButtons.clear();listRows.clear();directoryRows.clear();activeList=null;
-        createGangButton=null;saveRoleButton=null;memberCard=null;
+        createGangButton=null;saveRoleButton=null;memberCard=null;financeTable=null;
         Gang g=gang();
         if(!ClientState.ready()){addRenderableWidget(new CloseButton(left+w-30,top+11,b->onClose(),this::theme));return;}
         if(g!=null)tab=GangCategory.visibleOrOverview(tab).tabId();
@@ -113,10 +117,10 @@ public final class GangScreen extends Screen {
             button(left+10,top+h-75,96,"Ustawienia",b->{tab=3;bodyScroll=0;rebuildWidgets();},tab==3);
             String leaveMessage=ClientState.memberCount()==1?"Ostatni członek opuszcza gang — gang zostanie usunięty.":isLeader()?"Lider musi najpierw przekazać przywództwo.":"Czy chcesz opuścić ten gang?";
             button(left+10,top+h-48,96,"Opuść gang",b->confirm("Opuścić gang?",leaveMessage,()->send("leave",new JsonObject())));
-            switch(tab){case 1->buildMembers();case 2->buildMap();case 3->buildSettings();case 4->buildRegister();case 6,7,8,9->buildPlannedCategory();case 10->buildRoles();}
+            switch(tab){case 1->buildMembers();case 2->buildMap();case 3->buildSettings();case 4->buildRegister();case 6,7->buildFinance();case 8,9->buildPlannedCategory();case 10->buildRoles();}
         }
         if(activeList!=null){positionListRows();maxBodyScroll=0;bodyScroll=0;return;}
-        if(g!=null&&tab==4){maxBodyScroll=0;bodyScroll=0;return;}
+        if(g!=null&&(tab==4||tab==6||tab==7)){maxBodyScroll=0;bodyScroll=0;return;}
         int bottom=cy;
         for(var child:children())if(child instanceof AbstractWidget widget && widget.getX()>=cx && widget.getY()>=cy)bottom=Math.max(bottom,widget.getY()+widget.getHeight());
         for(Label line:labels)bottom=Math.max(bottom,line.y()+10);
@@ -315,6 +319,37 @@ public final class GangScreen extends Screen {
             g.fill(cx,y+row.height()-1,cx+cw-20,y+row.height(),0x22000000|theme().border());
         }
         g.disableScissor();
+    }
+    private void financeRequest(int page){financeScroll.reset();FinanceClient.view(tab==6?"bonuses":"balance",page,financeSearch,pl.crimeandlaw.gang.FinanceView.FILTERS.get(financeFilter));}
+    private void buildFinance(){
+        String kind=tab==6?"bonuses":"balance";var data=FinanceClient.data();
+        boolean matching=data.has("kind")&&kind.equals(data.get("kind").getAsString());
+        if(requestedFinanceTab!=tab){
+            requestedFinanceTab=tab;financeScroll.reset();lastFinancePage=-1;financeSearch="";financeFilter=0;
+            financeRequest(0);
+        }
+        label(cx,cy,tab==6?"Premie":"Saldo: "+pl.crimeandlaw.gang.GangFinances.format(FinanceClient.money("gangBalance")));
+        if(tab==6){
+            button(cx+cw-222,cy-5,108,"Wypłać premię",b->{FinanceClient.candidates("",0);minecraft.setScreen(new BonusPaymentScreen(this,false));}).active=can(Permission.PAY_BONUSES)&&matching;
+            button(cx+cw-108,cy-5,108,"Premia masowa",b->{FinanceClient.candidates("",0);minecraft.setScreen(new BonusPaymentScreen(this,true));}).active=can(Permission.PAY_BONUSES)&&matching;
+        }else{
+            button(cx+cw-148,cy-5,70,"Wpłać",b->minecraft.setScreen(new MoneyTransferScreen(this,true))).active=can(Permission.DEPOSIT_FUNDS);
+            button(cx+cw-72,cy-5,72,"Wypłać",b->minecraft.setScreen(new MoneyTransferScreen(this,false))).active=can(Permission.WITHDRAW_FUNDS);
+        }
+        label(cx,cy+22,"Twoje konto: "+pl.crimeandlaw.gang.GangFinances.format(FinanceClient.money("walletBalance")),0xFFAAA3B3);
+        int page=matching?FinanceClient.number("page",0):0,pages=matching?FinanceClient.number("pages",1):1;
+        if(lastFinancePage!=page){lastFinancePage=page;financeScroll.reset();}
+        String pageText="Strona "+(page+1)+" / "+pages;int pageX=cx+cw-font.width(pageText);
+        button(pageX-54,cy+17,23,"‹",b->financeRequest(page-1)).active=matching&&page>0;
+        button(pageX-28,cy+17,23,"›",b->financeRequest(page+1)).active=matching&&page+1<pages;label(pageX,cy+22,pageText,0xFFAAA3B3);
+        field(cx,cy+39,cw-174,64,financeSearch,value->financeSearch=value);
+        button(cx+cw-168,cy+39,62,"Szukaj",b->financeRequest(0));
+        String[] filters={"Wszystko","Nadawca","Odbiorca","Typ","Komentarz"};
+        button(cx+cw-100,cy+39,100,filters[financeFilter],b->{financeFilter=(financeFilter+1)%filters.length;financeRequest(0);});
+        var rows=matching&&data.has("entries")?data.getAsJsonArray("entries"):new JsonArray();
+        int tableTop=cy+67,tableHeight=top+h-26-tableTop;
+        financeTable=addRenderableWidget(new FinanceTable(cx,tableTop,cw,tableHeight,rows,tab==6,financeScroll,this::theme,layout.scale()));
+        addRenderableWidget(new RegisterScrollBar(cx+cw-10,tableTop+22,tableHeight-22,financeScroll,this::theme,"Przewijanie historii finansowej"));
     }
     private void buildPlannedCategory(){
         label(cx,cy,GangCategory.visibleOrOverview(tab).label());
@@ -534,7 +569,7 @@ public final class GangScreen extends Screen {
         if(gang!=null&&tab==0)drawGangOverview(g,gang,texture);
         if(gang!=null&&tab==4)drawRegister(g);
         if(gang==null&&find)drawDirectory(g);
-        if(gang!=null&&(tab==6||tab==7||tab==8||tab==9)){
+        if(gang!=null&&(tab==8||tab==9)){
             int y=cy+30,height=126;
             g.fill(cx,y,cx+cw,y+height,0x18000000);g.renderOutline(cx,y,cw,height,0x44000000|t.border());
             g.fill(cx+cw/2-18,y+28,cx+cw/2+18,y+30,t.borderArgb());
@@ -643,7 +678,7 @@ public final class GangScreen extends Screen {
         if(activeList!=null&&x>=cx&&x<cx+(gang()==null?cw:Math.min(150,(cw-12)/2))&&y>=listTop&&y<listBottom){
             activeList.scroll(-vertical*23);positionListRows();return true;
         }
-        if(gang()!=null&&tab==2)return super.mouseScrolled(x,y,horizontal,vertical);
+        if(gang()!=null&&(tab==2||tab==6||tab==7))return super.mouseScrolled(x,y,horizontal,vertical);
         if(gang()!=null&&tab==4){
             if(x>=cx&&x<cx+cw&&y>=historyTop&&y<historyBottom){historyScroll.scroll(-vertical*24);return true;}
             return super.mouseScrolled(x,y,horizontal,vertical);
@@ -654,6 +689,7 @@ public final class GangScreen extends Screen {
         return super.mouseScrolled(x,y,horizontal,vertical);
     }
     @Override public boolean keyPressed(int key,int scanCode,int modifiers){
+        if(gang()!=null&&(tab==6||tab==7)&&getFocused() instanceof EditBox&&(key==org.lwjgl.glfw.GLFW.GLFW_KEY_ENTER||key==org.lwjgl.glfw.GLFW.GLFW_KEY_KP_ENTER)){financeRequest(0);return true;}
         if(memberCard!=null&&key==org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE){selectedMember="";rebuildWidgets();return true;}
         if(gang()!=null&&tab==2&&!(getFocused() instanceof RegisterScrollBar)){
             switch(key){

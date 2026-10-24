@@ -4,7 +4,7 @@ Stan projektu: 24 października 2026.
 
 ## Status i sposób dalszej pracy
 
-To zapis pomysłów i decyzji użytkownika, a nie opis gotowego moda. Powstaje prototyp panelu gangów, obecnie wersja 0.1.27. 19 października użytkownik odłożył DarkPerazera i wrócił do Crime And Law. Zaakceptował rozpoczęcie od podstaw panelu gangów; obecnie doprecyzowuje jego wygląd. Dla pierwszego prototypu przyjęto Minecraft 1.21.1 i NeoForge 21.1.248: użytkownik polecił rozpoczęcie bez wskazania innej platformy. Jest to jawne założenie wykonawcze, nie wcześniejsza deklaracja użytkownika.
+To zapis pomysłów i decyzji użytkownika, a nie opis gotowego moda. Powstaje prototyp panelu gangów, obecnie wersja 0.1.29. 19 października użytkownik odłożył DarkPerazera i wrócił do Crime And Law. Zaakceptował rozpoczęcie od podstaw panelu gangów; obecnie doprecyzowuje jego wygląd. Dla pierwszego prototypu przyjęto Minecraft 1.21.1 i NeoForge 21.1.248: użytkownik polecił rozpoczęcie bez wskazania innej platformy. Jest to jawne założenie wykonawcze, nie wcześniejsza deklaracja użytkownika.
 
 Crime And Law jest nowym, osobnym modem. McArk pozostaje odłożony, zachowując cel odwzorowania ASA 1:1. Nie zmieniać projektu McArk w Crime And Law ani nie usuwać jego materiałów w ramach tej pracy.
 
@@ -654,3 +654,25 @@ gdy właściwe systemy własności oraz mapy będą rozwijane.
   nieprzezroczystą czarną obwódkę, także wokół dolnego czubka.
 - Pozycja na mapie i kierunek obrotu korzystają z dotychczasowych danych.
   Protokół sieciowy pozostaje 16.
+
+
+## Kontynuacja 24 października — wersja 0.1.29
+
+- Użytkownik polecił usunąć tworzenie i edycję zestawów ubrań oraz funkcje
+  dotyczące ubrań. Usunięte prawa są czyszczone ze starszych zapisów bez utraty
+  członkostwa, rang, mapy, logo czy rejestru.
+- Oznaczanie drużyn w przyszłych akcjach i dropach ma opierać się na kolorowaniu,
+  tak jak w capcie. AirDrop pozostaje pomysłem na później.
+- Kolejny zakres to Premie i Saldo gangu, na podstawie przekazanych ekranów
+  Majestic i informacji w oficjalnej wiki. Odnaleziono także ekrany czarnej listy
+  oraz tygodniowych celów; nie dopisano zasad celów bez ustalenia ich mechaniki.
+- Wykonano konta osobiste, wspólne saldo, wpłaty, wypłaty i premie pojedyncze/masowe
+  z komentarzem oraz odrębne historie finansowe. Prawo wpłaty, wypłaty i premii
+  można nadawać osobno rangom; lider posiada wszystkie trzy.
+- Założenie wykonawcze pierwszej wersji: całkowite dolary, nowe konta startują od
+  zera, bez darmowego kapitału i automatycznych dochodów z terenu. Do testów i
+  administracji służy komenda opisana w docs/FINANSE.md.
+- Premia masowa używa wyboru członków i wspólnej kwoty na osobę. Import CSV/TXT
+  z Majestic nie został wprowadzony. Limit 100 odbiorców jest limitem jednej
+  transakcji, nie limitem liczebności gangu.
+- Schemat zapisu gangów 3; protokół sieciowy 17.

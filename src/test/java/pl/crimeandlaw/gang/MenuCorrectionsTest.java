@@ -46,7 +46,7 @@ class MenuCorrectionsTest {
     }
     @Test void plannedCatalogRightsAreRejectedEvenForTheLeaderWithoutPartialChanges(){
         var d=new GangDirectory();var gang=d.create(owner,"Owner","Planned Rights","");String before=d.toJson();
-        assertEquals(25,Permission.values().length);assertEquals(8,Permission.activePermissions().size());
+        assertEquals(23,Permission.values().length);assertEquals(11,Permission.activePermissions().size());
         for(var p:Permission.values())if(!p.available()){
             assertFalse(GangDirectory.allowed(gang,owner,p));
             assertThrows(IllegalArgumentException.class,()->d.role(owner,"member","Członek",Set.of(p)));

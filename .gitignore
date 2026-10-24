@@ -4,6 +4,7 @@ run/
 run-server-smoke*/
 run-network-*/
 run-capture-*/
+run-finance-*/
 logs/
 .idea/
 *.iml

@@ -2,12 +2,14 @@ plugins {
     id 'java-library'
     id 'net.neoforged.moddev' version '2.0.148'
 }
-version = '0.1.28'
+version = '0.1.29'
 group = 'pl.crimeandlaw'
 base { archivesName = 'crimeandlaw' }
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 repositories { mavenCentral() }
 // Opt-in graphical check with fixture data; excluded from normal builds/JARs.
+def financeSmoke = providers.gradleProperty('financeSmoke').isPresent()
+if (financeSmoke) sourceSets.main.java.srcDir('src/financeTest/java')
 def uiSmoke = providers.gradleProperty('uiSmoke').isPresent()
 def serverSmoke = providers.gradleProperty('serverSmoke').isPresent()
 def serverSmokeId = providers.gradleProperty('serverSmokeId').getOrElse('current')
@@ -23,6 +25,26 @@ if (networkSmoke) sourceSets.main.java.srcDir('src/networkTest/java')
 neoForge {
     version = '21.1.248'
     runs {
+        if (financeSmoke) {
+            financeServer {
+                server(); programArgument '--nogui'
+                gameDirectory = file('run-finance-server')
+                jvmArgument '-Xmx1300m'
+                systemProperty 'crimeandlaw.financeSmoke', 'true'
+                systemProperty 'crimeandlaw.financeRestart', providers.gradleProperty('financeRestart').getOrElse('false')
+                systemProperty 'crimeandlaw.financeOutput', file('build/finance-smoke').absolutePath
+            }
+            ['owner', 'member'].each { financeRole ->
+                create('finance' + financeRole.capitalize()) {
+                    client(); gameDirectory = file('run-finance-' + financeRole)
+                    jvmArgument '-Xmx1300m'
+                    systemProperty 'crimeandlaw.financeRole', financeRole
+                    systemProperty 'crimeandlaw.financeOutput', file('build/finance-smoke').absolutePath
+                    def user = financeRole == 'owner' ? 'Owner29' : 'Member29'
+                    programArguments.addAll '--username', user, '--uuid', java.util.UUID.nameUUIDFromBytes(('OfflinePlayer:' + user).getBytes('UTF-8')).toString(), '--width', '1600', '--height', '900'
+                }
+            }
+        }
         if (captureSmoke) {
             captureServer {
                 server(); programArgument '--nogui'
@@ -127,7 +149,8 @@ tasks.named('test') {
 tasks.named('jar') {
     exclude 'pl/crimeandlaw/client/GangUiSmokeTest*', 'pl/crimeandlaw/territory/TerrainServerSmoke*',
         'pl/crimeandlaw/client/GangMultiplayerSmoke*', 'pl/crimeandlaw/gang/GangNetworkPersistenceSmoke*',
-        'pl/crimeandlaw/client/CaptureClientSmoke*', 'pl/crimeandlaw/territory/CaptureServerSmoke*'
+        'pl/crimeandlaw/client/CaptureClientSmoke*', 'pl/crimeandlaw/territory/CaptureServerSmoke*',
+        'pl/crimeandlaw/client/FinanceClientSmoke*', 'pl/crimeandlaw/gang/FinanceServerSmoke*'
 }
 tasks.named('wrapper') { distributionType = Wrapper.DistributionType.BIN }
 

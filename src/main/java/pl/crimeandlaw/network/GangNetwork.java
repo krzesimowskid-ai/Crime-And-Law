@@ -23,6 +23,8 @@ public final class GangNetwork {
     public static Consumer<String> captureReceiver=ignored->{};
     private static final Map<ServerPlayer,View> views=new WeakHashMap<>();
     private static final Map<ServerPlayer,Rate> rates=new WeakHashMap<>();
+    private static final Map<ServerPlayer,FinanceView.Query> financeViews=new WeakHashMap<>();
+    private static final Map<ServerPlayer,String> financeTokens=new WeakHashMap<>();
     public static final int ACTION_MAX_BYTES=ACTION_MAX_JSON+2048,STATE_MAX_BYTES=STATE_MAX_JSON+400_000;
     private static final Map<ServerPlayer,MessageChunks.Assembler> uploads=new WeakHashMap<>();
     private static final MessageChunks.Assembler download=new MessageChunks.Assembler();
@@ -81,7 +83,7 @@ public final class GangNetwork {
         @Override public Type<? extends CustomPacketPayload> type(){return TYPE;}
     }
     public static void register(RegisterPayloadHandlersEvent event){
-        var registrar=event.registrar("16");
+        var registrar=event.registrar("17");
         registrar.playToServer(Action.TYPE,Action.CODEC,GangNetwork::handle);
         registrar.playToClient(State.TYPE,State.CODEC,(p,c)->clientReceiver.accept(p.json));
         registrar.playToClient(Terrain.TYPE,Terrain.CODEC,(p,c)->terrainReceiver.accept(p.json));
@@ -161,7 +163,28 @@ public final class GangNetwork {
                 views.put(player,new View(old.query,old.page,Math.max(0,integer(a,"memberPage",old.memberPage)),Math.max(0,integer(a,"requestPage",old.requestPage)),Math.max(0,integer(a,"historyPage",old.historyPage))));
                 sendState(player,"");return;
             }
+            if(action.equals("finance_view")){
+                if(d.of(actor)==null)throw new IllegalArgumentException("Najpierw dołącz do gangu.");
+                financeViews.put(player,financeViews.getOrDefault(player,FinanceView.Query.DEFAULT).update(a));sendState(player,"");return;
+            }
+            if(Set.of("finance_deposit","finance_withdraw","finance_pay").contains(action)){
+                String token=financeTokens.get(player);
+                if(token==null||!token.equals(text(a,"financeToken")))throw new IllegalArgumentException("Odśwież dane przed następną transakcją.");
+                financeTokens.remove(player); // A repeated packet cannot execute the same payout twice.
+            }
             switch(action){
+                case "finance_deposit" -> d.finances.deposit(d,actor,exactAmount(a,"amount"),text(a,"comment"));
+                case "finance_withdraw" -> d.finances.withdraw(d,actor,exactAmount(a,"amount"),text(a,"comment"));
+                case "finance_pay" -> {
+                    if(!a.has("payments")||!a.get("payments").isJsonArray()||a.getAsJsonArray("payments").size()>GangFinances.MAX_RECIPIENTS)
+                        throw new IllegalArgumentException("Nieprawidłowa lista odbiorców.");
+                    Map<UUID,Long> payments=new LinkedHashMap<>();
+                    for(var item:a.getAsJsonArray("payments")){
+                        var payment=item.getAsJsonObject();UUID recipient=uuid(payment,"recipient");
+                        if(payments.putIfAbsent(recipient,exactAmount(payment,"amount"))!=null)throw new IllegalArgumentException("Odbiorca występuje na liście więcej niż raz.");
+                    }
+                    d.finances.pay(d,actor,payments,text(a,"comment"));
+                }
                 case "create" -> d.create(actor,player.getGameProfile().getName(),text(a,"name"),GangLogo.validate(text(a,"logo")));
                 case "request" -> d.request(actor,player.getGameProfile().getName(),uuid(a,"id"));
                 case "accept" -> d.accept(actor,uuid(a,"target"));
@@ -201,8 +224,12 @@ public final class GangNetwork {
         GangDirectory d=GangSavedData.get(player.server).directory;
         View view=views.computeIfAbsent(player,p->new View("",0,0,0,0));
         JsonObject result=new JsonObject();result.addProperty("player",player.getUUID().toString());result.addProperty("message",message);
+        result.addProperty("walletBalance",d.finances.wallet(player.getUUID()));
+        result.addProperty("financeToken",financeTokens.computeIfAbsent(player,p->UUID.randomUUID().toString()));
         Gang current=d.of(player.getUUID());
         if(current!=null){
+            result.addProperty("gangBalance",d.finances.balance(current.id));
+            if(financeViews.containsKey(player))result.add("finances",FinanceView.snapshot(d,player.getUUID(),financeViews.get(player)));
             JsonObject snapshot=GangView.snapshot(current,player.getUUID(),view.memberPage,view.requestPage,view.historyPage,
                 player.server.getPlayerList().getPlayers().stream().map(ServerPlayer::getUUID).filter(id->!id.equals(disconnected)).collect(java.util.stream.Collectors.toSet()));
             for(var entry:snapshot.entrySet())result.add(entry.getKey(),entry.getValue());
@@ -226,7 +253,7 @@ public final class GangNetwork {
         if(saved.directory.rememberProfile(player.getUUID(),player.getGameProfile().getName(),property==null?"":property.value(),property==null||property.signature()==null?"":property.signature()))saved.setDirty();
     }
     public static void presenceChanged(ServerPlayer player,boolean joined){
-        if(!joined){uploads.remove(player);rates.remove(player);views.remove(player);}
+        if(!joined){uploads.remove(player);rates.remove(player);views.remove(player);financeViews.remove(player);financeTokens.remove(player);}
         if(joined)rememberProfile(player);
         var gang=GangSavedData.get(player.server).directory.of(player.getUUID());if(gang==null)return;
         for(var viewer:player.server.getPlayerList().getPlayers())if(viewer!=player&&gang.members.containsKey(viewer.getUUID())&&views.containsKey(viewer))sendState(viewer,"",joined?null:player.getUUID());
@@ -238,6 +265,11 @@ public final class GangNetwork {
             throw new IllegalArgumentException("Nieprawidłowa pozycja mapy.");
         try{return a.get(key).getAsBigDecimal().intValueExact();}
         catch(ArithmeticException exception){throw new IllegalArgumentException("Nieprawidłowa pozycja mapy.");}
+    }
+    public static long exactAmount(JsonObject object,String key){
+        if(!object.has(key)||!object.get(key).isJsonPrimitive()||!object.getAsJsonPrimitive(key).isNumber())throw new IllegalArgumentException("Nieprawidłowa kwota.");
+        try{long amount=object.get(key).getAsBigDecimal().longValueExact();GangFinances.amount(amount);return amount;}
+        catch(ArithmeticException error){throw new IllegalArgumentException("Podaj dodatnią, całkowitą kwotę w dolarach.");}
     }
     private static UUID uuid(JsonObject a,String key){return UUID.fromString(text(a,key));}
 }

@@ -1,21 +1,24 @@
 # Crime And Law
 
 Autorski mod gangsterski: panel gangów, członkostwo i własny wygląd menu.
-Wersja **0.1.28**.
+Wersja **0.1.29**.
 
 Pierwsza propozycja własnej ekonomii w dolarach i rozwoju terenów:
 [Balans terytoriów](docs/BALANS_TERYTORIOW.md) oraz
 [symulacja](docs/SYMULACJA_BALANSU.md). To projekt do dalszej implementacji;
-JAR 0.1.28 nie odczytuje tych reguł ekonomii i nie wypłaca jeszcze pieniędzy.
+Wersja 0.1.29 dodaje konta graczy, saldo gangu, wpłaty, wypłaty i premie.
+Dochody z terytoriów i handlu nadal wymagają implementacji; roboczy balans
+nie jest jeszcze odczytywany przez JAR. Zasady użycia: [Finanse](docs/FINANSE.md).
 Przejmowanie terenów, zegar świata oraz oznaczenia mapy już działają:
 [zasady i komendy captów](docs/CAPTY.md).
 
 ## Uruchomienie
 
 - Minecraft **1.21.1**, Java **21**, NeoForge **21.1.248**.
-- Włóż `crimeandlaw-0.1.28.jar` do `mods`, zastępując poprzedni JAR tego moda.
+- Włóż `crimeandlaw-0.1.29.jar` do `mods`, zastępując poprzedni JAR tego moda.
 - W rozgrywce sieciowej mod musi być **u graczy i na serwerze**.
-  Wersje od 0.1.26 do 0.1.28 korzystają z protokołu sieciowego 16.
+  **0.1.29 korzysta z protokołu 17** — wymaga tej samej wersji na obu stronach.
+  Starsze wersje od 0.1.26 do 0.1.28 używają protokołu 16.
 - W świecie jednoosobowym część serwerowa działa razem ze światem.
 - **G** otwiera panel; skrót można zmienić w sterowaniu. Esc lub X zamyka okno.
 
@@ -52,8 +55,10 @@ Starsze zapisy zaczynają z pustym rejestrem; wydarzenia nie są odtwarzane wste
 
 Transport ma wyłącznie ukrytą definicję kategorii w kodzie. Nie ma przycisku,
 widoku, zadań działających w tle ani mechanik transportu. Próba wybrania jego
-nieaktywnego identyfikatora wraca do głównej zakładki. Saldo, premie, czarna lista i cele są widocznymi panelami informacyjnymi;
-ich mechaniki pozostają dalszym etapem.
+nieaktywnego identyfikatora wraca do głównej zakładki. Saldo gangu i premie
+mają działające formularze oraz wyszukiwaną, stronicowaną historię. Czarna lista
+i cele pozostają panelami w przygotowaniu. Tworzenie i edycję zestawów ubrań
+usunięto z katalogu uprawnień; starsze zapisy są migrowane automatycznie.
 
 Własne rangi tworzy się w **Rangi → + Nowa ranga**. Osobne okno „Nowa ranga”
 ma nazwę, uprawnienia i „Zapisz rangę”. Anuluj, X i Esc odrzucają nowy szkic.
@@ -83,7 +88,8 @@ Serwer sprawdza każde uprawnienie niezależnie od stanu przycisków. Prywatne
 zgłoszenia otrzymują tylko lider i osoby z uprawnieniem do zgłoszeń.
 
 Lider przed odejściem przekazuje przywództwo, jeśli ma innych członków.
-Odejście ostatniego członka usuwa pusty gang po potwierdzeniu.
+Odejście ostatniego członka usuwa pusty gang po potwierdzeniu; najpierw musi
+on wypłacić pozostałe środki gangu. Pieniądze osobiste pozostają na koncie po odejściu.
 
 ## Kolory i wygląd
 
@@ -189,7 +195,7 @@ Windows: gradlew.bat build
 Linux/macOS: ./gradlew build
 ```
 
-Wynik: `build/libs/crimeandlaw-0.1.28.jar`.
+Wynik: `build/libs/crimeandlaw-0.1.29.jar`.
 Gradle Wrapper 9.2.1, ModDevGradle 2.0.148, NeoForge 21.1.248.
 `./gradlew test` sprawdza model, migrację zapisów, duże listy i prywatność
 zgłoszeń, walidację/edycję logo, kolory oraz skalowanie menu.
