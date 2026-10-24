@@ -1,10 +1,13 @@
-# HUD, czarna lista i cele — 0.1.30
+# HUD, czarna lista i cele — 0.1.31
 
 ## Minimapka i liczniki
 
 Minimapka działa bez członkostwa w gangu i bez otwierania menu. Pokazuje
 rzeczywiście załadowany teren klienta, obraca się zgodnie z kierunkiem gracza
-i ma wskaźnik północy. Brakujące dane pozostają ciemne. Nie pobiera ziarna
+i ma wskaźnik północy przy krawędzi mapy. Stonowana szarość lądu i niebieska
+woda zastępują jaskrawe kolory biomów. Teren ma krycie 176/255 (około 69%);
+bez nieprzezroczystego podkładu. Filtracja dwuliniowa wygładza obrót i piksele.
+Brakujące dane pozostają delikatnie przyciemnione. Nie pobiera ziarna
 świata, nie generuje chunków i nie wysyła ciągłych zapytań o mapę na serwer.
 
 Przetwarzanie: najwyżej 512 kolumn na tick, miękki budżet 2 ms, pamięć do
@@ -13,7 +16,11 @@ brakujące kafle są przygotowywane wcześniej. Jedna tekstura 176×176 jest
 aktualizowana co najwyżej co pięć ticków, a nie na każdą klatkę.
 Zmiana wymiaru i wyjście z serwera czyszczą pamięć oraz teksturę.
 
-Obok mapki: oryginalne symbole banknotu i karty, **Gotówka** oraz **Bank**.
+Obok mapki: oryginalne symbole banknotu i karty oraz dwa małe wiersze kwot,
+bez dużych kafli i etykiet. Gotówka jest jasnozielona, bank jasnoniebieski.
+Kwoty i litera N korzystają z dołączonego, ograniczonego podzbioru DejaVu Sans
+Bold (około 6 KB, licencja dołączona). Największa kwota jest automatycznie
+skalowana, aby pozostała pełna i mieściła się w dostępnej szerokości.
 Nie są to znaki z przypadkowej czcionki. Symbole są rysowane wektorowo na
 płótnie 128 jednostek i skalowane wraz z całym HUD-em. Układ uwzględnia
 faktyczny rozmiar waniliowego hotbara, serc i pancerza. Nieaktywny czat jest

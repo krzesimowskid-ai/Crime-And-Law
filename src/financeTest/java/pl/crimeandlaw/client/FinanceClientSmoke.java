@@ -29,7 +29,7 @@ public final class FinanceClientSmoke {
             if(start==0){start=System.nanoTime();Files.createDirectories(OUT);}
             check(System.nanoTime()-start<360_000_000_000L,"Client timeout stage "+step+" / "+ClientState.message);
             if(++frames%6!=0)return;
-            if(!pending.isEmpty()){try(var image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(OUT.resolve(ROLE+"-"+pending+".png"));}pending="";}
+            if(!pending.isEmpty()){try(var image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(OUT.resolve(ROLE+"-"+pending+".png"));if(pending.equals("hud-clean-scale2"))checkIcons(mc,image);}pending="";}
             if(mc.screen instanceof AccessibilityOnboardingScreen onboarding){mc.options.onboardingAccessibilityFinished();onboarding.onClose();return;}
             if(mc.screen instanceof DisconnectedScreen)throw new AssertionError("Disconnected at stage "+step);
             if(step<0){
@@ -76,7 +76,24 @@ public final class FinanceClientSmoke {
             case 29->{var data=ClientState.state.getAsJsonObject("blacklist");if(!data.get("history").getAsBoolean())return;check(data.getAsJsonArray("entries").size()==2,"Blacklist history shows add and remove");pending="blacklist-history";step=30;}
             case 30->{press(mc,"Cele");pending="weekly-goals";step=31;}
             case 31->{check(ClientState.state.getAsJsonObject("goals").getAsJsonArray("cards").size()==3,"Three current-mechanic goals are visible");mc.setScreen(null);HudMoney.receive(new GangNetwork.Money(1_000_000_000_000L,1_000_000_000_000L));pending="hud-max-values";step=32;}
-            case 32->{HudMoney.receive(new GangNetwork.Money(1235,19500));Files.writeString(OUT.resolve("owner.PASS"),"Financial TCP checks, cash/bank HUD at GUI 2/4 and maximum values, live minimap, blacklist add/remove/history, weekly goals.\n");done=true;mc.stop();}
+            case 32->{HudMoney.receive(new GangNetwork.Money(148840,69420));look(mc,180);pending="hud-clean-north";step=33;}
+            case 33->{look(mc,90);pending="hud-clean-west";step=34;}
+            case 34->{look(mc,0);pending="hud-clean-south";step=35;}
+            case 35->{look(mc,-90);pending="hud-clean-east";step=36;}
+            case 36->{mc.options.guiScale().set(2);mc.resizeDisplay();pending="hud-clean-scale2";step=37;}
+            case 37->{mc.options.hideGui=true;pending="hud-hidden-f1";step=38;}
+            case 38->{mc.options.hideGui=false;mc.setScreen(new ChatScreen(""));pending="hud-open-chat";step=39;}
+            case 39->{mc.setScreen(null);HudMoney.ready=false;pending="hud-loading-balances";step=40;}
+            case 40->{HudMoney.receive(new GangNetwork.Money(1235,19500));Files.writeString(OUT.resolve("owner.PASS"),"Financial TCP checks; actual cash/bank HUD at GUI 2/4; synthetic client-only representative and maximum values; four compass headings; F1, open chat, loading state; live minimap, blacklist, goals.\n");done=true;mc.stop();}
+        }
+    }
+    private static void look(Minecraft mc,float yaw){mc.player.setYRot(yaw);mc.player.yRotO=yaw;mc.player.setXRot(38);mc.player.xRotO=38;}
+    private static void checkIcons(Minecraft mc,com.mojang.blaze3d.platform.NativeImage image){
+        var layout=PlayerHudLayout.of(mc.getWindow().getGuiScaledWidth(),mc.getWindow().getGuiScaledHeight());
+        double scale=layout.canvas().scale()*image.getWidth()/mc.getWindow().getGuiScaledWidth();
+        for(int row=0;row<2;row++){int count=0,x=(int)(layout.moneyX()*scale),y=(int)((layout.moneyY()+24*row)*scale);
+            for(int dy=0;dy<22*scale;dy++)for(int dx=0;dx<22*scale;dx++){int c=image.getPixelRGBA(x+dx,y+dy),r=c&255,g=c>>>8&255,b=c>>>16&255;if(g>160&&b>150&&r>130)count++;}
+            check(count>80,"Actual rendered "+(row==0?"banknote":"credit card")+" must contain visible vector pixels: "+count);
         }
     }
     private static void member(Minecraft mc)throws Exception{

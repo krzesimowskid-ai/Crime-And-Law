@@ -1,0 +1,11 @@
+{
+  "providers": [
+    {
+      "type": "ttf",
+      "file": "crimeandlaw:hud.ttf",
+      "size": 11,
+      "oversample": 4,
+      "shift": [0, 0]
+    }
+  ]
+}

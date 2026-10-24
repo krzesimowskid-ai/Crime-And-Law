@@ -1,7 +1,7 @@
 # Crime And Law
 
 Autorski mod gangsterski: panel gangów, członkostwo i własny wygląd menu.
-Wersja **0.1.30**.
+Wersja **0.1.31**.
 
 Pierwsza propozycja własnej ekonomii w dolarach i rozwoju terenów:
 [Balans terytoriów](docs/BALANS_TERYTORIOW.md) oraz
@@ -15,9 +15,9 @@ Przejmowanie terenów, zegar świata oraz oznaczenia mapy już działają:
 ## Uruchomienie
 
 - Minecraft **1.21.1**, Java **21**, NeoForge **21.1.248**.
-- Włóż `crimeandlaw-0.1.30.jar` do `mods`, zastępując poprzedni JAR tego moda.
+- Włóż `crimeandlaw-0.1.31.jar` do `mods`, zastępując poprzedni JAR tego moda.
 - W rozgrywce sieciowej mod musi być **u graczy i na serwerze**.
-  **0.1.30 korzysta z protokołu 18** — wymaga tej samej wersji na obu stronach.
+  **0.1.31 korzysta z protokołu 18** — wymaga tej samej wersji na obu stronach.
   Starsze wersje od 0.1.26 do 0.1.28 używają protokołu 16.
 - W świecie jednoosobowym część serwerowa działa razem ze światem.
 - **G** otwiera panel; skrót można zmienić w sterowaniu. Esc lub X zamyka okno.
@@ -27,7 +27,9 @@ Przejmowanie terenów, zegar świata oraz oznaczenia mapy już działają:
 Podczas gry, w lewym dolnym rogu, widać minimapkę rzeczywistego załadowanego
 terenu, strzałkę gracza i północ. Obok są autorskie ikony banknotu i karty
 oraz osobne kwoty **Gotówka** i **Bank**. Mapa podąża za graczem i kierunkiem
-patrzenia. Nie wymaga otwierania panelu ani członkostwa w gangu. HUD jest
+patrzenia. Mapa ma stonowane kolory, półprzezroczysty teren i płynną filtrację;
+północ pozostaje przy jej krawędzi. Kwoty są w dwóch kompaktowych wierszach
+z gładką czcionką, bez dużych kafli. Nie wymaga otwierania panelu ani członkostwa w gangu. HUD jest
 ukryty przy F1 i w otwartych ekranach. W grze nieaktywne wiadomości czatu
 są przesunięte ponad nowy HUD; otwarty czat zachowuje zwykłe położenie.
 Rozmiar minimapy jest niezależny od skali menu, a pozycja pieniędzy uwzględnia
@@ -220,7 +222,7 @@ Windows: gradlew.bat build
 Linux/macOS: ./gradlew build
 ```
 
-Wynik: `build/libs/crimeandlaw-0.1.30.jar`.
+Wynik: `build/libs/crimeandlaw-0.1.31.jar`.
 Gradle Wrapper 9.2.1, ModDevGradle 2.0.148, NeoForge 21.1.248.
 `./gradlew test` sprawdza model, migrację zapisów, duże listy i prywatność
 zgłoszeń, walidację/edycję logo, kolory oraz skalowanie menu.

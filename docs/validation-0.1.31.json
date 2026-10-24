@@ -1,0 +1,17 @@
+{
+  "tests": 152,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "version": "0.1.31",
+  "protocol": 18,
+  "schema": 4,
+  "bytes": 2009939,
+  "sha256": "b7bba6e659050f7f46d98fcb0d10ad28b12a15d535b6647934a02f7b15adadb7",
+  "nested_libraries": 15,
+  "network": "PASS",
+  "death_respawn": "PASS",
+  "restart": "PASS",
+  "rendered_icons": "PASS",
+  "hud": "1920x1080; GUI 2/4; four headings; normal and maximum balances; F1, chat, loading"
+}

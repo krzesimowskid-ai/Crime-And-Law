@@ -703,3 +703,13 @@ gdy właściwe systemy własności oraz mapy będą rozwijane.
   utraty zwykłych pieniędzy przy śmierci. W tym modzie oba salda są zachowane;
   nie przedstawiać tego jako zweryfikowanej reguły Majestic.
 - Schemat danych 4, protokół 18.
+
+
+## Poprawa wyglądu minimapy i pieniędzy — 0.1.31
+
+- Na podstawie zrzutu użytkownika: półprzezroczysta, mniej nasycona minimapa,
+  czytelniejsza strzałka, północ przy krawędzi zamiast wewnątrz mapy.
+- Zamiast dwóch dużych paneli pieniędzy: dwa małe wiersze z ikonami banknotu
+  i karty, gładką czcionką oraz cieniem. Zachowana pełna kwota bez skrótów.
+- Zmiana dotyczy wyglądu klienta; ekonomia, zapis i pakiety są bez zmian.
+  Protokół 18, schemat danych 4.
