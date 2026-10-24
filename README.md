@@ -1,7 +1,7 @@
 # Crime And Law
 
 Autorski mod gangsterski: panel gangów, członkostwo i własny wygląd menu.
-Wersja **0.1.35**.
+Wersja **0.1.36**.
 
 Pierwsza propozycja własnej ekonomii w dolarach i rozwoju terenów:
 [Balans terytoriów](docs/BALANS_TERYTORIOW.md) oraz
@@ -15,9 +15,9 @@ Przejmowanie terenów, zegar świata oraz oznaczenia mapy już działają:
 ## Uruchomienie
 
 - Minecraft **1.21.1**, Java **21**, NeoForge **21.1.248**.
-- Włóż `crimeandlaw-0.1.35.jar` do `mods`, zastępując poprzedni JAR tego moda.
+- Włóż `crimeandlaw-0.1.36.jar` do `mods`, zastępując poprzedni JAR tego moda.
 - W rozgrywce sieciowej mod musi być **u graczy i na serwerze**.
-  **0.1.35 korzysta z protokołu 19** — wymaga tej samej wersji na obu stronach.
+  **0.1.36 korzysta z protokołu 19** — wymaga tej samej wersji na obu stronach.
   Starsze wersje od 0.1.26 do 0.1.28 używają protokołu 16.
 - W świecie jednoosobowym część serwerowa działa razem ze światem.
 - **G** otwiera panel; skrót można zmienić w sterowaniu. Esc lub X zamyka okno.
@@ -37,6 +37,10 @@ ukryty przy F1 i w menu, a pozostaje widoczny podczas pisania na czacie.
 Mapa i liczniki są bliżej lewego dolnego narożnika: margines sześciu jednostek.
 Rozmiar minimapy jest niezależny od skali menu, a pozycja pieniędzy uwzględnia
 faktyczną skalę waniliowego hotbara i statystyk.
+
+Zegar i salda tworzą z mapą jeden układ również przy małym oknie. Zwykłe
+kwoty mieszczą się obok niej. Przy bardzo wąskim oknie lub długiej kwocie
+cała kolumna układa się bezpośrednio nad mapą, przy jej lewej krawędzi.
 
 Istniejące pieniądze osobiste pozostają w banku, nowa gotówka wynosi 0 $.
 Śmierć i odrodzenie nie odbierają ani nie kopiują żadnego z sald.
@@ -245,7 +249,7 @@ Windows: gradlew.bat build
 Linux/macOS: ./gradlew build
 ```
 
-Wynik: `build/libs/crimeandlaw-0.1.35.jar`.
+Wynik: `build/libs/crimeandlaw-0.1.36.jar`.
 Gradle Wrapper 9.2.1, ModDevGradle 2.0.148, NeoForge 21.1.248.
 `./gradlew test` sprawdza model, migrację zapisów, duże listy i prywatność
 zgłoszeń, walidację/edycję logo, kolory oraz skalowanie menu.

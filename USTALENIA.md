@@ -762,3 +762,14 @@ gdy właściwe systemy własności oraz mapy będą rozwijane.
 - Ustawienia pod zębatką mają jeden suwak wysokości. Natywna historia,
   limity, podpisy, usuwanie i czyszczenie wiadomości pozostają zachowane.
 - Zachowano poprawkę odstępu od captu z 0.1.34. Protokół 19, schemat danych 4.
+
+## Zegar i salda przy małym oknie — 0.1.36
+
+- Użytkownik ponownie wskazał zrzut małego okna: zegar i salda były wysoko
+  nad mapą i nie tworzyły z nią spójnego układu.
+- Poprzedni margines przy hotbarze zbyt wcześnie uruchamiał przenoszenie.
+  Zwykłe kwoty przy 855×481 pozostają obok mapy, wyrównane do jej dołu.
+- Przy braku szerokości cała kolumna układa się bezpośrednio nad mapą,
+  przy lewej krawędzi i z odstępem czterech jednostek.
+- Pomiar długich kwot odpowiada faktycznej skali ich rysowania.
+- Zachowano poprawki czatu i captu z 0.1.34–35. Protokół 19, schemat danych 4.

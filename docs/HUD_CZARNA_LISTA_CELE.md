@@ -1,4 +1,4 @@
-# HUD, czarna lista i cele — 0.1.33
+# HUD, czarna lista i cele — 0.1.36
 
 ## Minimapka i liczniki
 
@@ -28,6 +28,13 @@ do rzeczywistej szerokości kwot i daty. Wiersz licznika ma odstęp 14 jednostek
 ikona 14 jednostek, tekst skaluje się do 0,70 względem czcionki HUD.
 Są znacznie mniejsze od 0.1.31; chip i ramka banknotu mają dodatkowe detale. Czat jest
 w lewym górnym rogu, a otwarcie pisania zachowuje cały dolny HUD.
+
+Zegar i salda pozostają związane z mapą. Gdy kolumna mieści się po jej
+prawej stronie, dolny wiersz jest wyrównany z dolną krawędzią mapy.
+Gdy miejsca brakuje, cała kolumna przechodzi nad mapę przy jej lewej
+krawędzi, z odstępem czterech jednostek. Zastępuje to dawny układ, który
+przy małym oknie podnosił salda wysoko nad hotbar i odsuwał je od mapy.
+Szerokość salda uwzględnia faktyczną skalę rysowanego tekstu.
 
 Nowy HUD jest ukryty przy F1 i w menu; jest widoczny w otwartym czacie. Waniliowe serca,
 głód i hotbar pozostają dostępne. Dane pieniędzy są oddzielnym prywatnym

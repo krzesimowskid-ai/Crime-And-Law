@@ -11,7 +11,8 @@ class PlayerHudLayoutTest {
             var layout=PlayerHudLayout.of(nativeGui[0],nativeGui[1]);double scale=layout.canvas().scale();
             assertTrue(layout.mapX()*scale>=0);assertTrue((layout.mapY()+PlayerHudLayout.MAP_HEIGHT+2)*scale<nativeGui[1]);
             assertTrue(layout.clockY()*scale>=0);assertTrue((layout.moneyX()+PlayerHudLayout.MONEY_WIDTH)*scale<nativeGui[0]);
-            if((layout.moneyX()+PlayerHudLayout.MONEY_WIDTH)*scale>nativeGui[0]/2.0-96)assertTrue((layout.moneyY()+PlayerHudLayout.MONEY_HEIGHT)*scale<=nativeGui[1]-59.9);
+            assertTrue((layout.moneyX()+PlayerHudLayout.MONEY_WIDTH)*scale<=nativeGui[0]/2.0-91,"Counters stay to the left of the native hotbar");
+            assertTrue(layout.moneyX()==layout.mapX()||layout.moneyX()==layout.mapX()+PlayerHudLayout.MAP_WIDTH+10);
             assertEquals(6,layout.mapX());assertEquals(6,layout.canvas().canvasHeight()-layout.mapY()-PlayerHudLayout.MAP_HEIGHT);
         }
     }
@@ -20,6 +21,25 @@ class PlayerHudLayoutTest {
         assertEquals(compact.mapY()+PlayerHudLayout.MAP_HEIGHT,compact.moneyY()+PlayerHudLayout.MONEY_HEIGHT);
         var maximum=PlayerHudLayout.of(480,270,PlayerHudLayout.MONEY_WIDTH);
         assertTrue(maximum.moneyY()<compact.moneyY());
+        assertEquals(maximum.mapX(),maximum.moneyX());
+        assertEquals(maximum.mapY()-4,maximum.moneyY()+PlayerHudLayout.MONEY_HEIGHT);
+    }
+    @Test void theUsersSmallWindowKeepsOrdinaryAmountsBesideTheMap(){
+        for(int[] size:new int[][]{{428,241},{427,240},{480,270}}){
+            var hud=PlayerHudLayout.of(size[0],size[1],72);
+            assertEquals(hud.mapX()+PlayerHudLayout.MAP_WIDTH+10,hud.moneyX());
+            assertEquals(hud.mapY()+PlayerHudLayout.MAP_HEIGHT,hud.moneyY()+PlayerHudLayout.MONEY_HEIGHT);
+        }
+    }
+    @Test void narrowWindowsAndLongAmountsStayAttachedToTheMap(){
+        for(int[] size:new int[][]{{320,240},{344,258},{400,225},{428,241},{480,270}})
+            for(float width:new float[]{40,72,106}){
+                var hud=PlayerHudLayout.of(size[0],size[1],width);
+                assertTrue(hud.clockY()>0);
+                if(hud.moneyX()==hud.mapX())assertEquals(hud.mapY()-4,hud.moneyY()+PlayerHudLayout.MONEY_HEIGHT);
+                else assertEquals(hud.mapY()+PlayerHudLayout.MAP_HEIGHT,hud.moneyY()+PlayerHudLayout.MONEY_HEIGHT);
+                assertTrue((hud.moneyX()+width)*hud.canvas().scale()<=size[0]/2.0-91);
+            }
     }
     @Test void northFollowsTheEdgeInsteadOfCrossingTheMap(){
         int x=14,y=200,w=136,h=86;float px=x+w/2f,py=y+h*.58f;

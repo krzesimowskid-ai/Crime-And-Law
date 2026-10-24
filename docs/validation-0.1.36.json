@@ -1,0 +1,89 @@
+{
+  "version": "0.1.36",
+  "minecraft": "1.21.1",
+  "neoforge": "21.1.248",
+  "java": 21,
+  "protocol": 19,
+  "dataSchema": 4,
+  "build": "PASS",
+  "junit": {
+    "tests": 168,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "renderer": {
+    "result": "PASS",
+    "type": "Actual Minecraft renderer, resized windows and asserted native GUI scale; localhost dedicated server; local capture and balance display fixtures",
+    "cases": [
+      {
+        "case": "hidden-chat",
+        "geometry": "CaptureHudLayout[x=74, y=12, width=280, height=40] image=855x481 gui=428x241\nPlayerHudLayout[canvas=GangLayout[scale=0.535, canvasWidth=800, canvasHeight=450, panelWidth=640, panelHeight=360], mapX=6, mapY=358, moneyX=152, moneyY=416]\ncash=148840 bank=0",
+        "result": "PASS"
+      },
+      {
+        "case": "large-gui2",
+        "geometry": "CaptureHudLayout[x=361, y=12, width=280, height=40] image=1920x1080 gui=960x540\nPlayerHudLayout[canvas=GangLayout[scale=1.2, canvasWidth=800, canvasHeight=450, panelWidth=640, panelHeight=360], mapX=6, mapY=358, moneyX=152, moneyY=416]\ncash=148840 bank=0",
+        "result": "PASS"
+      },
+      {
+        "case": "large-gui4",
+        "geometry": "CaptureHudLayout[x=184, y=12, width=280, height=40] image=1920x1080 gui=480x270\nPlayerHudLayout[canvas=GangLayout[scale=0.6, canvasWidth=800, canvasHeight=450, panelWidth=640, panelHeight=360], mapX=6, mapY=358, moneyX=152, moneyY=416]\ncash=148840 bank=0",
+        "result": "PASS"
+      },
+      {
+        "case": "large-maximum-values",
+        "geometry": "CaptureHudLayout[x=184, y=12, width=280, height=40] image=1920x1080 gui=480x270\nPlayerHudLayout[canvas=GangLayout[scale=0.6, canvasWidth=800, canvasHeight=450, panelWidth=640, panelHeight=360], mapX=6, mapY=358, moneyX=6, moneyY=326]\ncash=1000000000000 bank=1000000000000",
+        "result": "PASS"
+      },
+      {
+        "case": "minimum-closed",
+        "geometry": "CaptureHudLayout[x=125, y=12, width=185, height=40] image=640x480 gui=320x240\nPlayerHudLayout[canvas=GangLayout[scale=0.4, canvasWidth=800, canvasHeight=600, panelWidth=640, panelHeight=360], mapX=6, mapY=508, moneyX=6, moneyY=476]\ncash=148840 bank=0",
+        "result": "PASS"
+      },
+      {
+        "case": "minimum-open",
+        "geometry": "CaptureHudLayout[x=125, y=12, width=185, height=40] image=640x480 gui=320x240\nPlayerHudLayout[canvas=GangLayout[scale=0.4, canvasWidth=800, canvasHeight=600, panelWidth=640, panelHeight=360], mapX=6, mapY=508, moneyX=6, moneyY=476]\ncash=148840 bank=0",
+        "result": "PASS"
+      },
+      {
+        "case": "small-closed",
+        "geometry": "CaptureHudLayout[x=164, y=12, width=254, height=40] image=855x481 gui=428x241\nPlayerHudLayout[canvas=GangLayout[scale=0.535, canvasWidth=800, canvasHeight=450, panelWidth=640, panelHeight=360], mapX=6, mapY=358, moneyX=152, moneyY=416]\ncash=148840 bank=0",
+        "result": "PASS"
+      },
+      {
+        "case": "small-maximum-values",
+        "geometry": "CaptureHudLayout[x=164, y=12, width=254, height=40] image=855x481 gui=428x241\nPlayerHudLayout[canvas=GangLayout[scale=0.535, canvasWidth=800, canvasHeight=450, panelWidth=640, panelHeight=360], mapX=6, mapY=358, moneyX=6, moneyY=326]\ncash=1000000000000 bank=1000000000000",
+        "result": "PASS"
+      },
+      {
+        "case": "small-open",
+        "geometry": "CaptureHudLayout[x=164, y=12, width=254, height=40] image=855x481 gui=428x241\nPlayerHudLayout[canvas=GangLayout[scale=0.535, canvasWidth=800, canvasHeight=450, panelWidth=640, panelHeight=360], mapX=6, mapY=358, moneyX=152, moneyY=416]\ncash=148840 bank=0",
+        "result": "PASS"
+      }
+    ],
+    "checks": [
+      "Ordinary balances stay beside the radar at 855x481",
+      "Narrow windows wrap counters directly above radar with a 4-unit gap",
+      "Maximum cash and bank values are displayed in full",
+      "Both counter icons visible in rendered pixels",
+      "Capture and chat remain disjoint",
+      "Persistent chat still passes 12-second retention and native clear/deletion/settings/completion checks"
+    ],
+    "screenshotsInspected": [
+      "small-closed",
+      "minimum-open",
+      "small-maximum-values",
+      "large-maximum-values"
+    ]
+  },
+  "jar": {
+    "name": "crimeandlaw-0.1.36.jar",
+    "bytes": 2124253,
+    "sha256": "ff2745c7818824dc7994aa5cec594c0a337469b06d89ffb39a3fe597a7d3d3c3",
+    "crc": "PASS",
+    "nestedJars": 15,
+    "nestedCrc": "PASS",
+    "smokeClasses": 0
+  }
+}

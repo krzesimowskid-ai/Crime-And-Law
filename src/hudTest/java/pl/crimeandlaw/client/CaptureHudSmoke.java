@@ -32,6 +32,8 @@ public final class CaptureHudSmoke {
         new Case("minimum-closed",640,480,2,false,false,"FIGHTING",false),
         new Case("large-gui2",1920,1080,2,true,false,"PREPARING",false),
         new Case("large-gui4",1920,1080,4,true,false,"FIGHTING",true),
+        new Case("small-maximum-values",855,481,2,false,false,"CLAIMING",false),
+        new Case("large-maximum-values",1920,1080,4,true,false,"PREPARING",false),
         new Case("hidden-chat",855,481,2,false,true,"CLAIMING",false)
     };
     private static final Path OUT=Path.of(System.getProperty("crimeandlaw.hudOutput","build/hud-smoke"));
@@ -55,7 +57,7 @@ public final class CaptureHudSmoke {
             if(step<0){
                 if(!(mc.screen instanceof TitleScreen)||mc.getOverlay()!=null)return;
                 mc.options.guiScale().set(2);mc.options.framerateLimit().set(30);mc.resizeDisplay();
-                ConnectScreen.startConnecting(mc.screen,mc,ServerAddress.parseString("127.0.0.1:25598"),new ServerData("HUD regression","127.0.0.1:25598",ServerData.Type.OTHER),false,null);
+                ConnectScreen.startConnecting(mc.screen,mc,ServerAddress.parseString("127.0.0.1:25599"),new ServerData("HUD regression","127.0.0.1:25599",ServerData.Type.OTHER),false,null);
                 step=0;return;
             }
             if(mc.player==null||mc.level==null)return;
@@ -68,13 +70,20 @@ public final class CaptureHudSmoke {
             if(step>CASES.length){persistence(mc);return;}
             var c=CASES[step-1];fixture(mc,c);
             if(++wait<9)return;
+            if(wait==9){mc.options.guiScale().set(c.gui());mc.resizeDisplay();return;}
             check(mc.getWindow().getWidth()==c.width()&&mc.getWindow().getHeight()==c.height(),"Actual framebuffer size "+c.name());
+            check(mc.getWindow().getGuiScale()==Math.min(c.gui(),Math.min(c.width()/320,c.height()/240)),"Actual native GUI scale "+c.name()+": "+mc.getWindow().getGuiScale()+", option="+mc.options.guiScale().get());
             if(c.focused())check(mc.screen instanceof RpChatScreen&&input(mc).getValue().equals("szkic wiadomości"),"Draft survives resized chat");
             var layout=CaptureHudLayout.of(mc.getWindow().getGuiScaledWidth(),c.hidden()?null:ChatView.layout(false));
+            var hud=PlayerHud.layout(mc.getWindow().getGuiScaledWidth(),mc.getWindow().getGuiScaledHeight());
+            boolean beside=hud.moneyX()!=hud.mapX();
+            check(beside?hud.moneyY()+PlayerHudLayout.MONEY_HEIGHT==hud.mapY()+PlayerHudLayout.MAP_HEIGHT:hud.moneyY()+PlayerHudLayout.MONEY_HEIGHT+4==hud.mapY(),"Counters stay attached to the radar in both layouts");
+            if(c.name().startsWith("small-")&&!c.name().contains("maximum"))check(beside,"The reported small window keeps ordinary balances beside the radar");
+            if(c.name().equals("small-maximum-values")||c.name().startsWith("minimum"))check(!beside,"Narrow layouts wrap directly above the radar");
             if(!c.hidden())check(layout.x()>(ChatView.layout(c.focused()).x()+ChatView.layout(c.focused()).width()+10)*ChatView.layout(c.focused()).scale(),"Chat and capture geometry is disjoint");
             try(var image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){
                 image.writeToFile(OUT.resolve(c.name()+".png"));
-                Files.writeString(OUT.resolve(c.name()+"-geometry.txt"),layout+" image="+image.getWidth()+"x"+image.getHeight()+" gui="+mc.getWindow().getGuiScaledWidth()+"x"+mc.getWindow().getGuiScaledHeight());
+                Files.writeString(OUT.resolve(c.name()+"-geometry.txt"),layout+" image="+image.getWidth()+"x"+image.getHeight()+" gui="+mc.getWindow().getGuiScaledWidth()+"x"+mc.getWindow().getGuiScaledHeight()+"\n"+hud+"\ncash="+HudMoney.cash+" bank="+HudMoney.bank);
                 checkBar(mc,image,layout);checkMoney(mc,image);
             }
             Files.writeString(OUT.resolve(c.name()+".PASS"),"Actual "+c.width()+"x"+c.height()+", GUI "+c.gui()+", capture border and both money icons rendered; chat geometry disjoint.\n");
@@ -143,7 +152,7 @@ public final class CaptureHudSmoke {
                 check(messages(mc).isEmpty(),"Native clearing remains authoritative");
                 try(var image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(OUT.resolve("persistent-cleared.png"));check(peak(image,l)<30,"An empty idle chat leaves no ghost panel or text");}
                 Files.writeString(OUT.resolve("persistence.PASS"),"All 11 rows remain after Escape and at least 12 real seconds / 240 GUI ticks; idle opacity stays readable and stable. Matching layouts, native clear/deletion, completion, clickable component, settings round trip and draft preserved.\n");
-                Files.writeString(OUT.resolve("hud.PASS"),"Seven window/HUD/capture cases and persistent chat renderer integration passed.\n");done=true;mc.stop();
+                Files.writeString(OUT.resolve("hud.PASS"),"Nine window/HUD/capture cases, attached counter layouts with ordinary and maximum balances, and persistent chat renderer integration passed.\n");done=true;mc.stop();
             }
         }
     }
@@ -170,6 +179,7 @@ public final class CaptureHudSmoke {
         mc.gui.getChat().addMessage(Component.literal("Aktualizowano capt przy -34, 4 — wiadomość testowa."));
     }
     private static void fixture(Minecraft mc,Case c){
+        boolean maximum=c.name().contains("maximum");HudMoney.receive(new GangNetwork.Money(maximum?1_000_000_000_000L:148840,maximum?1_000_000_000_000L:0));
         var battle=new JsonObject();battle.addProperty("phase",c.phase());battle.addProperty("remaining",296);battle.addProperty("x",-34);battle.addProperty("z",4);battle.addProperty("eliminated",c.eliminated());battle.addProperty("present",true);battle.addProperty("holding",0);battle.addProperty("holdRequired",60);
         var state=new JsonObject();state.addProperty("dimension",mc.level.dimension().location().toString());state.add("ownBattle",battle);CaptureClient.state=state;
     }

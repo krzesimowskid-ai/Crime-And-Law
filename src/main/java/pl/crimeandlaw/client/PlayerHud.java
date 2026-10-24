@@ -30,7 +30,8 @@ public final class PlayerHud {
     }
     static PlayerHudLayout layout(int width,int height){
         var font=Minecraft.getInstance().font;var time=HudClock.INSTANCE.display();
-        float span=Math.max(20+Math.min(84,Math.max(font.width(amount(false)),font.width(amount(true)))*MONEY_SCALE),Math.max(31+font.width(Component.literal(time.date()).setStyle(HUD_FONT))*.57f,font.width(Component.literal(time.day()).setStyle(HUD_FONT))*.62f));
+        float amountWidth=Math.max(font.width(amount(false)),font.width(amount(true)));
+        float span=Math.max(20+Math.min(84,amountWidth*MONEY_SCALE),Math.max(31+font.width(Component.literal(time.date()).setStyle(HUD_FONT))*.57f,font.width(Component.literal(time.day()).setStyle(HUD_FONT))*.62f));
         return PlayerHudLayout.of(width,height,span);
     }
     private static void clock(GuiGraphics g,int x,int y){
