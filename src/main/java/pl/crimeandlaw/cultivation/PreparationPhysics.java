@@ -15,7 +15,7 @@ public final class PreparationPhysics {
     public static double soilY(double fill){return BOTTOM+(TOP-BOTTOM)*Math.clamp(fill,0,1);}
     public static double soilRadius(double fill){return .2035+.0811*Math.clamp(fill,0,1);}
     public static boolean inside(double x,double z,double radius){x=Math.abs(x-.5);z=Math.abs(z-.5);return Math.max(x,z)<=radius*.9238795&&x+z<=radius*1.306563;}
-    public static boolean bounded(Pose p){return Double.isFinite(p.x)&&Double.isFinite(p.y)&&Double.isFinite(p.z)&&Double.isFinite(p.roll)&&Double.isFinite(p.pitch)&&p.x>=-.45&&p.x<=1.45&&p.z>=-.45&&p.z<=1.45&&p.y>=.60&&p.y<=1.55&&Math.abs(p.roll)<=Math.PI&&Math.abs(p.pitch)<=1.3;}
+    public static boolean bounded(Pose p){return Double.isFinite(p.x)&&Double.isFinite(p.y)&&Double.isFinite(p.z)&&Double.isFinite(p.roll)&&Double.isFinite(p.pitch)&&p.x>=-.45&&p.x<=1.45&&p.z>=-.45&&p.z<=1.45&&p.y>=.60&&p.y<=1.55&&Math.abs(p.roll)<=Math.PI+1e-5&&Math.abs(p.pitch)<=1.30001;}
     public static Stream stream(Pose pose,boolean water,boolean held){
         var local=water?new Point(.976,.54,.50):new Point(.5,.82,.5);
         var normal=rotate(water?new Point(.809,.588,0):new Point(0,1,0),pose.roll,pose.pitch);

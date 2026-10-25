@@ -12,5 +12,6 @@ class PreparationPhysicsTest {
     @Test void surfaceAlwaysFitsInsideTaperedCavity(){double last=0;for(int i=0;i<=1000;i++){double f=i/1000.,y=PreparationPhysics.soilY(f),r=PreparationPhysics.soilRadius(f);assertTrue(y>=.065&&y<=.385);assertTrue(r>=last);assertTrue(r<.215+.095*(y-.055)/.375-.008);last=r;}}
     @Test void seedFallsAccordingToGravityAndHitsAtPredictedTime(){var source=new Point(.5,.83,.5);double t=PreparationPhysics.flight(source,new Point(0,0,0),.345);var p=PreparationPhysics.at(new Stream(source,new Point(0,0,0),true),t);assertEquals(.345,p.y(),1e-8);assertTrue(t>.5&&t<.7);assertTrue(PreparationPhysics.inside(p.x(),p.z(),.17));}
     @Test void nonFiniteOrDistantControlPointsCannotBeAccepted(){for(double bad:new double[]{Double.NaN,Double.NEGATIVE_INFINITY,Double.POSITIVE_INFINITY,100,-100})assertFalse(PreparationPhysics.bounded(new Pose(bad,1,.5,0,0)));assertFalse(PreparationPhysics.bounded(new Pose(.5,100,.5,0,0)));assertFalse(PreparationPhysics.bounded(new Pose(.5,1,.5,100,0)));}
+    @Test void floatWireAnglesKeepValidPiRotation(){assertTrue(PreparationPhysics.bounded(new Pose(.5,1,.5,(float)Math.PI,0)));}
     @Test void octagonRejectsSquareCorners(){assertTrue(PreparationPhysics.inside(.5,.5,.3));assertFalse(PreparationPhysics.inside(.5+.3,.5+.3,.3));assertFalse(PreparationPhysics.inside(.5,.5+.3,.3));}
 }

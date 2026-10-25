@@ -1,0 +1,76 @@
+{
+  "version": "0.1.44",
+  "date": "2026-10-25",
+  "minecraft": "1.21.1",
+  "neoforge": "21.1.248",
+  "java": 21,
+  "protocol": 24,
+  "jar": {
+    "filename": "crimeandlaw-0.1.44.jar",
+    "bytes": 3939060,
+    "sha256": "4786cc13192caa129d7fd5a7f5b06b530a659118b1097883bae4eb653f0db8c0",
+    "crc": "pass",
+    "duplicate_entries": 0,
+    "fixture_classes": 0,
+    "production_classes_byte_identical": 245,
+    "source_resources_byte_identical": 34,
+    "renewable_seed_recipe": false
+  },
+  "unit": {
+    "tests": 209,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "suites": 36
+  },
+  "tcp": {
+    "shop-recovery": "Quote refreshed after three seconds without replaying purchase or changing funds",
+    "reservation": "Second TCP player denied same pot",
+    "server": "TCP purchases, placement, UV assembly, source refill, 3D pour, packet, planting, watering, eight free-order cuts, conservation and adversarial checks pass",
+    "security": "Closed/stacked bag checks, no-motion completion, seed-phase skip, source swap, repeat completion, three bag charges, replaced BE, veto, wall/reach, packet capacity, creative overflow, cash/bank separation, shop replay/capacity/distance, upper/lower/creative frame destruction, legacy drops pass",
+    "restart": "Actual disk restart: frame/pot/UV, exhausted soil, ordinary six-leaf roll/partial mask/UUID, leaf/seed/water/bag/tool counts and cash preserved",
+    "owner": "Actual shop and replay, night UV, 3D seam cutting, LPM grab and WASD tilt, floating pause, aimed filling, packet opening, falling missed/recovered seed, soil covering, moving water emitter, exact supplies, 8 free-order snips pass",
+    "rival": "Second TCP player denied same preparation session",
+    "preparation-recovery": "Unprocessed request recovers after three seconds through cancellation/state refresh, no materials spent"
+  },
+  "visual": {
+    "gallery": "pass",
+    "screenshots_tcp": 31,
+    "screenshots_gallery": 1,
+    "resolutions_gui": [
+      [
+        1920,
+        1080,
+        2
+      ],
+      [
+        1920,
+        1080,
+        4
+      ],
+      [
+        855,
+        481,
+        2
+      ],
+      [
+        640,
+        480,
+        2
+      ]
+    ],
+    "block_atlas": "1024x512x4",
+    "frame_render_bounds_height": 2,
+    "uv_color": "local purple tint and occluded top-surface spill",
+    "uv_surface_cache_ticks": 10,
+    "frame_frustum_culling": true
+  },
+  "additional_tcp_restart": "restart-diagnostic: pass",
+  "limits": [
+    "One earlier final-tcp restart lost station chunk changes; no pre-restart snapshot exists for that attempt. Cause not established; two fresh final runs retain pre-restart snapshots and pass.",
+    "UV color is local to station meshes and nearby horizontal collision surfaces; not global RGB lighting.",
+    "Network growth clock fast-forwarded; 18000-step growth and exposure verified in unit tests.",
+    "No large-farm FPS benchmark.",
+    "Normal disk restart tested; no forced power loss between Minecraft file writes."
+  ]
+}

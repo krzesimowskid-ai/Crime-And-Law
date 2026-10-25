@@ -1,7 +1,7 @@
 # Crime And Law
 
 Autorski mod gangsterski: panel gangów, członkostwo i własny wygląd menu.
-Wersja **0.1.43**.
+Wersja **0.1.44**.
 
 Pierwsza propozycja własnej ekonomii w dolarach i rozwoju terenów:
 [Balans terytoriów](docs/BALANS_TERYTORIOW.md) oraz
@@ -16,7 +16,11 @@ Przejmowanie terenów, zegar świata oraz oznaczenia mapy już działają:
 
 Aurelia ma pełen jednorazowy cykl: doniczka, worki ziemi na 1/2/3
 napełnienia, luźne nasiona i woreczki po 5, sadzonka oraz konewka.
-**Z** otwiera pikselową minigrę 3D nasypywania ziemi i podlewania.
+**Z** otwiera pikselową minigrę 3D: rozcinanie szwu, chwyt LPM i przechylanie
+WASD, opadające nasiono oraz ręczne zasypywanie dołka. Worek i konewka
+pozostają w miejscu po puszczeniu. Strumienie startują z ich otworów.
+Doniczka ma nowy ciemny korpus, worki własne czytelne etykiety ziemi,
+a zamocowane UV oświetla doniczkę i otoczenie fioletową poświatą.
 Dwublokowy stelaż przyjmuje doniczkę na dole i lampę UV u góry.
 Zwykły plon wynosi 3–6 liści, z odpowiednią ekspozycją UV 4–8.
 Każdy liść wybierasz i przycinasz samodzielnie. Po zbiorze trzeba wsypać
@@ -25,14 +29,14 @@ nową ziemię i posadzić nowe nasiono; sprzęt pozostaje.
 Zwykły NPC Ogrodnik sprzedaje materiały i wyposażenie za gotówkę.
 Nie ma darmowej receptury ani zwrotu nasion z niszczonej rośliny.
 Instrukcja, roboczy balans i polecenie ustawienia sklepu:
-[Aurelia](docs/AURELIA.md). Wyniki: [weryfikacja 0.1.43](docs/VALIDATION_0.1.43.md).
+[Aurelia](docs/AURELIA.md). Wyniki: [weryfikacja 0.1.44](docs/VALIDATION_0.1.44.md).
 
 ## Uruchomienie
 
 - Minecraft **1.21.1**, Java **21**, NeoForge **21.1.248**.
-- Włóż `crimeandlaw-0.1.43.jar` do `mods`, zastępując poprzedni JAR tego moda.
+- Włóż `crimeandlaw-0.1.44.jar` do `mods`, zastępując poprzedni JAR tego moda.
 - W rozgrywce sieciowej mod musi być **u graczy i na serwerze**.
-  **0.1.43 korzysta z protokołu 23** — używaj aktualnej wersji na obu stronach.
+  **0.1.44 korzysta z protokołu 24** — używaj aktualnej wersji na obu stronach.
   Starsze wersje od 0.1.26 do 0.1.28 używają protokołu 16.
 - W świecie jednoosobowym część serwerowa działa razem ze światem.
 - **G** otwiera panel; skrót można zmienić w sterowaniu. Esc lub X zamyka okno.

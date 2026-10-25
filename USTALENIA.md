@@ -913,3 +913,24 @@ To zapis kierunku rozwoju; JAR 0.1.42 nie został w tej rozmowie zmieniony.
   odrzuca cały zakup. Rewizje i wyceny zapobiegają powtórzeniu skutków.
 - Protokół 23; gotówka/bank i istniejące menu są zachowane. Zgodność
   światów obejmuje stare rośliny, lecz ostatni zbiór nie odrasta.
+
+
+## Poprawki po nagraniu — 25 października 2026, 0.1.44
+
+- Wzór sylwetki: Plastic Pot ze Schedule I, własny ciemny pikselowy model.
+  Worki są miękkimi opakowaniami ziemi z własnym nadrukiem AGRO / ZIEMIA,
+  bez kopiowania grafiki Lenny’s. Konewka ma nową skalę i pozycję w ręce.
+- Rama ma poprzeczkę, obejmy i ciągłe uchwyty dochodzące do UV.
+- Obowiązkowe interakcje: rozcinanie szwu worka, chwyt LPM, przechył WASD,
+  trafianie strumieniem, otwarcie opakowania nasion, upuszczenie z grawitacją
+  i ręczne zasypanie dołka. Samo naciśnięcie przycisku już nie sadzi.
+- Worek i konewka po puszczeniu pozostają w miejscu, strumień się zatrzymuje.
+  Nasiono opada; nieudane trafienie nie zabiera go z ekwipunku.
+- Ziemia mieści się w zwężającej komorze, ma wspólne planarne UV bez
+  promienistych szwów. Cząstki wychodzą ze wspólnego z modelem punktu.
+- UV daje widoczny fiolet na sprzęcie/roślinie i podłożu. Efekt jest lokalny,
+  z kontrolą widoczności powierzchni i buforem obliczeń na pół sekundy.
+- Serwer sprawdza sterowanie i faktyczne trafienie. Ostateczne zużycie
+  następuje raz, po pełnym etapie; stare pakiety nie ponawiają operacji.
+  Rozcięcie jednego worka ze stosu otwiera tylko jedną sztukę.
+- Protokół 24; bilans plonów, czasy, ceny i zakres funkcji sklepu zachowano.

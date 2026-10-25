@@ -1,7 +1,9 @@
-import os,sys,socket,subprocess,time,hashlib,uuid,argparse
+import os,sys,socket,subprocess,time,hashlib,uuid,argparse,shutil
 from pathlib import Path
 repo=Path(__file__).resolve().parent.parent;root=repo.parent;tools=Path(os.environ.get('CRIMEANDLAW_BUILD_TOOLS',str(root/'build-tools')))
-arg=argparse.ArgumentParser();arg.add_argument('--visual',action='store_true');arg.add_argument('--output',default='tcp-1');args=arg.parse_args();out=repo/'build/garden-smoke'/args.output;out.mkdir(parents=True,exist_ok=True)
+arg=argparse.ArgumentParser();arg.add_argument('--visual',action='store_true');arg.add_argument('--output',default='tcp-1');args=arg.parse_args();out=repo/'build/garden-smoke'/args.output
+if out.exists() and any(out.iterdir()):raise SystemExit('Choose a fresh --output directory; previous results must not be reused.')
+out.mkdir(parents=True,exist_ok=True)
 env=os.environ.copy()
 for key in ['JAVA_TOOL_OPTIONS','JDK_JAVA_OPTIONS','GRADLE_OPTS']:env.pop(key,None)
 env['MOD_CLASSES']=':'.join('crimeandlaw%%'+str(p) for p in [repo/'build/classes/java/main',repo/'build/resources/main'])
@@ -46,6 +48,7 @@ try:
    if time.monotonic()>deadline:raise RuntimeError('Network validation timeout')
    time.sleep(.3)
   if not all((out/(n+'.PASS')).exists() for n in ['owner','rival','server','security']):raise RuntimeError('Missing network PASS')
+  shutil.copytree(out/'game-server/world',out/'before-restart-world')
   p=launch('server',True);p.wait(timeout=100)
   if not (out/'restart.PASS').exists():raise RuntimeError('Disk restart failed')
   print('PASS two TCP clients, adversarial checks and disk restart',flush=True)

@@ -23,7 +23,7 @@ public final class GardenMaterials {
         glyphs(im,Integer.toString(capacity),14,37,0x285741);register(id,im);
     }
     private static void glyphs(NativeImage im,String word,int x,int y,int color){
-        String alphabet="AGROZIEM123";String[] pixels={"010101111101101","110101110101101","111101101101111","111001010100111","111001010100111","111010010010111","111100110100111","101111111101101","010110010010111","111001111100111","111001111001111"};
+        String alphabet="AGROZIEM123";String[] pixels={"010101111101101","111100101101111","110101110101101","111101101101111","111001010100111","111010010010111","111100110100111","101111111101101","010110010010111","111001111100111","111001111001111"};
         for(char c:word.toCharArray()){int at=alphabet.indexOf(c);if(at>=0)for(int yy=0;yy<5;yy++)for(int xx=0;xx<3;xx++)if(pixels[at].charAt(yy*3+xx)=='1')im.setPixelRGBA(x+xx,y+yy,abgr(color));x+=4;}
     }
     private static int abgr(int rgb){return 0xFF000000|(rgb&255)<<16|(rgb&0xFF00)|(rgb>>>16&255);}

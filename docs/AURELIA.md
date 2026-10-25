@@ -1,7 +1,7 @@
 # Aurelia — doniczki, wyposażenie i zbiór
 
-Wersja 0.1.43. Minecraft 1.21.1, NeoForge 21.1.248, Java 21.
-Protokół **23**: ten sam JAR na serwerze i u graczy.
+Wersja 0.1.44. Minecraft 1.21.1, NeoForge 21.1.248, Java 21.
+Protokół **24**: ten sam JAR na serwerze i u graczy.
 Aurelia jest fikcyjną rośliną; liczby są bilansem gry.
 
 ## Skąd wziąć wyposażenie
@@ -38,29 +38,48 @@ wartości wykonawcze, które można później zbilansować.
 
 ## Przygotowanie stanowiska
 
-1. Ustaw doniczkę albo dwublokowy stelaż na wolnym miejscu.
-2. Do **dolnego** bloku ramy włóż doniczkę PPM. Do **górnego** włóż lampę UV.
-   Jedna lampa obsługuje wyłącznie doniczkę we własnym stelażu.
-3. Napełnij konewkę: weź ją do ręki i użyj PPM przy źródle wody.
-   Pełna ma 400 jednostek; sucha doniczka przyjmuje 100.
-4. Spójrz na doniczkę i naciśnij **Z** albo PPM. Pojawi się okno 3D.
-5. Wybierz worek strzałkami obok nazwy lub kółkiem nad listą materiałów.
-   Przytrzymaj **LPM nad otworem doniczki**, kieruj strumień do środka
-   i puść po napełnieniu wskaźnika. Widać otwarty i przechylony worek,
-   opadające cząstki oraz rosnący poziom ziemi.
-6. Jedno udane napełnienie zużywa **jedno użycie** worka. Worek 3 przechodzi
-   3 → 2 → 1 → zużyty. Nie trzeba trzech porcji do jednej doniczki.
-7. Wybierz nasiono lub sadzonkę i kliknij „Posadź jedną roślinę”. Jeśli masz
-   zamknięty woreczek, przycisk najpierw otwiera go na dokładnie 5 nasion.
-   Po sadzeniu zostają 4. Woreczek można również otworzyć PPM poza oknem.
-8. W tym samym oknie wybierz konewkę. Przytrzymaj LPM nad doniczką i puść
-   po napełnieniu wskaźnika. Ubywa tylko tyle wody, ile przyjęła doniczka.
+1. Ustaw ciemną plastikową doniczkę samodzielnie lub stalowy stelaż na dwa
+   bloki. PPM montuje doniczkę na dole i UV u góry. Poprzeczka, obejmy
+   i dwa pionowe uchwyty tworzą widoczne połączenie lampy z ramą.
+2. Weź konewkę i napełnij PPM przy źródle wody. Pełna ma 400 jednostek;
+   pusta doniczka przyjmuje 100. Model w ręce jest mniejszy i odsunięty
+   od środka ekranu, z widocznym uchwytem.
+3. Spójrz na doniczkę i naciśnij **Z** lub PPM. Wybierz materiał strzałkami
+   albo kółkiem myszy nad listą.
+4. Kliknij „Rozetnij worek”. **Przytrzymaj LPM przy kropce na złotym szwie
+   i przeciągnij po całym oznaczeniu**. Widać ostrze i odchylający się brzeg.
+   Otwieranie nie zużywa ziemi. Ze stosu otwiera jedną sztukę; pozostałe
+   pozostają zamknięte. Rozcięty większy worek zachowuje otwarcie i licznik.
+5. Po rozcięciu **złap worek LPM** i przesuń go nad doniczkę. **A/D**
+   obraca w lewo/prawo, **W/S** przechyla przód/tył. Dopiero odpowiednie
+   pochylenie wysypuje ziemię. Strumień jest liczony z rzeczywistego otworu
+   modelu; nietrafienie nie zapełnia doniczki. Po puszczeniu LPM worek
+   pozostaje w miejscu, a nasypywanie staje. Można chwycić go ponownie.
+6. Trafiające cząstki stopniowo wypełniają zwężającą się komorę. Powierzchnia
+   i grudki mieszczą się wewnątrz ścianek także na początku napełniania.
+   Po pełnym napełnieniu serwer pobiera **jedno pełne użycie worka**;
+   duży nadal przechodzi 3 → 2 → 1 → zużyty.
+7. Kliknij „Przygotuj sadzenie”. Przy zamkniętym woreczku najpierw otwórz
+   szew w minigrze. **Chwyć nasiono LPM, przesuń nad dołek i puść**.
+   Nasiono opada pod wpływem grawitacji. Nietrafione można podnieść ponownie;
+   nie zużywa się przedmiotu za samo upuszczenie poza doniczką.
+8. Po opadnięciu **przytrzymaj LPM na ziemi i kilkoma ruchami przysuń ją
+   nad nasiono**. Dołek się zamyka; dopiero zatwierdzone zasypanie zużywa
+   jedną sztukę. Bezpośrednie użycie woreczka zostawia cztery luźne nasiona.
+   Nadal można poza oknem rozpakować całe opakowanie PPM na pięć sztuk.
+9. Wybierz „Weź konewkę”, złap LPM i ustaw strumień jak przy worku.
+   A/D przechyla, W/S kieruje przód/tył. Kropelki wychodzą z wylewki
+   i poruszają się razem z nią. Po puszczeniu konewka nie upada. Udane
+   podlanie pobiera tylko tyle wody, ile przyjęła doniczka.
 
-PPM i przeciągnięcie obracają widok. Esc lub „Zamknij” zachowuje zatwierdzony
-postęp. Nieudane lub anulowane napełnienie nie zużywa ziemi. Większe worki
-oraz konewka zapisują zawartość niezależnie od naprawianej wytrzymałości.
-Zwykłe nasiona już nie sadzą na zaoranej ziemi; usunięto darmową recepturę
-nasion oraz ich drop z dawnych roślin.
+PPM na tle obraca widok. Esc lub „Zamknij” zachowuje zatwierdzone etapy.
+Przerwanie niepełnego wsypywania lub sadzenia nie daje plonu ani nie pobiera
+materiału. Otwarcie worka zapisuje się osobno od jego zawartości i nie
+zamienia całego stosu w rozcięte worki. Nasiono jest obiektem podlegającym
+grawitacji w minigrze; worek i konewka są ręcznie ustawianymi narzędziami.
+
+Nasiona nie sadzą na zaoranej ziemi; nie ma darmowej receptury ani zwrotu
+nasion z niszczonej rośliny.
 
 ## Wzrost i plon
 
@@ -78,7 +97,13 @@ po to, aby zebrać już dojrzałą roślinę.
 | Zwykłe światło | 3–6 liści, równe szanse |
 | UV przez co najmniej 80% rzeczywistego wzrostu | 4–8 liści, równe szanse |
 
-UV umożliwia wzrost w ciemnym wnętrzu. Nie daje dodatkowego przyspieszenia
+UV umożliwia wzrost w ciemnym wnętrzu. Widoczny fiolet pochodzi z własnego
+lokalnego oświetlenia modeli i poświaty na dostępnych górnych powierzchniach
+otoczenia. Nie wymaga paczki shaderów; logiczny poziom światła Minecrafta
+pozostaje oddzielny od koloru. To lokalny efekt stanowiska, a nie zmiana
+całego silnika Minecrafta na oświetlenie RGB.
+
+UV nie daje dodatkowego przyspieszenia
 ani premii dla sąsiednich doniczek. W tej wersji nie ma zużycia lampy ani
 sieci elektrycznej. Włożenie lampy tuż przed zbiorem nie zmienia plonu.
 Losowanie następuje raz przy dojrzewaniu; liczba liści, maska pozostałych,
@@ -117,7 +142,7 @@ zasadzoną doniczkę. Zwykły gracz nie może ominąć czasu wzrostu.
 
 ## Grafika i zapis
 
-Sprzęt ma własne pikselowe materiały 16×16 i przestrzenną geometrię:
+Sprzęt ma własne pikselowe materiały 16×16 oraz drukowane etykiety 32×48 i przestrzenną geometrię:
 pusty środek doniczki, rant, szwy worków, licznik pojemności, uchwyt oraz
 wylewkę konewki, stalowe łączenia i świetlówki UV. Roślina i nożyce
 zachowują własne materiały 32×32 oraz schodkowe ścianki z poprzedniej wersji.
@@ -130,4 +155,4 @@ Jednorazowe rewizje żądań i wyceny sklepu nie pozwalają ponawiać skutków
 starym pakietem. Po trzech sekundach bez potwierdzenia klient odzyskuje
 stan bez ponawiania wydatku ani nagrody.
 
-Wyniki i granice testów: [VALIDATION_0.1.43.md](VALIDATION_0.1.43.md).
+Wyniki i granice testów: [VALIDATION_0.1.44.md](VALIDATION_0.1.44.md).
