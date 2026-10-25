@@ -13,6 +13,8 @@ public enum GangCategory {
     BALANCE(7,"Zarządzanie saldem",Placement.NAVIGATION),
     BLACKLIST(8,"Czarna lista",Placement.NAVIGATION),
     GOALS(9,"Cele",Placement.NAVIGATION),
+    UPGRADES(11,"Ulepszenia",Placement.NAVIGATION),
+    CONTRACTS(12,"Kontrakty",Placement.NAVIGATION),
     SETTINGS(3,"Ustawienia",Placement.FOOTER),
     TRANSPORT(5,"Transport",Placement.HIDDEN);
     public enum Placement { NAVIGATION, FOOTER, HIDDEN }

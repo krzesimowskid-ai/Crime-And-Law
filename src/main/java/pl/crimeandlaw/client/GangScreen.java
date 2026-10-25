@@ -117,13 +117,16 @@ public final class GangScreen extends Screen {
         }else{
             cx=left+116;cy=top+55;cw=w-130;
             addRenderableWidget(new CloseButton(left+w-30,top+11,b->onClose(),this::theme));
+            int settingsY=top+h-75;
+            // Keep every category above the footer, including the upcoming panels.
+            int tabSpacing=Math.min(24,(settingsY-cy-23)/Math.max(1,TABS.size()-1));
             for(int i=0;i<TABS.size();i++){
-                final GangCategory category=TABS.get(i);final int chosen=category.tabId();button(left+10,cy+i*24,96,category==GangCategory.BALANCE?"Saldo gangu":category.label(),b->{tab=chosen;requestedFinanceTab=-1;requestedBlacklist=-1;memberPage=0;bodyScroll=0;historyScroll.reset();if(chosen==9)send("goals_view",new JsonObject());rebuildWidgets();},tab==chosen);
+                final GangCategory category=TABS.get(i);final int chosen=category.tabId();button(left+10,cy+i*tabSpacing,96,category==GangCategory.BALANCE?"Saldo gangu":category.label(),b->{tab=chosen;requestedFinanceTab=-1;requestedBlacklist=-1;memberPage=0;bodyScroll=0;historyScroll.reset();if(chosen==9)send("goals_view",new JsonObject());rebuildWidgets();},tab==chosen);
             }
-            button(left+10,top+h-75,96,"Ustawienia",b->{tab=3;bodyScroll=0;rebuildWidgets();},tab==3);
+            button(left+10,settingsY,96,"Ustawienia",b->{tab=3;bodyScroll=0;rebuildWidgets();},tab==3);
             String leaveMessage=ClientState.memberCount()==1?"Ostatni członek opuszcza gang — gang zostanie usunięty.":isLeader()?"Lider musi najpierw przekazać przywództwo.":"Czy chcesz opuścić ten gang?";
             button(left+10,top+h-48,96,"Opuść gang",b->confirm("Opuścić gang?",leaveMessage,()->send("leave",new JsonObject())));
-            switch(tab){case 1->buildMembers();case 2->buildMap();case 3->buildSettings();case 4->buildRegister();case 6,7->buildFinance();case 8->buildBlacklist();case 9->buildGoals();case 10->buildRoles();}
+            switch(tab){case 1->buildMembers();case 2->buildMap();case 3->buildSettings();case 4->buildRegister();case 6,7->buildFinance();case 8->buildBlacklist();case 9->buildGoals();case 10->buildRoles();case 11,12->label(cx,cy+2,GangCategory.visibleOrOverview(tab).label());}
         }
         if(activeList!=null){positionListRows();maxBodyScroll=0;bodyScroll=0;return;}
         if(g!=null&&(tab==4||tab==6||tab==7||tab==8||tab==9)){maxBodyScroll=0;bodyScroll=0;return;}
@@ -591,6 +594,7 @@ public final class GangScreen extends Screen {
             drawBanner(g,banner(),bx,cy+144,bw,bh);g.renderOutline(bx,cy+144,bw,bh,0x66000000|t.border());
         }
         if(gang!=null&&tab==0)drawGangOverview(g,gang,texture);
+        if(gang!=null&&(tab==GangCategory.UPGRADES.tabId()||tab==GangCategory.CONTRACTS.tabId()))drawUpcomingPanel(g);
         if(gang!=null&&tab==4)drawRegister(g);
         if(gang==null&&find)drawDirectory(g);
         clip(g,cx,cy,cx+cw,top+h-24);
@@ -612,6 +616,13 @@ public final class GangScreen extends Screen {
             g.fill(left+6,tipY-4,left+w-6,top+h-24,0xFF181820);
             for(int i=0;i<wrapped.size();i++)g.drawString(font,wrapped.get(i),left+12,tipY+i*11,0xFFE9E8EC,false);
         }
+    }
+    private void drawUpcomingPanel(GuiGraphics g){
+        int x=cx+16,y=cy+66,width=cw-32,center=cx+cw/2;
+        g.fill(x,y,x+width,y+112,0x18000000);
+        g.renderOutline(x,y,width,112,0x55000000|theme().border());
+        g.fill(center-20,y+26,center+20,y+28,theme().borderArgb());
+        centeredText(g,"W przygotowaniu",center,y+52,1.25f,0xFFEFE9F3);
     }
     private void drawGangOverview(GuiGraphics g,Gang gang,net.minecraft.resources.ResourceLocation logo){
         // Identity content shares the full banner's axis, including its wider side margins.

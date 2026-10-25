@@ -773,3 +773,13 @@ gdy właściwe systemy własności oraz mapy będą rozwijane.
   przy lewej krawędzi i z odstępem czterech jednostek.
 - Pomiar długich kwot odpowiada faktycznej skali ich rysowania.
 - Zachowano poprawki czatu i captu z 0.1.34–35. Protokół 19, schemat danych 4.
+
+## Ulepszenia i kontrakty — 0.1.37
+
+- Na prośbę użytkownika dodano widoczne zakładki „Ulepszenia” i „Kontrakty”.
+- Obie otwierają panel „W przygotowaniu”, dostępny również zwykłym członkom.
+- Mechaniki, koszty i nagrody czekają na dalsze informacje oraz zrzuty.
+- Odstępy nawigacji dopasowują się do liczby zakładek; „Ustawienia”
+  i „Opuść gang” pozostają w stopce bez nakładania się przycisków.
+- Nowe identyfikatory 11 i 12 nie zmieniają wcześniejszych zakładek.
+  Protokół 19 i schemat danych 4 pozostają bez zmian.

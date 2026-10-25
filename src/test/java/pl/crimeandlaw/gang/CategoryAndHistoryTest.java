@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class CategoryAndHistoryTest {
     @Test void onlyTransportIsDisabledAndCannotBeOpened(){
-        assertEquals(List.of(GangCategory.GANG,GangCategory.MEMBERS,GangCategory.ROLES,GangCategory.REGISTER,GangCategory.TERRITORY,GangCategory.BONUSES,GangCategory.BALANCE,GangCategory.BLACKLIST,GangCategory.GOALS),GangCategory.navigation());
+        assertEquals(List.of(GangCategory.GANG,GangCategory.MEMBERS,GangCategory.ROLES,GangCategory.REGISTER,GangCategory.TERRITORY,GangCategory.BONUSES,GangCategory.BALANCE,GangCategory.BLACKLIST,GangCategory.GOALS,GangCategory.UPGRADES,GangCategory.CONTRACTS),GangCategory.navigation());
         assertEquals(List.of(GangCategory.TRANSPORT),Arrays.stream(GangCategory.values()).filter(c->!c.enabled()).toList());
         assertEquals(GangCategory.GANG,GangCategory.visibleOrOverview(GangCategory.TRANSPORT.tabId()));
         assertEquals(GangCategory.REGISTER,GangCategory.visibleOrOverview(4));
