@@ -93,7 +93,7 @@ public final class GangScreen extends Screen {
     public void updated(){
         Gang g=gang();String id=g==null?"":g.id.toString();
         if(!id.equals(lastGang)){
-            lastGang=id;tab=0;selectedMember="";memberPage=0;previewTheme=false;lastHistoryPage=-1;historyScroll.reset();
+            lastGang=id;++logoRequest;tab=0;selectedMember="";memberPage=0;previewTheme=false;lastHistoryPage=-1;historyScroll.reset();
             Theme t=theme();background=String.format("%06X",t.background());border=String.format("%06X",t.border());opacity=t.opacity();
             draftLogo="";selectedRole="member";roleName="";rolePermissions.clear();draggedRole="";roleMoved=false;
             roleDraftFor="";roleScroll.reset();directoryScroll.reset();navigationScroll.reset();draftBanner=null;terrainCenter="";terrainSelection=null;
@@ -160,7 +160,12 @@ public final class GangScreen extends Screen {
     private void send(String action,JsonObject args){ClientState.action(action,args);}
     private void target(String action,String id){JsonObject a=new JsonObject();a.addProperty("target",id);send(action,a);}
     private void confirm(String title,String description,Runnable action){
-        minecraft.setScreen(new ConfirmScreen(yes->{minecraft.setScreen(this);if(yes)action.run();},Component.literal(title),Component.literal(description)));
+        UUID expected=gang()==null?null:gang().id;
+        minecraft.setScreen(new ConfirmScreen(yes->{
+            minecraft.setScreen(this);
+            if(!Objects.equals(expected,gang()==null?null:gang().id)){updated();return;}
+            if(yes)action.run();
+        },Component.literal(title),Component.literal(description)));
     }
     private void buildCreate(){
         int x=cx+22,formWidth=cw-216;

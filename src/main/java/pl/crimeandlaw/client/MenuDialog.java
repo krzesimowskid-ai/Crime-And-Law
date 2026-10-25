@@ -11,7 +11,10 @@ abstract class MenuDialog extends Screen {
     protected final GangScreen parent;
     protected GangLayout layout;
     protected int left,top,panelWidth=520,panelHeight=340;
-    protected MenuDialog(GangScreen parent,String title){super(Component.literal(title));this.parent=parent;}
+    private final java.util.UUID gangId;
+    protected MenuDialog(GangScreen parent,String title){super(Component.literal(title));this.parent=parent;var gang=ClientState.gang();gangId=gang==null?null:gang.id;}
+    protected final boolean sameGang(){var gang=ClientState.gang();return java.util.Objects.equals(gangId,gang==null?null:gang.id);}
+    public void updated(){if(!sameGang()){parent.updated();minecraft.setScreen(parent);}}
     protected Theme theme(){return parent.currentTheme();}
     @Override protected void init(){
         layout=GangLayout.of(width,height);left=(layout.canvasWidth()-panelWidth)/2;top=(layout.canvasHeight()-panelHeight)/2;

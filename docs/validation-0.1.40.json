@@ -1,0 +1,1197 @@
+{
+  "version": "0.1.40",
+  "date": "2026-10-25",
+  "baseline_commit": "fc4358bbe7a0178a4d6ad7caf9b455ac5dcba26b",
+  "protocol": 20,
+  "save_schema": 4,
+  "scope": "All project-owned production Java sources, shipped resources and build configuration. Source review is distinct from branch/statement coverage and does not audit the sources of bundled third-party libraries.",
+  "counts": {
+    "production-java": 104,
+    "optional-design-tool": 2,
+    "build": 7,
+    "resource": 9
+  },
+  "files": [
+    {
+      "path": "src/main/java/pl/crimeandlaw/CrimeAndLaw.java",
+      "kind": "production-java",
+      "baseline_sha256": "23dce4ab5de3f68e3a1f412abe1acc9c1932512ce3ffa1ec0b5a2fa488b129b7",
+      "reviewed_sha256": "23dce4ab5de3f68e3a1f412abe1acc9c1932512ce3ffa1ec0b5a2fa488b129b7",
+      "result": "sprawdzono",
+      "checks": "Rejestracja moda i rozdzielenie klienta od serwera dedykowanego.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/client/BannerTexture.java",
+      "kind": "production-java",
+      "baseline_sha256": "2137e2f2aded721d32b4f2342a40f4e7e50ef026d20bbd88f8b6f51b8a4d5f5a",
+      "reviewed_sha256": "2137e2f2aded721d32b4f2342a40f4e7e50ef026d20bbd88f8b6f51b8a4d5f5a",
+      "result": "sprawdzono",
+      "checks": "Wejście i renderowanie; stan/szkice; uprawnienia; zamykanie i zasoby; powiązania z pakietami.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/client/BlacklistAddScreen.java",
+      "kind": "production-java",
+      "baseline_sha256": "6f63773c8ec52b072684b927eaa7f51c4070a341898107a0b17aa35f058d1169",
+      "reviewed_sha256": "08f269e15dafe38b2e5e92879b72bdad5d85cb969d8fb8dafbdfc769f1cd28a8",
+      "result": "naprawiono",
+      "checks": "Wejście i renderowanie; stan/szkice; uprawnienia; zamykanie i zasoby; powiązania z pakietami.",
+      "findings": "dialog-gang-context"
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/client/BlacklistTable.java",
+      "kind": "production-java",
+      "baseline_sha256": "623ca096581008e32309b3997894fbfc816dfa372ff90fdbe245c41cb5c49be6",
+      "reviewed_sha256": "623ca096581008e32309b3997894fbfc816dfa372ff90fdbe245c41cb5c49be6",
+      "result": "sprawdzono",
+      "checks": "Wejście i renderowanie; stan/szkice; uprawnienia; zamykanie i zasoby; powiązania z pakietami.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/client/BonusPaymentScreen.java",
+      "kind": "production-java",
+      "baseline_sha256": "43cd0c46cbdd14ea6da6892d840677fdb7519e0688f0264ebc2e27163dfba75a",
+      "reviewed_sha256": "43cd0c46cbdd14ea6da6892d840677fdb7519e0688f0264ebc2e27163dfba75a",
+      "result": "sprawdzono",
+      "checks": "Wejście i renderowanie; stan/szkice; uprawnienia; zamykanie i zasoby; powiązania z pakietami.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/client/CaptureClient.java",
+      "kind": "production-java",
+      "baseline_sha256": "2ea8c2472b090832ffac440e5fd72ffd4a27560ea1f5d3c45dbfdfbe0f51c570",
+      "reviewed_sha256": "2ea8c2472b090832ffac440e5fd72ffd4a27560ea1f5d3c45dbfdfbe0f51c570",
+      "result": "sprawdzono",
+      "checks": "Wejście i renderowanie; stan/szkice; uprawnienia; zamykanie i zasoby; powiązania z pakietami.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/client/CaptureHudLayout.java",
+      "kind": "production-java",
+      "baseline_sha256": "57909e4b5a13f21d883756150074501a68bdabd1b534105ae19b527b6c1cd188",
+      "reviewed_sha256": "57909e4b5a13f21d883756150074501a68bdabd1b534105ae19b527b6c1cd188",
+      "result": "sprawdzono",
+      "checks": "Wejście i renderowanie; stan/szkice; uprawnienia; zamykanie i zasoby; powiązania z pakietami.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/client/CaptureOverlay.java",
+      "kind": "production-java",
+      "baseline_sha256": "e6552f8b143a228cf21ddbdad9b3f3dea2c456c6cc6ad977623293d4d2cb0ac8",
+      "reviewed_sha256": "e6552f8b143a228cf21ddbdad9b3f3dea2c456c6cc6ad977623293d4d2cb0ac8",
+      "result": "sprawdzono",
+      "checks": "Wejście i renderowanie; stan/szkice; uprawnienia; zamykanie i zasoby; powiązania z pakietami.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/client/ChatFade.java",
+      "kind": "production-java",
+      "baseline_sha256": "daad963d386f3b315a5c8a8e2273e36251bc1f1c9480ced60d69f66da0bdb86d",
+      "reviewed_sha256": "daad963d386f3b315a5c8a8e2273e36251bc1f1c9480ced60d69f66da0bdb86d",
+      "result": "sprawdzono",
+      "checks": "Wejście i renderowanie; stan/szkice; uprawnienia; zamykanie i zasoby; powiązania z pakietami.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/client/ChatFonts.java",
+      "kind": "production-java",
+      "baseline_sha256": "3d4fc7986a195b9599601ad49b41221e14777e4ae864ee920c0337c7f96ff6c9",
+      "reviewed_sha256": "3d4fc7986a195b9599601ad49b41221e14777e4ae864ee920c0337c7f96ff6c9",
+      "result": "sprawdzono",
+      "checks": "Wejście i renderowanie; stan/szkice; uprawnienia; zamykanie i zasoby; powiązania z pakietami.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/client/ChatLayout.java",
+      "kind": "production-java",
+      "baseline_sha256": "97715d4e9be0820fe080854c59744dd4adab8187312bdb6a3d76e95c63d3b764",
+      "reviewed_sha256": "97715d4e9be0820fe080854c59744dd4adab8187312bdb6a3d76e95c63d3b764",
+      "result": "sprawdzono",
+      "checks": "Wejście i renderowanie; stan/szkice; uprawnienia; zamykanie i zasoby; powiązania z pakietami.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/client/ChatScroll.java",
+      "kind": "production-java",
+      "baseline_sha256": "ab1706c72e3c42c619720287704e7e660aeded1898af096547d3431dbd203d58",
+      "reviewed_sha256": "ab1706c72e3c42c619720287704e7e660aeded1898af096547d3431dbd203d58",
+      "result": "sprawdzono",
+      "checks": "Wejście i renderowanie; stan/szkice; uprawnienia; zamykanie i zasoby; powiązania z pakietami.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/client/ChatView.java",
+      "kind": "production-java",
+      "baseline_sha256": "1b6a01a267c3c047985f15391e94466057bb96d4910c8f2a05958485e546a793",
+      "reviewed_sha256": "1b6a01a267c3c047985f15391e94466057bb96d4910c8f2a05958485e546a793",
+      "result": "sprawdzono",
+      "checks": "Wejście i renderowanie; stan/szkice; uprawnienia; zamykanie i zasoby; powiązania z pakietami.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/client/ClientEvents.java",
+      "kind": "production-java",
+      "baseline_sha256": "ef60effae0d6208aca6c528a745882ddee6b290ccd0399c0dc6ea5068f560adc",
+      "reviewed_sha256": "ef60effae0d6208aca6c528a745882ddee6b290ccd0399c0dc6ea5068f560adc",
+      "result": "sprawdzono",
+      "checks": "Wejście i renderowanie; stan/szkice; uprawnienia; zamykanie i zasoby; powiązania z pakietami.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/client/ClientMinimap.java",
+      "kind": "production-java",
+      "baseline_sha256": "536c2217d2dbacf17a282f0fc9ac93dbf504e40faad71eae37a0845a140277ce",
+      "reviewed_sha256": "536c2217d2dbacf17a282f0fc9ac93dbf504e40faad71eae37a0845a140277ce",
+      "result": "sprawdzono",
+      "checks": "Wejście i renderowanie; stan/szkice; uprawnienia; zamykanie i zasoby; powiązania z pakietami.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/client/ClientState.java",
+      "kind": "production-java",
+      "baseline_sha256": "4c98c6e2b06faeda8fabfe8de795e03cb7c4b803b6cf00b0c9536062645157a5",
+      "reviewed_sha256": "6af355d0d5109553210eeabf161597641fdf5e2fb3975bbb734d5213fe995cb6",
+      "result": "naprawiono",
+      "checks": "Wejście i renderowanie; stan/szkice; uprawnienia; zamykanie i zasoby; powiązania z pakietami.",
+      "findings": "dialog-gang-context"
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/client/CloseButton.java",
+      "kind": "production-java",
+      "baseline_sha256": "7522bdf5d166ba281b8b343854db9a71cb0702a2842cc924e30ee84c70b76eda",
+      "reviewed_sha256": "7522bdf5d166ba281b8b343854db9a71cb0702a2842cc924e30ee84c70b76eda",
+      "result": "sprawdzono",
+      "checks": "Wejście i renderowanie; stan/szkice; uprawnienia; zamykanie i zasoby; powiązania z pakietami.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/client/ColorPickerScreen.java",
+      "kind": "production-java",
+      "baseline_sha256": "c2631b4cc8688d8550f649897afa2ae36add17331e810bc4ca07646b7df61b1e",
+      "reviewed_sha256": "c2631b4cc8688d8550f649897afa2ae36add17331e810bc4ca07646b7df61b1e",
+      "result": "sprawdzono",
+      "checks": "Wejście i renderowanie; stan/szkice; uprawnienia; zamykanie i zasoby; powiązania z pakietami.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/client/ColorValues.java",
+      "kind": "production-java",
+      "baseline_sha256": "b07590f2a92b2326d9330dc79eb0f687da366c67508d5ae1bb6ab7884f9f68f8",
+      "reviewed_sha256": "b07590f2a92b2326d9330dc79eb0f687da366c67508d5ae1bb6ab7884f9f68f8",
+      "result": "sprawdzono",
+      "checks": "Wejście i renderowanie; stan/szkice; uprawnienia; zamykanie i zasoby; powiązania z pakietami.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/client/FinanceClient.java",
+      "kind": "production-java",
+      "baseline_sha256": "759ec183503eeb2da30f1e2a00d2ad30655144926bdb524e98f16a3c18f5b6e0",
+      "reviewed_sha256": "759ec183503eeb2da30f1e2a00d2ad30655144926bdb524e98f16a3c18f5b6e0",
+      "result": "sprawdzono",
+      "checks": "Wejście i renderowanie; stan/szkice; uprawnienia; zamykanie i zasoby; powiązania z pakietami.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/client/FinanceResponseScreen.java",
+      "kind": "production-java",
+      "baseline_sha256": "19ca0ae98e178ef00f05a430419c39bdecfb3af757c529d374c2e22115fbc98f",
+      "reviewed_sha256": "6bb1e21f34dd349dfce0cfcd7f4bc173c9998beab8d6ba660d95058fe3fb5dd3",
+      "result": "naprawiono",
+      "checks": "Wejście i renderowanie; stan/szkice; uprawnienia; zamykanie i zasoby; powiązania z pakietami.",
+      "findings": "dialog-gang-context"
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/client/FinanceTable.java",
+      "kind": "production-java",
+      "baseline_sha256": "05ff146624d3ef0f604c9c617d7af5f024860e7ab66e8e8dd84ca538aa84cbd2",
+      "reviewed_sha256": "05ff146624d3ef0f604c9c617d7af5f024860e7ab66e8e8dd84ca538aa84cbd2",
+      "result": "sprawdzono",
+      "checks": "Wejście i renderowanie; stan/szkice; uprawnienia; zamykanie i zasoby; powiązania z pakietami.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/client/FlatButton.java",
+      "kind": "production-java",
+      "baseline_sha256": "36a7da07d25c5c72cd16b1cbbe27b6aa33a6ff7c7ecc174547760d383f50e7ea",
+      "reviewed_sha256": "36a7da07d25c5c72cd16b1cbbe27b6aa33a6ff7c7ecc174547760d383f50e7ea",
+      "result": "sprawdzono",
+      "checks": "Wejście i renderowanie; stan/szkice; uprawnienia; zamykanie i zasoby; powiązania z pakietami.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/client/GangLayout.java",
+      "kind": "production-java",
+      "baseline_sha256": "bf38e3041cf17a5efe4235a70c37bdb068d6da38dade97b1625495bf3333fd31",
+      "reviewed_sha256": "bf38e3041cf17a5efe4235a70c37bdb068d6da38dade97b1625495bf3333fd31",
+      "result": "sprawdzono",
+      "checks": "Wejście i renderowanie; stan/szkice; uprawnienia; zamykanie i zasoby; powiązania z pakietami.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/client/GangScreen.java",
+      "kind": "production-java",
+      "baseline_sha256": "fc924238d38af3b0103b372a3ba90cd43aaa45dd2265244d7dfe6f8e229c765f",
+      "reviewed_sha256": "787ad8252a50d6ca8b4882c21f79a0d238ac4f6e8d484bbbb22b46e0fe3fab1b",
+      "result": "naprawiono",
+      "checks": "Wejście i renderowanie; stan/szkice; uprawnienia; zamykanie i zasoby; powiązania z pakietami.",
+      "findings": "dialog-gang-context"
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/client/GoalsPanel.java",
+      "kind": "production-java",
+      "baseline_sha256": "5dcad4fbc1b31606baea082fae11b4fdcbea4825cee1503ab9e0967eb63c5278",
+      "reviewed_sha256": "5dcad4fbc1b31606baea082fae11b4fdcbea4825cee1503ab9e0967eb63c5278",
+      "result": "sprawdzono",
+      "checks": "Wejście i renderowanie; stan/szkice; uprawnienia; zamykanie i zasoby; powiązania z pakietami.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/client/GradientSlider.java",
+      "kind": "production-java",
+      "baseline_sha256": "fb0d1f41ae6b6418f757c41c22e9f09cff92e0ae9eba7d18899d54504cda60d8",
+      "reviewed_sha256": "fb0d1f41ae6b6418f757c41c22e9f09cff92e0ae9eba7d18899d54504cda60d8",
+      "result": "sprawdzono",
+      "checks": "Wejście i renderowanie; stan/szkice; uprawnienia; zamykanie i zasoby; powiązania z pakietami.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/client/HudClock.java",
+      "kind": "production-java",
+      "baseline_sha256": "203cdb2e5a7865d27c6efd77971adfde5ea5b78c739db56691cbeb39c99dd4d6",
+      "reviewed_sha256": "203cdb2e5a7865d27c6efd77971adfde5ea5b78c739db56691cbeb39c99dd4d6",
+      "result": "sprawdzono",
+      "checks": "Wejście i renderowanie; stan/szkice; uprawnienia; zamykanie i zasoby; powiązania z pakietami.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/client/HudMoney.java",
+      "kind": "production-java",
+      "baseline_sha256": "bef59b45541fb05691db8d7815c3f29d4a0191a9c02ea0c1c057dff2b34c6d23",
+      "reviewed_sha256": "bef59b45541fb05691db8d7815c3f29d4a0191a9c02ea0c1c057dff2b34c6d23",
+      "result": "sprawdzono",
+      "checks": "Wejście i renderowanie; stan/szkice; uprawnienia; zamykanie i zasoby; powiązania z pakietami.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/client/HudShapes.java",
+      "kind": "production-java",
+      "baseline_sha256": "3fe71309625bfa4cf6f405665f989e2daaa708e4f1cca311b9f2883a20905adc",
+      "reviewed_sha256": "3fe71309625bfa4cf6f405665f989e2daaa708e4f1cca311b9f2883a20905adc",
+      "result": "sprawdzono",
+      "checks": "Wejście i renderowanie; stan/szkice; uprawnienia; zamykanie i zasoby; powiązania z pakietami.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/client/LogoCrop.java",
+      "kind": "production-java",
+      "baseline_sha256": "6cd559888b5d25df518eaafce19ddf36c82c8511a3f20c1509067baa051e4274",
+      "reviewed_sha256": "6cd559888b5d25df518eaafce19ddf36c82c8511a3f20c1509067baa051e4274",
+      "result": "sprawdzono",
+      "checks": "Wejście i renderowanie; stan/szkice; uprawnienia; zamykanie i zasoby; powiązania z pakietami.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/client/LogoCropScreen.java",
+      "kind": "production-java",
+      "baseline_sha256": "f2b649a81f029d2ba4fe258df54de1e516512e00e7adad59af35d30a21fd4ce2",
+      "reviewed_sha256": "f2b649a81f029d2ba4fe258df54de1e516512e00e7adad59af35d30a21fd4ce2",
+      "result": "sprawdzono",
+      "checks": "Wejście i renderowanie; stan/szkice; uprawnienia; zamykanie i zasoby; powiązania z pakietami.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/client/LogoImages.java",
+      "kind": "production-java",
+      "baseline_sha256": "92c79c88b24d8dab2018b14a2651f43d988abdd940ed1453a1d1c02860916755",
+      "reviewed_sha256": "92c79c88b24d8dab2018b14a2651f43d988abdd940ed1453a1d1c02860916755",
+      "result": "sprawdzono",
+      "checks": "Wejście i renderowanie; stan/szkice; uprawnienia; zamykanie i zasoby; powiązania z pakietami.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/client/LogoTexture.java",
+      "kind": "production-java",
+      "baseline_sha256": "d514aa842d04747d4d666954ccad56cc55e4e11bc4ba7a97505d0fd60dfd9912",
+      "reviewed_sha256": "d514aa842d04747d4d666954ccad56cc55e4e11bc4ba7a97505d0fd60dfd9912",
+      "result": "sprawdzono",
+      "checks": "Wejście i renderowanie; stan/szkice; uprawnienia; zamykanie i zasoby; powiązania z pakietami.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/client/MemberCard.java",
+      "kind": "production-java",
+      "baseline_sha256": "0fe0cdda9a431e53aea83c77995def672fe37c6612319ee5e9d6456c3868824d",
+      "reviewed_sha256": "0fe0cdda9a431e53aea83c77995def672fe37c6612319ee5e9d6456c3868824d",
+      "result": "sprawdzono",
+      "checks": "Wejście i renderowanie; stan/szkice; uprawnienia; zamykanie i zasoby; powiązania z pakietami.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/client/MemberRow.java",
+      "kind": "production-java",
+      "baseline_sha256": "81b61847fb5500a7ff2ea49f754bc517afd5505bd9e9cc9b9517b46ddacc0146",
+      "reviewed_sha256": "81b61847fb5500a7ff2ea49f754bc517afd5505bd9e9cc9b9517b46ddacc0146",
+      "result": "sprawdzono",
+      "checks": "Wejście i renderowanie; stan/szkice; uprawnienia; zamykanie i zasoby; powiązania z pakietami.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/client/MenuDialog.java",
+      "kind": "production-java",
+      "baseline_sha256": "b90cc254a4fd3ac21eda2ab59b254c7a99a3cbb3476c376c230671f619bde270",
+      "reviewed_sha256": "004ae228e86fb40683009c3b5da8ad4e4b16d8a10d6baa389fa8eda01569de7a",
+      "result": "naprawiono",
+      "checks": "Wejście i renderowanie; stan/szkice; uprawnienia; zamykanie i zasoby; powiązania z pakietami.",
+      "findings": "dialog-gang-context"
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/client/MinimapStyle.java",
+      "kind": "production-java",
+      "baseline_sha256": "3323ae772e2f5f58b40ecab82b804cb9ec327034598c6643c3978eafb90b8a80",
+      "reviewed_sha256": "3323ae772e2f5f58b40ecab82b804cb9ec327034598c6643c3978eafb90b8a80",
+      "result": "sprawdzono",
+      "checks": "Wejście i renderowanie; stan/szkice; uprawnienia; zamykanie i zasoby; powiązania z pakietami.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/client/MoneyIcons.java",
+      "kind": "production-java",
+      "baseline_sha256": "dd17160dde9090ba84268c9a8f976b75915df11751d42b8b54fbe3094786bbc0",
+      "reviewed_sha256": "dd17160dde9090ba84268c9a8f976b75915df11751d42b8b54fbe3094786bbc0",
+      "result": "sprawdzono",
+      "checks": "Wejście i renderowanie; stan/szkice; uprawnienia; zamykanie i zasoby; powiązania z pakietami.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/client/MoneyTransferScreen.java",
+      "kind": "production-java",
+      "baseline_sha256": "04ec162741d66d46010499f4abdf41a79acef9a8eadff15955e234fc3efb3a86",
+      "reviewed_sha256": "04ec162741d66d46010499f4abdf41a79acef9a8eadff15955e234fc3efb3a86",
+      "result": "sprawdzono",
+      "checks": "Wejście i renderowanie; stan/szkice; uprawnienia; zamykanie i zasoby; powiązania z pakietami.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/client/NewRoleScreen.java",
+      "kind": "production-java",
+      "baseline_sha256": "a3f4cc981f8f2afd807482fc711b1b808a4c5e8f3a02f0f51d109fe833da80d7",
+      "reviewed_sha256": "a3f4cc981f8f2afd807482fc711b1b808a4c5e8f3a02f0f51d109fe833da80d7",
+      "result": "sprawdzono",
+      "checks": "Wejście i renderowanie; stan/szkice; uprawnienia; zamykanie i zasoby; powiązania z pakietami.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/client/PermissionList.java",
+      "kind": "production-java",
+      "baseline_sha256": "bd3a2a0fa3429b7cf474c16e2508cd0cba250b11a02f45975637ad6998893d5d",
+      "reviewed_sha256": "bd3a2a0fa3429b7cf474c16e2508cd0cba250b11a02f45975637ad6998893d5d",
+      "result": "sprawdzono",
+      "checks": "Wejście i renderowanie; stan/szkice; uprawnienia; zamykanie i zasoby; powiązania z pakietami.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/client/PermissionToggle.java",
+      "kind": "production-java",
+      "baseline_sha256": "6e9f439cbf107099e8d12be0d8e9c674fbf7e3ee6847b1ddf3dff6afac5adfad",
+      "reviewed_sha256": "6e9f439cbf107099e8d12be0d8e9c674fbf7e3ee6847b1ddf3dff6afac5adfad",
+      "result": "sprawdzono",
+      "checks": "Wejście i renderowanie; stan/szkice; uprawnienia; zamykanie i zasoby; powiązania z pakietami.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/client/PersonalTheme.java",
+      "kind": "production-java",
+      "baseline_sha256": "56abe81b806f233c01f4b0205b107ddcec839c064e08f968aeb4204a6856fe47",
+      "reviewed_sha256": "8da85485600aa3e5561c9e671b3d3e739885257cca9e85c1b0597331c226c309",
+      "result": "naprawiono",
+      "checks": "Wejście i renderowanie; stan/szkice; uprawnienia; zamykanie i zasoby; powiązania z pakietami.",
+      "findings": "appearance-write-rollback"
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/client/PlayerHomeButton.java",
+      "kind": "production-java",
+      "baseline_sha256": "83c59d988cc3636feb65076a7525eaf738af59af6776ab6213cc0956a72e17a7",
+      "reviewed_sha256": "83c59d988cc3636feb65076a7525eaf738af59af6776ab6213cc0956a72e17a7",
+      "result": "sprawdzono",
+      "checks": "Wejście i renderowanie; stan/szkice; uprawnienia; zamykanie i zasoby; powiązania z pakietami.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/client/PlayerHud.java",
+      "kind": "production-java",
+      "baseline_sha256": "386c37e1e5e5f036c65556d8ade2200f44615e0f3ad66db3029b7a95bc95f8e7",
+      "reviewed_sha256": "386c37e1e5e5f036c65556d8ade2200f44615e0f3ad66db3029b7a95bc95f8e7",
+      "result": "sprawdzono",
+      "checks": "Wejście i renderowanie; stan/szkice; uprawnienia; zamykanie i zasoby; powiązania z pakietami.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/client/PlayerHudLayout.java",
+      "kind": "production-java",
+      "baseline_sha256": "c3b31fd00a009e18594eafa35377b4e6ca2cba9728287d29a29d066cdc20028f",
+      "reviewed_sha256": "c3b31fd00a009e18594eafa35377b4e6ca2cba9728287d29a29d066cdc20028f",
+      "result": "sprawdzono",
+      "checks": "Wejście i renderowanie; stan/szkice; uprawnienia; zamykanie i zasoby; powiązania z pakietami.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/client/RegisterScrollBar.java",
+      "kind": "production-java",
+      "baseline_sha256": "5b0495d19c199c5a3ad523e66120f0f1724635b06a3b9e17f45124fc5e29a4ed",
+      "reviewed_sha256": "5b0495d19c199c5a3ad523e66120f0f1724635b06a3b9e17f45124fc5e29a4ed",
+      "result": "sprawdzono",
+      "checks": "Wejście i renderowanie; stan/szkice; uprawnienia; zamykanie i zasoby; powiązania z pakietami.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/client/RpChatOptionsScreen.java",
+      "kind": "production-java",
+      "baseline_sha256": "89b37120e0baa9e6c0c86328733b11ae30c064554b7ba4843db5ff9d03b949d6",
+      "reviewed_sha256": "89b37120e0baa9e6c0c86328733b11ae30c064554b7ba4843db5ff9d03b949d6",
+      "result": "sprawdzono",
+      "checks": "Wejście i renderowanie; stan/szkice; uprawnienia; zamykanie i zasoby; powiązania z pakietami.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/client/RpChatScreen.java",
+      "kind": "production-java",
+      "baseline_sha256": "5894306161ce88c959ff602243f3c6fbdfe58ef0d642b649625a8b39fa59cb7d",
+      "reviewed_sha256": "5894306161ce88c959ff602243f3c6fbdfe58ef0d642b649625a8b39fa59cb7d",
+      "result": "sprawdzono",
+      "checks": "Wejście i renderowanie; stan/szkice; uprawnienia; zamykanie i zasoby; powiązania z pakietami.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/client/ScrollPosition.java",
+      "kind": "production-java",
+      "baseline_sha256": "372a184eb6275f601530efd024055d2a29bf11617081707db9b13c5afa3870d9",
+      "reviewed_sha256": "372a184eb6275f601530efd024055d2a29bf11617081707db9b13c5afa3870d9",
+      "result": "sprawdzono",
+      "checks": "Wejście i renderowanie; stan/szkice; uprawnienia; zamykanie i zasoby; powiązania z pakietami.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/client/SmoothImageTexture.java",
+      "kind": "production-java",
+      "baseline_sha256": "38e9f13da52041a5160cd0d9d421592ee221f6682b9207bfb139ea049adcddd8",
+      "reviewed_sha256": "38e9f13da52041a5160cd0d9d421592ee221f6682b9207bfb139ea049adcddd8",
+      "result": "sprawdzono",
+      "checks": "Wejście i renderowanie; stan/szkice; uprawnienia; zamykanie i zasoby; powiązania z pakietami.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/client/TerrainClient.java",
+      "kind": "production-java",
+      "baseline_sha256": "f9a0b12e75db84d377f88a85172269ef06244729ad3e974b0e03a81daf387e62",
+      "reviewed_sha256": "f9a0b12e75db84d377f88a85172269ef06244729ad3e974b0e03a81daf387e62",
+      "result": "sprawdzono",
+      "checks": "Wejście i renderowanie; stan/szkice; uprawnienia; zamykanie i zasoby; powiązania z pakietami.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/client/TerrainMapTexture.java",
+      "kind": "production-java",
+      "baseline_sha256": "8c57a92a85b736c375c60f2b3417d6c0c786f3aec00a9695950a53452a1266aa",
+      "reviewed_sha256": "8c57a92a85b736c375c60f2b3417d6c0c786f3aec00a9695950a53452a1266aa",
+      "result": "sprawdzono",
+      "checks": "Wejście i renderowanie; stan/szkice; uprawnienia; zamykanie i zasoby; powiązania z pakietami.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/client/TerrainMarkScreen.java",
+      "kind": "production-java",
+      "baseline_sha256": "1d568f61aa245c7707afe900b629cb825d583ead6d6d2f18143abc92b216abc8",
+      "reviewed_sha256": "1d568f61aa245c7707afe900b629cb825d583ead6d6d2f18143abc92b216abc8",
+      "result": "sprawdzono",
+      "checks": "Wejście i renderowanie; stan/szkice; uprawnienia; zamykanie i zasoby; powiązania z pakietami.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/client/TerrainPanel.java",
+      "kind": "production-java",
+      "baseline_sha256": "e0ce5a6c7e850cd1c225a603890ccef2b2e5c5ae30879c55cacd276e31c6f07e",
+      "reviewed_sha256": "e0ce5a6c7e850cd1c225a603890ccef2b2e5c5ae30879c55cacd276e31c6f07e",
+      "result": "sprawdzono",
+      "checks": "Wejście i renderowanie; stan/szkice; uprawnienia; zamykanie i zasoby; powiązania z pakietami.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/client/ValueSlider.java",
+      "kind": "production-java",
+      "baseline_sha256": "2dad89934c1e6dcae4dc1e98577326c3fb66dcdf63f217f1b8c6ae411ff1d67a",
+      "reviewed_sha256": "2dad89934c1e6dcae4dc1e98577326c3fb66dcdf63f217f1b8c6ae411ff1d67a",
+      "result": "sprawdzono",
+      "checks": "Wejście i renderowanie; stan/szkice; uprawnienia; zamykanie i zasoby; powiązania z pakietami.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/gang/BlacklistView.java",
+      "kind": "production-java",
+      "baseline_sha256": "187aeb1af35455e22829c0994c951d97c4caf7ccb9dc52fcaccfb59808561478",
+      "reviewed_sha256": "187aeb1af35455e22829c0994c951d97c4caf7ccb9dc52fcaccfb59808561478",
+      "result": "sprawdzono",
+      "checks": "Walidacja i kolejność zmian; prawa; limity, stronicowanie, zapis i migracja danych.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/gang/FinanceView.java",
+      "kind": "production-java",
+      "baseline_sha256": "d301b3311e237e2c23be5c6b2ac4a709a92173ab538bc537b4791433b4ac04d8",
+      "reviewed_sha256": "d301b3311e237e2c23be5c6b2ac4a709a92173ab538bc537b4791433b4ac04d8",
+      "result": "sprawdzono",
+      "checks": "Walidacja i kolejność zmian; prawa; limity, stronicowanie, zapis i migracja danych.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/gang/GangBanner.java",
+      "kind": "production-java",
+      "baseline_sha256": "5152d4ee49d59f06546beda11216eee3522e9f13e5d87a9d3b366819849d05d4",
+      "reviewed_sha256": "5152d4ee49d59f06546beda11216eee3522e9f13e5d87a9d3b366819849d05d4",
+      "result": "sprawdzono",
+      "checks": "Walidacja i kolejność zmian; prawa; limity, stronicowanie, zapis i migracja danych.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/gang/GangBlacklist.java",
+      "kind": "production-java",
+      "baseline_sha256": "1bcd3e20b1a613498844e48f4b3041ce10034e46706392c9c42bfa9bc533a76f",
+      "reviewed_sha256": "1bcd3e20b1a613498844e48f4b3041ce10034e46706392c9c42bfa9bc533a76f",
+      "result": "sprawdzono",
+      "checks": "Walidacja i kolejność zmian; prawa; limity, stronicowanie, zapis i migracja danych.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/gang/GangCategory.java",
+      "kind": "production-java",
+      "baseline_sha256": "d8aeb24e9bce6ab70ac5be672b22bb6e86b422206066648273567d5502b47524",
+      "reviewed_sha256": "d8aeb24e9bce6ab70ac5be672b22bb6e86b422206066648273567d5502b47524",
+      "result": "sprawdzono",
+      "checks": "Walidacja i kolejność zmian; prawa; limity, stronicowanie, zapis i migracja danych.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/gang/GangDirectory.java",
+      "kind": "production-java",
+      "baseline_sha256": "14930a764c344bf0a79d5b4a94787f6800cb37176d679f37f6c5d23df805d91d",
+      "reviewed_sha256": "14930a764c344bf0a79d5b4a94787f6800cb37176d679f37f6c5d23df805d91d",
+      "result": "sprawdzono",
+      "checks": "Walidacja i kolejność zmian; prawa; limity, stronicowanie, zapis i migracja danych.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/gang/GangFinances.java",
+      "kind": "production-java",
+      "baseline_sha256": "a3eee27efd5991ec9c183784528eb71453d26b0c7e89220ed6c3b3031334f791",
+      "reviewed_sha256": "a3eee27efd5991ec9c183784528eb71453d26b0c7e89220ed6c3b3031334f791",
+      "result": "sprawdzono",
+      "checks": "Walidacja i kolejność zmian; prawa; limity, stronicowanie, zapis i migracja danych.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/gang/GangGoals.java",
+      "kind": "production-java",
+      "baseline_sha256": "00c5b2754f2ab149426eef1032bbf157dffcc81f1dce685fe5f4a8047024ae35",
+      "reviewed_sha256": "00c5b2754f2ab149426eef1032bbf157dffcc81f1dce685fe5f4a8047024ae35",
+      "result": "sprawdzono",
+      "checks": "Walidacja i kolejność zmian; prawa; limity, stronicowanie, zapis i migracja danych.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/gang/GangLogo.java",
+      "kind": "production-java",
+      "baseline_sha256": "a3c8c68a7061bb4c67af324bc1dd3d4886e4237805ea3a4c209fc3315a064e19",
+      "reviewed_sha256": "a3c8c68a7061bb4c67af324bc1dd3d4886e4237805ea3a4c209fc3315a064e19",
+      "result": "sprawdzono",
+      "checks": "Walidacja i kolejność zmian; prawa; limity, stronicowanie, zapis i migracja danych.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/gang/GangSavedData.java",
+      "kind": "production-java",
+      "baseline_sha256": "4e71a27da81fa3fffca518d56b620605bd4733e1388c030c50d579c136cb52a1",
+      "reviewed_sha256": "4e71a27da81fa3fffca518d56b620605bd4733e1388c030c50d579c136cb52a1",
+      "result": "sprawdzono",
+      "checks": "Walidacja i kolejność zmian; prawa; limity, stronicowanie, zapis i migracja danych.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/gang/GangView.java",
+      "kind": "production-java",
+      "baseline_sha256": "14282321805ffa4d312f80656a70b643e90f168a8e7ebf27941f7eaca23c240d",
+      "reviewed_sha256": "14282321805ffa4d312f80656a70b643e90f168a8e7ebf27941f7eaca23c240d",
+      "result": "sprawdzono",
+      "checks": "Walidacja i kolejność zmian; prawa; limity, stronicowanie, zapis i migracja danych.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/gang/MoneyCommands.java",
+      "kind": "production-java",
+      "baseline_sha256": "5b25587bcce72f2c32495dcbf499b72244c1e8d5f3eec5e03c5329442629843d",
+      "reviewed_sha256": "5b25587bcce72f2c32495dcbf499b72244c1e8d5f3eec5e03c5329442629843d",
+      "result": "sprawdzono",
+      "checks": "Walidacja i kolejność zmian; prawa; limity, stronicowanie, zapis i migracja danych.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/mixin/CaptureDropMixin.java",
+      "kind": "production-java",
+      "baseline_sha256": "1f0a1e25d55c0311bfdac32d234670441d9ae04a39cf508de0f3cd4ef7d12d00",
+      "reviewed_sha256": "1f0a1e25d55c0311bfdac32d234670441d9ae04a39cf508de0f3cd4ef7d12d00",
+      "result": "sprawdzono",
+      "checks": "Miejsca wstrzyknięć w używanym Minecraft/NeoForge; zachowanie natywnego czatu i separacji łupów.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/mixin/client/ChatComponentAccess.java",
+      "kind": "production-java",
+      "baseline_sha256": "1d411fa672a761e2ed3148af73c1712ab214d1bfa07e924d67bbc2f7f66bd575",
+      "reviewed_sha256": "1d411fa672a761e2ed3148af73c1712ab214d1bfa07e924d67bbc2f7f66bd575",
+      "result": "sprawdzono",
+      "checks": "Miejsca wstrzyknięć w używanym Minecraft/NeoForge; zachowanie natywnego czatu i separacji łupów.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/mixin/client/ChatComponentMixin.java",
+      "kind": "production-java",
+      "baseline_sha256": "8b97946eeb610ceb3f9ea7029defacc337f4eac88dd2009935b3431be091ef9a",
+      "reviewed_sha256": "8b97946eeb610ceb3f9ea7029defacc337f4eac88dd2009935b3431be091ef9a",
+      "result": "sprawdzono",
+      "checks": "Miejsca wstrzyknięć w używanym Minecraft/NeoForge; zachowanie natywnego czatu i separacji łupów.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/mixin/client/ChatScreenAccess.java",
+      "kind": "production-java",
+      "baseline_sha256": "5dd71137bab659ab5d83696fa7d3806c90aaa6a52d9a2bdd6172993574e8f06d",
+      "reviewed_sha256": "5dd71137bab659ab5d83696fa7d3806c90aaa6a52d9a2bdd6172993574e8f06d",
+      "result": "sprawdzono",
+      "checks": "Miejsca wstrzyknięć w używanym Minecraft/NeoForge; zachowanie natywnego czatu i separacji łupów.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/mixin/client/CommandSuggestionsMixin.java",
+      "kind": "production-java",
+      "baseline_sha256": "e72b1b76fdf312ffdee8c875191e0ae3c5b63ee222eb0d8d4caee231011a1f82",
+      "reviewed_sha256": "e72b1b76fdf312ffdee8c875191e0ae3c5b63ee222eb0d8d4caee231011a1f82",
+      "result": "sprawdzono",
+      "checks": "Miejsca wstrzyknięć w używanym Minecraft/NeoForge; zachowanie natywnego czatu i separacji łupów.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/mixin/client/FontAccess.java",
+      "kind": "production-java",
+      "baseline_sha256": "bec827823b3af50fb765402dd438794d9025ab9f53c8fe172eb8e05f472d427d",
+      "reviewed_sha256": "bec827823b3af50fb765402dd438794d9025ab9f53c8fe172eb8e05f472d427d",
+      "result": "sprawdzono",
+      "checks": "Miejsca wstrzyknięć w używanym Minecraft/NeoForge; zachowanie natywnego czatu i separacji łupów.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/network/ActionFields.java",
+      "kind": "production-java",
+      "baseline_sha256": "49bc4eb703318c94826b090dcf3bdacff45757fedfb7c849ff3953238027cd9d",
+      "reviewed_sha256": "49bc4eb703318c94826b090dcf3bdacff45757fedfb7c849ff3953238027cd9d",
+      "result": "sprawdzono",
+      "checks": "Autorytet serwera; tożsamość gracza; typy i limity; tokeny; fragmentacja i sesje.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/network/GangNetwork.java",
+      "kind": "production-java",
+      "baseline_sha256": "db692f9b410e438729aa493da0ed1108eb12b8546bc5b140f8cd4f925ab7f408",
+      "reviewed_sha256": "db692f9b410e438729aa493da0ed1108eb12b8546bc5b140f8cd4f925ab7f408",
+      "result": "sprawdzono",
+      "checks": "Autorytet serwera; tożsamość gracza; typy i limity; tokeny; fragmentacja i sesje.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/network/GangPresence.java",
+      "kind": "production-java",
+      "baseline_sha256": "969b48f73789b06c062d7913bdb64341f284aedde34dd31ece1ed01070d853cb",
+      "reviewed_sha256": "969b48f73789b06c062d7913bdb64341f284aedde34dd31ece1ed01070d853cb",
+      "result": "sprawdzono",
+      "checks": "Autorytet serwera; tożsamość gracza; typy i limity; tokeny; fragmentacja i sesje.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/network/MessageChunks.java",
+      "kind": "production-java",
+      "baseline_sha256": "275af7e3c88e12706cbcd51ac906a55eb6ef2cd351d964f0798fda567d578732",
+      "reviewed_sha256": "275af7e3c88e12706cbcd51ac906a55eb6ef2cd351d964f0798fda567d578732",
+      "result": "sprawdzono",
+      "checks": "Autorytet serwera; tożsamość gracza; typy i limity; tokeny; fragmentacja i sesje.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/territory/CaptureBoard.java",
+      "kind": "production-java",
+      "baseline_sha256": "16c67f314d2785b0983dca9570c461629faeee975d768a4e9a748a5976a50ad8",
+      "reviewed_sha256": "16c67f314d2785b0983dca9570c461629faeee975d768a4e9a748a5976a50ad8",
+      "result": "sprawdzono",
+      "checks": "Obecność i wymiary; stany captu; przedmioty; trwałość; limity zadań i odczytów mapy.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/territory/CaptureController.java",
+      "kind": "production-java",
+      "baseline_sha256": "c462291ee08ed227b00fd3a7157d6fe2b181c5590490b820963b51cf3b0c1147",
+      "reviewed_sha256": "c462291ee08ed227b00fd3a7157d6fe2b181c5590490b820963b51cf3b0c1147",
+      "result": "sprawdzono",
+      "checks": "Obecność i wymiary; stany captu; przedmioty; trwałość; limity zadań i odczytów mapy.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/territory/CaptureJoinPolicy.java",
+      "kind": "production-java",
+      "baseline_sha256": "70a1f6fc97461abe8a418d65dd7b78bdd02f98e1bf44c986d25a827be159460f",
+      "reviewed_sha256": "70a1f6fc97461abe8a418d65dd7b78bdd02f98e1bf44c986d25a827be159460f",
+      "result": "sprawdzono",
+      "checks": "Obecność i wymiary; stany captu; przedmioty; trwałość; limity zadań i odczytów mapy.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/territory/CaptureLoot.java",
+      "kind": "production-java",
+      "baseline_sha256": "7de61aa3b2eeb7ac2b0d2f2d238ffb927d37ad52fd1709fdab821e3116c93ded",
+      "reviewed_sha256": "7de61aa3b2eeb7ac2b0d2f2d238ffb927d37ad52fd1709fdab821e3116c93ded",
+      "result": "sprawdzono",
+      "checks": "Obecność i wymiary; stany captu; przedmioty; trwałość; limity zadań i odczytów mapy.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/territory/CaptureRules.java",
+      "kind": "production-java",
+      "baseline_sha256": "15ac7cf25bc96d74383f7e8fb9a9ef48109b43e3e7e7600413c54d183ff29ca0",
+      "reviewed_sha256": "15ac7cf25bc96d74383f7e8fb9a9ef48109b43e3e7e7600413c54d183ff29ca0",
+      "result": "sprawdzono",
+      "checks": "Obecność i wymiary; stany captu; przedmioty; trwałość; limity zadań i odczytów mapy.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/territory/CaptureSavedData.java",
+      "kind": "production-java",
+      "baseline_sha256": "8232c6112dc64a902354301db3fbdeee395c12ca481cf397ff25abe3fe1a963b",
+      "reviewed_sha256": "8232c6112dc64a902354301db3fbdeee395c12ca481cf397ff25abe3fe1a963b",
+      "result": "sprawdzono",
+      "checks": "Obecność i wymiary; stany captu; przedmioty; trwałość; limity zadań i odczytów mapy.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/territory/TerrainAnalysis.java",
+      "kind": "production-java",
+      "baseline_sha256": "41d7fbfdab8e44657db8b3a2e5461cde3c77512862947977400eca7515c730ae",
+      "reviewed_sha256": "41d7fbfdab8e44657db8b3a2e5461cde3c77512862947977400eca7515c730ae",
+      "result": "sprawdzono",
+      "checks": "Obecność i wymiary; stany captu; przedmioty; trwałość; limity zadań i odczytów mapy.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/territory/TerrainAtlas.java",
+      "kind": "production-java",
+      "baseline_sha256": "b7749bc26b1cdcd1f50661344a6904b78c46c5c451071234e991cd1eb7a29e1c",
+      "reviewed_sha256": "b7749bc26b1cdcd1f50661344a6904b78c46c5c451071234e991cd1eb7a29e1c",
+      "result": "sprawdzono",
+      "checks": "Obecność i wymiary; stany captu; przedmioty; trwałość; limity zadań i odczytów mapy.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/territory/TerrainCartography.java",
+      "kind": "production-java",
+      "baseline_sha256": "528c8d4ce5457dcf61724cc6b9d0684341ab0e89bece4dfb00b69fb39a761495",
+      "reviewed_sha256": "528c8d4ce5457dcf61724cc6b9d0684341ab0e89bece4dfb00b69fb39a761495",
+      "result": "sprawdzono",
+      "checks": "Obecność i wymiary; stany captu; przedmioty; trwałość; limity zadań i odczytów mapy.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/territory/TerrainDemand.java",
+      "kind": "production-java",
+      "baseline_sha256": "5670d1eb48aa5a28068cff9b63d6ace9ba2d07afc7db67c0abf7cc0025389077",
+      "reviewed_sha256": "5670d1eb48aa5a28068cff9b63d6ace9ba2d07afc7db67c0abf7cc0025389077",
+      "result": "sprawdzono",
+      "checks": "Obecność i wymiary; stany captu; przedmioty; trwałość; limity zadań i odczytów mapy.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/territory/TerrainDiskMap.java",
+      "kind": "production-java",
+      "baseline_sha256": "98087c51403f4602627cd5f59b84aba8f3a5e3a96fb767aa866093afeb417fa4",
+      "reviewed_sha256": "98087c51403f4602627cd5f59b84aba8f3a5e3a96fb767aa866093afeb417fa4",
+      "result": "sprawdzono",
+      "checks": "Obecność i wymiary; stany captu; przedmioty; trwałość; limity zadań i odczytów mapy.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/territory/TerrainDrag.java",
+      "kind": "production-java",
+      "baseline_sha256": "4d0a5699d189145d9bfcdfc542a10833fe3eef7b43030dd113900284e220b797",
+      "reviewed_sha256": "4d0a5699d189145d9bfcdfc542a10833fe3eef7b43030dd113900284e220b797",
+      "result": "sprawdzono",
+      "checks": "Obecność i wymiary; stany captu; przedmioty; trwałość; limity zadań i odczytów mapy.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/territory/TerrainKey.java",
+      "kind": "production-java",
+      "baseline_sha256": "9f2e837dd98f22644bc7b0c5b1a6419aade55947b66f1a7b83d187ef234a703d",
+      "reviewed_sha256": "9f2e837dd98f22644bc7b0c5b1a6419aade55947b66f1a7b83d187ef234a703d",
+      "result": "sprawdzono",
+      "checks": "Obecność i wymiary; stany captu; przedmioty; trwałość; limity zadań i odczytów mapy.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/territory/TerrainMapColors.java",
+      "kind": "production-java",
+      "baseline_sha256": "8d72efc6e564599f4eed5a3529991a320599b12df05690095cba0932ea2173cf",
+      "reviewed_sha256": "8d72efc6e564599f4eed5a3529991a320599b12df05690095cba0932ea2173cf",
+      "result": "sprawdzono",
+      "checks": "Obecność i wymiary; stany captu; przedmioty; trwałość; limity zadań i odczytów mapy.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/territory/TerrainMapTile.java",
+      "kind": "production-java",
+      "baseline_sha256": "9e14fed1abfab96195ca4d4608df5d3108600bac1affef871073389fff0f49db",
+      "reviewed_sha256": "9e14fed1abfab96195ca4d4608df5d3108600bac1affef871073389fff0f49db",
+      "result": "sprawdzono",
+      "checks": "Obecność i wymiary; stany captu; przedmioty; trwałość; limity zadań i odczytów mapy.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/territory/TerrainMarkers.java",
+      "kind": "production-java",
+      "baseline_sha256": "ad16c74cffdde00f22d73550c73f2fad4990be84f8e74ad9910231503e8c3868",
+      "reviewed_sha256": "ad16c74cffdde00f22d73550c73f2fad4990be84f8e74ad9910231503e8c3868",
+      "result": "sprawdzono",
+      "checks": "Obecność i wymiary; stany captu; przedmioty; trwałość; limity zadań i odczytów mapy.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/territory/TerrainOrigins.java",
+      "kind": "production-java",
+      "baseline_sha256": "20b675f5967f76802ac9a662939f8205d122296123073c3bbcd5d9fc4eb122de",
+      "reviewed_sha256": "20b675f5967f76802ac9a662939f8205d122296123073c3bbcd5d9fc4eb122de",
+      "result": "sprawdzono",
+      "checks": "Obecność i wymiary; stany captu; przedmioty; trwałość; limity zadań i odczytów mapy.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/territory/TerrainProfile.java",
+      "kind": "production-java",
+      "baseline_sha256": "7d4e1a4ba9418bfed16bf503eb30095010b73b664c39359fb782e8653ee77a54",
+      "reviewed_sha256": "7d4e1a4ba9418bfed16bf503eb30095010b73b664c39359fb782e8653ee77a54",
+      "result": "sprawdzono",
+      "checks": "Obecność i wymiary; stany captu; przedmioty; trwałość; limity zadań i odczytów mapy.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/territory/TerrainRequestGate.java",
+      "kind": "production-java",
+      "baseline_sha256": "b4d3426af6d4625f9a14c95e1a949db6336d1bc4e3dd261a2666b7038e48f79e",
+      "reviewed_sha256": "b4d3426af6d4625f9a14c95e1a949db6336d1bc4e3dd261a2666b7038e48f79e",
+      "result": "sprawdzono",
+      "checks": "Obecność i wymiary; stany captu; przedmioty; trwałość; limity zadań i odczytów mapy.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/territory/TerrainSavedData.java",
+      "kind": "production-java",
+      "baseline_sha256": "405a56f3ccdbafbc7521c40138f5bc0b10b2059fcab18cea0eafc65b8f841c79",
+      "reviewed_sha256": "405a56f3ccdbafbc7521c40138f5bc0b10b2059fcab18cea0eafc65b8f841c79",
+      "result": "sprawdzono",
+      "checks": "Obecność i wymiary; stany captu; przedmioty; trwałość; limity zadań i odczytów mapy.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/territory/TerrainTemplates.java",
+      "kind": "production-java",
+      "baseline_sha256": "a3198cc1757abc287ad17e4d9a04a6aeaff4ddf4906e31ee272809f5fb764389",
+      "reviewed_sha256": "a3198cc1757abc287ad17e4d9a04a6aeaff4ddf4906e31ee272809f5fb764389",
+      "result": "sprawdzono",
+      "checks": "Obecność i wymiary; stany captu; przedmioty; trwałość; limity zadań i odczytów mapy.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/territory/TerrainView.java",
+      "kind": "production-java",
+      "baseline_sha256": "83963f140c1d69d4fbfc63109370f99f6dadad07632a7c0601b71e114b70eb7f",
+      "reviewed_sha256": "83963f140c1d69d4fbfc63109370f99f6dadad07632a7c0601b71e114b70eb7f",
+      "result": "sprawdzono",
+      "checks": "Obecność i wymiary; stany captu; przedmioty; trwałość; limity zadań i odczytów mapy.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/territory/TerrainViewCache.java",
+      "kind": "production-java",
+      "baseline_sha256": "93a710e8c7964025833e991aa5ab91bc730f8715e8cc3cfbd9197bcc77de047c",
+      "reviewed_sha256": "93a710e8c7964025833e991aa5ab91bc730f8715e8cc3cfbd9197bcc77de047c",
+      "result": "sprawdzono",
+      "checks": "Obecność i wymiary; stany captu; przedmioty; trwałość; limity zadań i odczytów mapy.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/territory/TerrainViewport.java",
+      "kind": "production-java",
+      "baseline_sha256": "38748ca4bd0c3970468631d169e9b6e5cd1009dba3d25d0032f250c0182c6da4",
+      "reviewed_sha256": "38748ca4bd0c3970468631d169e9b6e5cd1009dba3d25d0032f250c0182c6da4",
+      "result": "sprawdzono",
+      "checks": "Obecność i wymiary; stany captu; przedmioty; trwałość; limity zadań i odczytów mapy.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/territory/WorldTimeCommands.java",
+      "kind": "production-java",
+      "baseline_sha256": "e9489e3569e398c2b4bcd5ca7a01ebc0d800594f56661d67cd2ddf5c176751e9",
+      "reviewed_sha256": "e9489e3569e398c2b4bcd5ca7a01ebc0d800594f56661d67cd2ddf5c176751e9",
+      "result": "sprawdzono",
+      "checks": "Obecność i wymiary; stany captu; przedmioty; trwałość; limity zadań i odczytów mapy.",
+      "findings": ""
+    },
+    {
+      "path": "balance/territory-v1.json",
+      "kind": "optional-design-tool",
+      "baseline_sha256": "",
+      "reviewed_sha256": "83d7c89a46b049e718ae314a5b4ffb4cbbd40cf3562df13288bd50e1366ddf5e",
+      "result": "sprawdzono",
+      "checks": "Przegląd modelu i sześć scenariuszy matematycznych; pliki nie są wczytywane przez mod.",
+      "findings": ""
+    },
+    {
+      "path": "build.gradle",
+      "kind": "build",
+      "baseline_sha256": "",
+      "reviewed_sha256": "712421c307e119d681599039667f43a45ef501be833ef2caf06511c825f27258",
+      "result": "sprawdzono",
+      "checks": "Konfiguracja i zakres paczki; wersje; poprawność formatu i powiązania z kodem.",
+      "findings": ""
+    },
+    {
+      "path": "gradle.properties",
+      "kind": "build",
+      "baseline_sha256": "",
+      "reviewed_sha256": "25bf76e780506f29cbe49e68d5ceffe6b364b5089098da1e9ecc16bdb967a1e7",
+      "result": "sprawdzono",
+      "checks": "Konfiguracja i zakres paczki; wersje; poprawność formatu i powiązania z kodem.",
+      "findings": ""
+    },
+    {
+      "path": "gradle/wrapper/gradle-wrapper.jar",
+      "kind": "build",
+      "baseline_sha256": "",
+      "reviewed_sha256": "423cb469ccc0ecc31f0e4e1c309976198ccb734cdcbb7029d4bda0f18f57e8d9",
+      "result": "sprawdzono",
+      "checks": "CRC archiwum; punkt wejścia wrappera. Bez audytu źródeł Gradle.",
+      "findings": ""
+    },
+    {
+      "path": "gradle/wrapper/gradle-wrapper.properties",
+      "kind": "build",
+      "baseline_sha256": "",
+      "reviewed_sha256": "ae9287ed83e55d3a7e1fc1475faaf03fe6cb6e216a976d64852b1c4312ae3559",
+      "result": "sprawdzono",
+      "checks": "Konfiguracja i zakres paczki; wersje; poprawność formatu i powiązania z kodem.",
+      "findings": ""
+    },
+    {
+      "path": "gradlew",
+      "kind": "build",
+      "baseline_sha256": "",
+      "reviewed_sha256": "fb68debc1b1acf8ec55dc0d5e5495e1dedd0bd6b61f304bee61613eeb2bd9b92",
+      "result": "sprawdzono",
+      "checks": "Skrypt startowy standardowego wrappera, ścieżka Java, argumenty; bash -n dla gradlew.",
+      "findings": ""
+    },
+    {
+      "path": "gradlew.bat",
+      "kind": "build",
+      "baseline_sha256": "",
+      "reviewed_sha256": "fedad02c18e266ec094995a5751b7fe1eb6e74f66bf75db64fae2e50eb22c234",
+      "result": "sprawdzono",
+      "checks": "Skrypt startowy standardowego wrappera, ścieżka Java, argumenty; bash -n dla gradlew.",
+      "findings": ""
+    },
+    {
+      "path": "settings.gradle",
+      "kind": "build",
+      "baseline_sha256": "",
+      "reviewed_sha256": "3da3122e28336f2e58049fd4c9e04a7a80c83ba1e911f534fd96f65c28e58d1e",
+      "result": "sprawdzono",
+      "checks": "Konfiguracja i zakres paczki; wersje; poprawność formatu i powiązania z kodem.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/resources/META-INF/licenses/dejavu.txt",
+      "kind": "resource",
+      "baseline_sha256": "",
+      "reviewed_sha256": "773851f832205315ef56168540fca94f4888aa898aca8fc1251ca90b1daf934a",
+      "result": "sprawdzono",
+      "checks": "Konfiguracja i zakres paczki; wersje; poprawność formatu i powiązania z kodem.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/resources/META-INF/neoforge.mods.toml",
+      "kind": "resource",
+      "baseline_sha256": "",
+      "reviewed_sha256": "1459a8f496fd21b43cba2a13a748b1ee199a459fb5d6479181ddee5b46cb50a5",
+      "result": "sprawdzono",
+      "checks": "Konfiguracja i zakres paczki; wersje; poprawność formatu i powiązania z kodem.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/resources/assets/crimeandlaw/font/chat.json",
+      "kind": "resource",
+      "baseline_sha256": "",
+      "reviewed_sha256": "2dd3aefded1afafcb98b4079252c6b54dde5d5ecc64a3c4e0bc89ca3a94d52f2",
+      "result": "sprawdzono",
+      "checks": "Konfiguracja i zakres paczki; wersje; poprawność formatu i powiązania z kodem.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/resources/assets/crimeandlaw/font/chat.ttf",
+      "kind": "resource",
+      "baseline_sha256": "",
+      "reviewed_sha256": "ac2ba21f5c68a282770e94bfaf0816f4ff3917511cff25e6e1e3ada62f7d9a7b",
+      "result": "sprawdzono",
+      "checks": "Tablice TTF, cmap i faktycznie używane znaki; kompletna licencja w paczce.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/resources/assets/crimeandlaw/font/hud.json",
+      "kind": "resource",
+      "baseline_sha256": "",
+      "reviewed_sha256": "e958d75548cfc01cafea03536399f9392c594bb4d2d61f60bb53c8f2d44ef2a5",
+      "result": "sprawdzono",
+      "checks": "Konfiguracja i zakres paczki; wersje; poprawność formatu i powiązania z kodem.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/resources/assets/crimeandlaw/font/hud.ttf",
+      "kind": "resource",
+      "baseline_sha256": "",
+      "reviewed_sha256": "1c967c41f5e697267fa33ef0d21cab5d6454489591e551a5b2c54fa4b0fbcf9a",
+      "result": "sprawdzono",
+      "checks": "Tablice TTF, cmap i faktycznie używane znaki; kompletna licencja w paczce.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/resources/assets/crimeandlaw/lang/en_us.json",
+      "kind": "resource",
+      "baseline_sha256": "",
+      "reviewed_sha256": "4844e8a41230452b5e03934ce78954edcdf6d02833b60b89466e9669c2976019",
+      "result": "sprawdzono",
+      "checks": "Konfiguracja i zakres paczki; wersje; poprawność formatu i powiązania z kodem.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/resources/assets/crimeandlaw/lang/pl_pl.json",
+      "kind": "resource",
+      "baseline_sha256": "",
+      "reviewed_sha256": "9f90337565ebabcf7c7a6fa68535e9090b0a6031130f1eeb0be57cfa3cef5dcc",
+      "result": "sprawdzono",
+      "checks": "Konfiguracja i zakres paczki; wersje; poprawność formatu i powiązania z kodem.",
+      "findings": ""
+    },
+    {
+      "path": "src/main/resources/crimeandlaw.mixins.json",
+      "kind": "resource",
+      "baseline_sha256": "",
+      "reviewed_sha256": "ca65c7feaee089cec00a118a2673c06d559d8d878bfbbde0e8971778bae97254",
+      "result": "sprawdzono",
+      "checks": "Konfiguracja i zakres paczki; wersje; poprawność formatu i powiązania z kodem.",
+      "findings": ""
+    },
+    {
+      "path": "tools/territory_balance.py",
+      "kind": "optional-design-tool",
+      "baseline_sha256": "",
+      "reviewed_sha256": "4501b7b578b27ae7ea20b2c525677edcd16050907a40b796a5b19258b09fd328",
+      "result": "sprawdzono",
+      "checks": "Przegląd modelu i sześć scenariuszy matematycznych; pliki nie są wczytywane przez mod.",
+      "findings": ""
+    }
+  ],
+  "findings": [
+    {
+      "id": "appearance-write-rollback",
+      "file": "src/main/java/pl/crimeandlaw/client/PersonalTheme.java",
+      "status": "fixed-and-reproduced",
+      "issue": "set mutates in-memory themes before I/O succeeds; failed save can still change the effective theme.",
+      "regression_before": "validation-040/regression-before/result.txt",
+      "regression_after": "validation-040/final-review/result.txt"
+    },
+    {
+      "id": "dialog-gang-context",
+      "file": "src/main/java/pl/crimeandlaw/client/MenuDialog.java",
+      "status": "fixed-and-reproduced",
+      "issue": "Generic dialogs are not notified on gang changes; stale new-rank or map-color callbacks can act on the new current gang.",
+      "regression_before": "validation-040/regression-before/result.txt",
+      "regression_after": "validation-040/final-review/result.txt"
+    }
+  ],
+  "runtime_status": "passed",
+  "artifact": {
+    "filename": "crimeandlaw-0.1.40.jar",
+    "size_bytes": 2130811,
+    "sha256": "12777f54f4030a790212407ead6799a69312c22ca603371076f19e7b324ceb5a",
+    "nested_libraries_crc_ok": 15,
+    "mod_classes_java21": 177,
+    "smoke_classes": 0,
+    "metadata_version": "0.1.40",
+    "protocol": 20
+  },
+  "unit_tests": {
+    "tests": 175,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "suites": 32
+  },
+  "integration_results": {
+    "final-review": {
+      "reports": {
+        "result.txt": "PASS Failed theme save leaves the effective preference unchanged\nPASS New-rank draft is discarded after gang change\nPASS Color draft survives same-gang refresh and closes on gang change\nPASS Confirmation cannot act on a different gang\n"
+      },
+      "screenshots": 0
+    },
+    "final-ui": {
+      "reports": {
+        "result.txt": "PASS 1920x1080 GUI 2.0 owner: physical permission toggles; protected-role save; new role; correlated responses; gang change\nPASS 1920x1080 GUI 4.0 personnel: physical permission toggles; protected-role save; new role; correlated responses; gang change\nPASS 855x481 GUI 2.0 owner: physical permission toggles; protected-role save; new role; correlated responses; gang change\nPASS 640x480 GUI 2.0 personnel: physical permission toggles; protected-role save; new role; correlated responses; gang change\n"
+      },
+      "screenshots": 8
+    },
+    "final-full": {
+      "reports": {
+        "result.txt": "00-loading — 1920x1080, GUI 2.0\nPASS creation, scale 2.0\n01-create-scale2 — 1920x1080, GUI 2.0\nPASS creation, scale 4.0\n02-create-scale4 — 1920x1080, GUI 4.0\n03-find — 1920x1080, GUI 4.0\n04-gang — 1920x1080, GUI 4.0\n05-members — 1920x1080, GUI 4.0\n06-member-page2 — 1920x1080, GUI 4.0\n07-settings — 1920x1080, GUI 4.0\n08-applications — 1920x1080, GUI 4.0\n09-management — 1920x1080, GUI 4.0\n10-color-gradients — 1920x1080, GUI 4.0\n11-appearance-preview — 1920x1080, GUI 4.0\n12-logo-crop — 1920x1080, GUI 4.0\nPASS logo: 2048x2048 saved texture, legacy 64x64, detailed PNG stream decoding, trilinear minification/linear magnification filters, smooth crop preview.\n13-logo-preview — 1920x1080, GUI 4.0\n14-member-settings — 1920x1080, GUI 4.0\n15-overview-logo-long-name-scale2 — 1920x1080, GUI 2.0\n16-register — 1920x1080, GUI 2.0\n17-register-scrolled — 1920x1080, GUI 2.0\n18-register-second-page — 1920x1080, GUI 2.0\n19-register-scale4 — 1920x1080, GUI 4.0\n20-hidden-transport-fallback — 1920x1080, GUI 4.0\n21-ranks — 1920x1080, GUI 4.0\n22-create-rank — 1920x1080, GUI 4.0\n23-custom-rank — 1920x1080, GUI 4.0\n24-rank-order — 1920x1080, GUI 4.0\n25-delegated-management — 1920x1080, GUI 4.0\n26-clean-logo — 1920x1080, GUI 4.0\n27-rank-dialog-scale2 — 1920x1080, GUI 2.0\n28-terrain-map-scale2 — 1920x1080, GUI 2.0\n29-terrain-map-scale4 — 1920x1080, GUI 4.0\n30-terrain-unavailable — 1920x1080, GUI 4.0\n31-terrain-zoom-and-grid — 1920x1080, GUI 4.0\n32-actual-village-map-scale4 — 1920x1080, GUI 4.0\n33-actual-village-map-scale2 — 1920x1080, GUI 2.0\n34-find-twelve-gangs — 1920x1080, GUI 2.0\n35-find-scrolled — 1920x1080, GUI 2.0\n36-twelve-ranks-scrolled — 1920x1080, GUI 2.0\n37-rank-draft-resize — 1920x1080, GUI 4.0\n38-rank-drag-autoscroll — 1920x1080, GUI 4.0\n39-premie-panel — 1920x1080, GUI 4.0\n40-balance-panel — 1920x1080, GUI 4.0\n41-blacklist-panel — 1920x1080, GUI 4.0\n42-goals-panel — 1920x1080, GUI 4.0\n43-map-before-pan — 1920x1080, GUI 4.0\n44-map-drag-preview — 1920x1080, GUI 4.0\n45-map-panned-player-outside — 1920x1080, GUI 4.0\n46-map-return-to-player — 1920x1080, GUI 4.0\n47-actual-map-navigation-final — 1920x1080, GUI 2.0\n48-banner-color-settings — 1920x1080, GUI 2.0\n49-banner-solid-overview — 1920x1080, GUI 2.0\n50-banner-wide-crop — 1920x1080, GUI 2.0\n51-banner-image-settings — 1920x1080, GUI 2.0\n52-banner-image-overview — 1920x1080, GUI 2.0\n53-create-primary-action — 1920x1080, GUI 2.0\n54-member-skin-card — 1920x1080, GUI 2.0\n55-banner-final-settings — 1920x1080, GUI 2.0\n56-map-roundtrip — 1920x1080, GUI 2.0\n57-planned-permissions — 1920x1080, GUI 2.0\n58-skin-outer-layers — 1920x1080, GUI 2.0\n59-high-resolution-minification — 1920x1080, GUI 2.0\n60-map-held-r0-step1 — 1920x1080, GUI 2.0\n60-map-held-r0-step2 — 1920x1080, GUI 2.0\n60-map-held-r0-step3 — 1920x1080, GUI 2.0\n60-map-held-r0-step4 — 1920x1080, GUI 2.0\n60-map-held-r0-step5 — 1920x1080, GUI 2.0\n60-map-held-r0-step6 — 1920x1080, GUI 2.0\n60-map-held-r1-step1 — 1920x1080, GUI 2.0\n60-map-held-r1-step2 — 1920x1080, GUI 2.0\n60-map-held-r1-step3 — 1920x1080, GUI 2.0\n60-map-held-r1-step4 — 1920x1080, GUI 2.0\n60-map-held-r1-step5 — 1920x1080, GUI 2.0\n60-map-held-r1-step6 — 1920x1080, GUI 2.0\n60-map-held-r2-step1 — 1920x1080, GUI 2.0\n60-map-held-r2-step2 — 1920x1080, GUI 2.0\n60-map-held-r2-step3 — 1920x1080, GUI 2.0\n60-map-held-r2-step4 — 1920x1080, GUI 2.0\n60-map-held-r2-step5 — 1920x1080, GUI 2.0\n60-map-held-r2-step6 — 1920x1080, GUI 2.0\nPASS held map pan: three zoom levels, eighteen direction/reversal steps, delayed neighboring replies during a held gesture, stable focus/selection, no background or fog pixels across fully known visible terrain, and round-trip release.\nPASS high-resolution images: actual 2048-square/2048-wide textures, full GPU mip chains, neutral checkerboard minification without coarse aliasing, asynchronous apply and cancellation.\nPASS: actual Minecraft renderer; earlier map, list, roles, register and logo checks retained; centered actions, accented creation form, member skin card/dismissal, banner color/image/crop, Enter focus, stationary rank-drag autoscroll, persistent chunk selection and top player icon; loading gate, full strip edges, cached drag round-trip, searchable locked future permissions; actual alpha-blended hat, jacket and both sleeves for wide and slim skins.\n"
+      },
+      "screenshots": 89
+    },
+    "final-finance": {
+      "reports": {
+        "server.PASS": "TCP payouts, denied operations, replay rejection and conserved bank/treasury total of $100000 plus $1802 cash verified.\n",
+        "owner-payments.PASS": "Owner UI, raw invalid packets and timeout recovery pass\n",
+        "restart.PASS": "Actual world reload preserves accounts, ledger and rank permissions.\n",
+        "owner.PASS": "Financial TCP checks; HUD/clock/minimap at GUI 2/4 with focused chat; actual native chat sends and echo; history/draft; completion; wheel and scrollbar; clickable component; native message deletion; GUI resize; settings round trip; send button; clock zone changes; blacklist and goals.\n",
+        "recovery.PASS": "Real dialog waits five seconds, recovers server state and invalidates a simulated unprocessed request without resending money.\n",
+        "audit.PASS": "Actual dedicated server thread and two connected TCP sessions: foreign/stale/replayed nonces; spoofed actor; role escalation; malformed/deep fields; atomic batch; concurrent queued deposits; unchanged total.\n",
+        "member.PASS": "Permissions, received bonuses, authorized bank deposit, actual death/respawn and cash/bank synchronization.\n"
+      },
+      "screenshots": 33
+    },
+    "final-capture2": {
+      "reports": {
+        "server.PASS": "Actual dedicated server: commands/permission, clock/gamerule restoration, presence, neutral capture, PvP elimination, protection, loot isolation and NBT passed.\n",
+        "restart.PASS": "Ownership, protection, cancellation, cooldown, depot, scoped notes, timezone persist on disk.\n",
+        "owner.PASS": "Real owner: scoped marker, activation/start/confirm, PvP roster, HUD, ownership refresh, death loot and depot claim over TCP passed.\n",
+        "rival.PASS": "Real rival joined, died, respawned, remained eliminated and received end-of-capture cleanup.\n"
+      },
+      "screenshots": 7
+    },
+    "final-terrain": {
+      "reports": {
+        "result.txt": "FIRST_RUN PASS: real village TerrainKey[dimension=minecraft:overworld, x=12, z=54], generated FARM, original traits, old-chunk reconstruction, surface tiles, all-column colors, seam/live update, remote/world-corner views without generation; camera-only loaded chunk outside player radius; real FULL chunk NBT palette/heightmap prefetched eight chunks from the camera, beyond the visible map, without tickets; cold region-file read after restart, no empty distant region file.\nRESTART PASS: real village TerrainKey[dimension=minecraft:overworld, x=12, z=54], generated FARM, original traits, old-chunk reconstruction, surface tiles, all-column colors, seam/live update, remote/world-corner views without generation; camera-only loaded chunk outside player radius; real FULL chunk NBT palette/heightmap prefetched eight chunks from the camera, beyond the visible map, without tickets; cold region-file read after restart, no empty distant region file.\n"
+      },
+      "screenshots": 0
+    }
+  }
+}

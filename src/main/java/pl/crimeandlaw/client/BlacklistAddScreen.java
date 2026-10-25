@@ -10,9 +10,8 @@ final class BlacklistAddScreen extends MenuDialog {
     private boolean pending;
     private long awaitingSince;
     private String submittedId="";
-    private final java.util.UUID gangId;
     private FlatButton save;
-    BlacklistAddScreen(GangScreen parent){super(parent,"Dodaj do czarnej listy");panelHeight=245;gangId=ClientState.gang().id;}
+    BlacklistAddScreen(GangScreen parent){super(parent,"Dodaj do czarnej listy");panelHeight=245;}
     @Override protected void build(){
         save=null;
         field(top+75,36,player,value->{player=value;updateSave();});
@@ -31,7 +30,7 @@ final class BlacklistAddScreen extends MenuDialog {
         }
     }
     public void updated(){
-        if(ClientState.gang()==null||!gangId.equals(ClientState.gang().id)){onClose();parent.updated();return;}
+        if(!sameGang()){super.updated();return;}
         boolean ownResponse=ClientState.state.has("operationId")&&submittedId.equals(ClientState.state.get("operationId").getAsString());
         if(pending&&ownResponse){pending=false;if(ClientState.message.equals("Zapisano.")){onClose();parent.updated();return;}}
         rebuildWidgets();

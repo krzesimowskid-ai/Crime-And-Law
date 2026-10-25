@@ -20,9 +20,13 @@ public final class PersonalTheme {
         return themes.get(gang);
     }
     public static boolean set(String gang,Theme theme){
-        get(gang);if(theme==null)themes.remove(gang);else themes.put(gang,theme);
-        try{Files.createDirectories(FILE.getParent());Path tmp=FILE.resolveSibling(FILE.getFileName()+".tmp");
-            Files.writeString(tmp,JSON.toJson(new Data(themes)));Files.move(tmp,FILE,StandardCopyOption.REPLACE_EXISTING);return true;}
+        get(gang);Map<String,Theme> next=new HashMap<>(themes);if(theme==null)next.remove(gang);else next.put(gang,theme);
+        Path tmp=FILE.resolveSibling(FILE.getFileName()+".tmp");
+        try{Files.createDirectories(FILE.getParent());Files.writeString(tmp,JSON.toJson(new Data(next)));
+            try{Files.move(tmp,FILE,StandardCopyOption.ATOMIC_MOVE,StandardCopyOption.REPLACE_EXISTING);}
+            catch(AtomicMoveNotSupportedException exception){Files.move(tmp,FILE,StandardCopyOption.REPLACE_EXISTING);}
+            themes.clear();themes.putAll(next);return true;}
         catch(Exception exception){ClientState.message="Nie udało się zapisać osobistego motywu.";return false;}
+        finally{try{Files.deleteIfExists(tmp);}catch(Exception ignored){}}
     }
 }

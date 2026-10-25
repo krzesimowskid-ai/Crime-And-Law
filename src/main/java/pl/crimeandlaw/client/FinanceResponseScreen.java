@@ -10,8 +10,7 @@ abstract class FinanceResponseScreen extends MenuDialog {
     protected boolean pending;
     private String submittedToken="";
     private long awaitingSince;
-    private final java.util.UUID gangId;
-    FinanceResponseScreen(GangScreen parent,String title){super(parent,title);gangId=ClientState.gang().id;}
+    FinanceResponseScreen(GangScreen parent,String title){super(parent,title);}
     protected EditBox field(int x,int y,int width,int max,String value,java.util.function.Consumer<String> changed){
         var field=new EditBox(font,x,y,width,20,Component.literal("Wartość"));field.setMaxLength(max);field.setValue(value);field.setResponder(changed);addRenderableWidget(field);return field;
     }
@@ -31,8 +30,7 @@ abstract class FinanceResponseScreen extends MenuDialog {
         }
     }
     public void updated(){
-        var gang=ClientState.gang();
-        if(gang==null||!gang.id.equals(gangId)){onClose();parent.updated();return;}
+        if(!sameGang()){super.updated();return;}
         if(pending&&!submittedToken.equals(FinanceClient.token())){
             pending=false;if(ClientState.message.equals("Zapisano.")){onClose();parent.updated();return;}
         }

@@ -1,4 +1,4 @@
-Aktualne wydanie: [walidacja 0.1.39](docs/VALIDATION_0.1.39.md).
+Aktualne wydanie: [walidacja 0.1.40](docs/VALIDATION_0.1.40.md).
 
 # Weryfikacja 0.1.24
 
