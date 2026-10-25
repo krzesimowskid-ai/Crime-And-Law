@@ -41,6 +41,15 @@ odrost, receptura i dotychczasowy drop nasion nadal w nim działają.
 
 Receptury i premie są mechanikami fikcyjnych gatunków w grze.
 
+## Otwieranie worka — doprecyzowanie użytkownika
+
+Użytkownik rozważył krótkie nacięcie worka ziemi, aby utworzyć otwór do
+wysypywania. To osobna czynność od przycinania liści. Pod koniec wypowiedzi
+pozostawił ten pomysł otwarty, dlatego nie dodajemy obowiązku posiadania
+specjalnych nożyc do otwierania worków. Możliwa realizacja: gest otwarcia
+lub nacięcia w minigrze, następnie przechylenie worka. Otwarty worek
+zachowuje pozostałą zawartość; samo otwarcie nie zużywa porcji ziemi.
+
 ## Pojemność worków i obsługa nasion
 
 Propozycja robocza: worek przechowuje 1, 2 lub 3 **porcje ziemi**.
@@ -102,6 +111,28 @@ Dlatego proponowana nazwa przedmiotu to **lampa do wzrostu roślin** lub
 wzrostu i poprawa szansy większego plonu są umownymi parametrami gry,
 a nie przełożeniem liczb z badań na rzeczywistą uprawę.
 
+Dalsze doprecyzowanie po pytaniu użytkownika o UV: nazwa „ogrodnicza”
+określa funkcję lampy, a „UV” zakres promieniowania. LED określa
+technologię źródła i nie jest przeciwieństwem UV. Oświetlenie podstawowe
+w uprawach obejmuje m.in. LED i HPS; dodatkowy emiter UV może być osobnym
+modułem lub częścią tej samej oprawy. UV oddziałuje biologicznie, lecz nie
+zastępuje podstawowego oświetlenia fotosyntetycznego.
+
+Badania na konopiach nie potwierdzają uniwersalnej premii UV do ilości
+plonu ani zawartości kannabinoidów. Rodriguez-Morrison et al. (2021) oraz
+Llewellyn et al. (2022) nie wykazali takich ogólnych korzyści w swoich
+warunkach; obserwowano także skutki niekorzystne. Huebner et al. (2024)
+wykazali zmiany części związków aromatycznych, bez zmiany profilu
+kannabinoidów, przy zróżnicowanych, często niekorzystnych wynikach dla
+plonu i jakości. To wyjaśnienie nazwy i roli światła, bez przenoszenia
+parametrów doświadczeń na mechanikę moda.
+
+Propozycja do gry pozostaje otwarta: podstawowa lampa ogrodnicza na
+stalowym stelażu, a moduł UV jako możliwe osobne ulepszenie dla fikcyjnej
+rośliny. Ewentualny efekt UV byłby umownym balansem gry, nie biologiczną
+gwarancją większego plonu. Nie jest to jeszcze dodany przedmiot ani
+zatwierdzona nowa gałąź ulepszeń.
+
 Przykład roboczego balansu w grze: plon 3–6 liści, a działająca lampa
 zwiększa szansę wyniku 5–6 bez gwarantowania maksimum. Liczba widocznych,
 możliwych do odcięcia liści odpowiada wylosowanemu wynikowi; jeden liść
@@ -112,6 +143,13 @@ do czasu nie są jeszcze ostatecznie ustalone.
 
 - [University of Minnesota — Lighting for indoor plants and starting seeds](https://extension.umn.edu/garden-and-home/yard-and-garden/gardening-in-minnesota/lighting-for-indoor-plants).
 - [Qian et al., Plant Physiology 2021 — Downsizing in plants](https://academic.oup.com/plphys/article/187/1/378/6294311), DOI 10.1093/plphys/kiab262.
+
+Dodatkowe źródła o lampach i UV, sprawdzone 25 października 2026:
+
+- [University of Missouri — Understanding Grow Lights](https://extension.missouri.edu/publications/g6987).
+- [Rodriguez-Morrison et al. 2021 — Cannabis Inflorescence Yield and Cannabinoid Concentration Are Not Increased With Exposure to Short-Wavelength Ultraviolet-B Radiation](https://www.frontiersin.org/journals/plant-science/articles/10.3389/fpls.2021.725078/full).
+- [Llewellyn et al. 2022 — Indoor grown cannabis yield increased proportionally with light intensity, but ultraviolet radiation did not affect yield or cannabinoid content](https://www.frontiersin.org/journals/plant-science/articles/10.3389/fpls.2022.974018/full).
+- [Huebner et al. 2024 — Influence of different UV spectra and intensities on yield and quality of cannabis inflorescences](https://www.frontiersin.org/journals/plant-science/articles/10.3389/fpls.2024.1480876/full).
 
 ## Kolejność wykonania
 
