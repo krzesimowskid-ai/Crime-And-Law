@@ -133,11 +133,24 @@ rośliny. Ewentualny efekt UV byłby umownym balansem gry, nie biologiczną
 gwarancją większego plonu. Nie jest to jeszcze dodany przedmiot ani
 zatwierdzona nowa gałąź ulepszeń.
 
-Przykład roboczego balansu w grze: plon 3–6 liści, a działająca lampa
-zwiększa szansę wyniku 5–6 bez gwarantowania maksimum. Liczba widocznych,
-możliwych do odcięcia liści odpowiada wylosowanemu wynikowi; jeden liść
-jest jedną nagrodą. Zakres, rozkład prawdopodobieństwa i ewentualna premia
-do czasu nie są jeszcze ostatecznie ustalone.
+Aktualna propozycja użytkownika do roboczego balansu w grze:
+
+- Zwykłe światło: **3–6 liści** na roślinę.
+- Działająca lampa UV: **4–8 liści** na roślinę.
+
+Zakresy są włączne i zastępują wcześniejszą propozycję zachowania zakresu
+3–6 z większą szansą wyniku 5–6. Przy równych szansach każdej liczby średnia
+wynosi odpowiednio 4,5 i 6 liści, czyli UV zwiększa oczekiwany plon o około
+33,3%. To już wyraźna premia; ewentualne przyspieszenie wzrostu trzeba
+bilansować osobno, bez automatycznego dokładania dużego drugiego bonusu.
+Rozkład prawdopodobieństwa i premia do czasu nie są jeszcze ustalone.
+
+Liczba widocznych, możliwych do odcięcia liści odpowiada wylosowanemu
+wynikowi; jeden liść jest jedną nagrodą. Model i wybieranie liści muszą
+obsługiwać do ośmiu sztuk, zamiast obecnego stałego zestawu sześciu.
+Wynik jest losowany przez serwer raz na cykl i zapisywany. Zakres UV
+uwzględnia działanie lampy podczas wzrostu, a nie samo jej zamontowanie
+przed zbiorem. To plan kolejnej wersji; JAR 0.1.42 nie został zmieniony.
 
 Źródła sprawdzone 25 października 2026:
 
