@@ -58,27 +58,28 @@ public final class PreparationScreen extends GardenScreen {
         g.fill(x+628,y+398,x+871,y+447,0x7021332E);wrapped(g,pending!=null?"Czekam na potwierdzenie…":message,639,406,220,GREEN,2);
         drawStage(g,stack,dt);
         g.flush();RenderSystem.depthMask(true);RenderSystem.clear(256,Minecraft.ON_OSX);RenderSystem.disableDepthTest();
+        if(mode()==PotNetwork.POUR||mode()==PotNetwork.WATER){int px=(int)opening.x,py=(int)opening.y,c=holding&&aimed(aimX,aimY)?0xFFBFE291:0xAA77A389;for(int sx:new int[]{-1,1})for(int sy:new int[]{-1,1}){int xx=px+sx*82,yy=py+sy*34;g.fill(Math.min(xx,xx-sx*11),yy,Math.max(xx,xx-sx*11)+1,yy+1,c);g.fill(xx,Math.min(yy,yy-sy*8),xx+1,Math.max(yy,yy-sy*8)+1,c);}}
         label(g,state.stage()<2?"Celuj w otwór • trzymaj i puść LPM po napełnieniu":"Zatwierdzone czynności są zachowywane po zamknięciu",29,475,MUTED);
         label(g,"PPM i przeciągnięcie: obrót",29,494,MUTED);
         end(g,mx,my,delta);
     }
     private void drawStage(GuiGraphics g,ItemStack stack,float dt){
-        var camera=new Matrix4f().translate(left+294,top+421,180).scale(390,-390,390).rotateX(.38f).rotateY(yaw).translate(-.5f,0,-.5f);
+        float view=390-95*state.growth()/(float)CultivationRules.GROWTH_TICKS;
+        var camera=new Matrix4f().translate(left+294,top+421,180).scale(view,-view,view).rotateX(.38f).rotateY(yaw).translate(-.5f,0,-.5f);
         opening=camera.transformPosition(new Vector3f(.5f,.47f,.5f));float fill=state.stage()>0?1:progress*.97f;
         g.flush();RenderSystem.enableDepthTest();RenderSystem.depthMask(true);Lighting.setupFor3DItems();var buffers=minecraft.renderBuffers().bufferSource();
         g.pose().pushPose();g.pose().mulPose(camera);
         GardenMesh.station(g.pose(),buffers,false,true,false,fill,state.stage()>=2?state.growth():-1,state.total()>0?state.leaves():63,state.total(),state.water(),LightTexture.FULL_BRIGHT);
         // Settling grains and droplets are small 3D cubes, projected with the same camera.
-        if(holding&&aimed(aimX,aimY)){float t=(System.nanoTime()-started)/1e9f;for(int i=0;i<22;i++){float f=(t*1.7f+i*.137f)%1;double xx=.5+Math.sin(i*9.4)*.065,zz=.5+Math.cos(i*3.7)*.065,yy=.48+.38*(1-f);GardenMesh.box(g.pose(),buffers,mode()==PotNetwork.POUR?GardenMaterials.SOIL:GardenMaterials.WATER,xx,yy,zz,xx+.018,yy+.028,zz+.018,LightTexture.FULL_BRIGHT,-1);}}
+        if(holding&&aimed(aimX,aimY)){float t=(System.nanoTime()-started)/1e9f;for(int i=0;i<22;i++){float f=(t*1.7f+i*.137f)%1;double xx=.5+Math.sin(i*9.4)*.065,zz=.5+Math.cos(i*3.7)*.065,yy=.48+.205*(1-f);GardenMesh.box(g.pose(),buffers,mode()==PotNetwork.POUR?GardenMaterials.SOIL:GardenMaterials.WATER,xx,yy,zz,xx+.018,yy+.028,zz+.018,LightTexture.FULL_BRIGHT,-1);}}
         g.pose().popPose();buffers.endBatch();
         if(!stack.isEmpty()&&(mode()==PotNetwork.POUR||mode()==PotNetwork.WATER)){
             double tx=holding?Math.clamp(aimX,opening.x-170,opening.x+170):opening.x+75,ty=holding?Math.clamp(aimY,opening.y-60,opening.y+55):opening.y;
-            g.pose().pushPose();g.pose().translate(tx+52,ty-86,330);g.pose().scale(150,-150,150);g.pose().mulPose(Axis.XP.rotation(.30f));g.pose().mulPose(Axis.YP.rotation(-.40f));g.pose().mulPose(Axis.ZP.rotation(holding?-.66f:-.12f));g.pose().translate(-.5,0,-.5);
+            g.pose().pushPose();boolean water=mode()==PotNetwork.WATER;g.pose().translate(holding?tx:opening.x+120,holding?ty-75:opening.y-70,330);g.pose().scale(140,-140,140);g.pose().mulPose(Axis.XP.rotation(.30f));g.pose().mulPose(Axis.YP.rotation(-.40f));g.pose().mulPose(Axis.ZP.rotation(holding?(water?-.5f:2.35f):-.12f));g.pose().translate(holding&&water?-.98:-.5,holding?(water?-.55:-.80):0,-.5);
             if(stack.getItem() instanceof GardenSupplyItem it){if(it.kind==GardenSupplyItem.Kind.SOIL)GardenMesh.bag(g.pose(),buffers,it.capacity,false,holding,LightTexture.FULL_BRIGHT);else GardenMesh.can(g.pose(),buffers,it.contents(stack),LightTexture.FULL_BRIGHT);}
             buffers.endBatch();g.pose().popPose();
         }
         RenderSystem.disableDepthTest();
-        if(state.stage()<2||mode()==PotNetwork.WATER){int px=(int)opening.x,py=(int)opening.y;g.renderOutline(px-82,py-34,164,68,holding&&aimed(aimX,aimY)?0xFFBFE291:0x665F987B);}
     }
     private boolean rotating;
     @Override public boolean mouseClicked(double x,double y,int b){if(super.mouseClicked(x,y,b))return true;double lx=x/scale,ly=y/scale;

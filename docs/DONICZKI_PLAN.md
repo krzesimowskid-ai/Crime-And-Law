@@ -1,8 +1,9 @@
 # Doniczki i jednorazowe uprawy — projekt następnego etapu
 
-Aktualne wymagania z 25 października 2026. Dokument opisuje następny etap;
-wydany JAR 0.1.42 nadal ma sadzenie na zaoranej ziemi, odrost oraz starą
-recepturę i drop nasion. Opisane poniżej mechaniki wymagają wdrożenia.
+Plan z 25 października 2026 został wdrożony w **0.1.43**.
+Poniżej zachowano ustalenia projektowe. Aktualną instrukcję, ceny, czas,
+warunek UV i szczegóły wykonania opisuje [AURELIA.md](AURELIA.md).
+Walidacja jest w [VALIDATION_0.1.43.md](VALIDATION_0.1.43.md).
 
 ## Ustalony cykl i przedmioty
 

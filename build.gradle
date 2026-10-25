@@ -9,6 +9,7 @@ java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 repositories { mavenCentral() }
 // Opt-in graphical check with fixture data; excluded from normal builds/JARs.
 def financeSmoke = providers.gradleProperty('financeSmoke').isPresent()
+if (providers.gradleProperty('gardenSmoke').isPresent()) sourceSets.main.java.srcDir('src/gardenTest/java')
 if (providers.gradleProperty('harvestSmoke').isPresent()) sourceSets.main.java.srcDir('src/harvestTest/java')
 if (financeSmoke) sourceSets.main.java.srcDir('src/financeTest/java')
 if (providers.gradleProperty('hudSmoke').isPresent()) sourceSets.main.java.srcDir('src/hudTest/java')
@@ -156,6 +157,7 @@ tasks.named('jar') {
         'pl/crimeandlaw/client/CaptureClientSmoke*', 'pl/crimeandlaw/territory/CaptureServerSmoke*',
         'pl/crimeandlaw/client/FinanceClientSmoke*', 'pl/crimeandlaw/gang/FinanceServerSmoke*'
     exclude 'pl/crimeandlaw/client/CaptureHudSmoke*'
+    exclude 'pl/crimeandlaw/cultivation/GardenServerSmoke*', 'pl/crimeandlaw/client/cultivation/GardenClientSmoke*'
     exclude 'pl/crimeandlaw/cultivation/HarvestServerSmoke*', 'pl/crimeandlaw/client/cultivation/HarvestClientSmoke*'
 }
 tasks.named('wrapper') { distributionType = Wrapper.DistributionType.BIN }

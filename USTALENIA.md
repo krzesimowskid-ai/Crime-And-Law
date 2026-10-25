@@ -894,3 +894,22 @@ To zapis kierunku rozwoju; JAR 0.1.42 nie został w tej rozmowie zmieniony.
   rozgrywka nie będzie RP; nie dokładać na tej podstawie systemów RP.
 - Zaktualizowany projekt: `docs/DONICZKI_PLAN.md`. To nadal plan kolejnej
   wersji, bez zmiany wydanego JAR 0.1.42.
+
+
+## Wdrożenie doniczek — 25 października 2026, 0.1.43
+
+- Wdrożono doniczkę, dwublokowy stelaż (jedna doniczka/jedno UV), oryginalne
+  pikselowe modele 3D, ziemię na 1/2/3 pełne napełnienia, woreczek 5 nasion,
+  luźne nasiona, sadzonkę oraz konewkę 400 jednostek z napełnianiem ze źródła.
+- Okno Z/PPM: celowane nasypywanie ziemi, otwieranie woreczka, sadzenie
+  jednej sztuki i celowane podlewanie. Zatwierdzone etapy zachowują zapis.
+- Jedno nasiono i jedno podłoże na cykl. Usunięto odrost, darmową recepturę
+  oraz drop nasion. Zbiór zachowuje wolny wybór wszystkich 3–8 liści.
+- Plon 3–6 / UV 4–8, równy rozkład, zapis raz. Roboczy próg UV: 80%
+  aktywnego wzrostu. Bez dodatkowego przyspieszenia i bez premii obszarowej.
+- Roboczy czas: 15 aktywnych minut od nasiona, sadzonka zaczyna od 20%.
+  Robocze ceny i gotówkowy sklep Ogrodnika opisano w docs/AURELIA.md.
+- Sklep jest zwykłą funkcją NPC, bez systemów RP. Brak miejsca lub gotówki
+  odrzuca cały zakup. Rewizje i wyceny zapobiegają powtórzeniu skutków.
+- Protokół 23; gotówka/bank i istniejące menu są zachowane. Zgodność
+  światów obejmuje stare rośliny, lecz ostatni zbiór nie odrasta.

@@ -1,0 +1,71 @@
+{
+  "version": "0.1.43",
+  "date": "2026-10-25",
+  "minecraft": "1.21.1",
+  "neoforge": "21.1.248",
+  "java": 21,
+  "protocol": 23,
+  "jar": {
+    "filename": "crimeandlaw-0.1.43.jar",
+    "bytes": 3912625,
+    "sha256": "fd123e26e5d45f1ee3c9ca719443112ddf24e5d6e0d70a79208ab5e41e29f055",
+    "crc": "pass",
+    "duplicate_entries": 0,
+    "fixture_classes": 0,
+    "production_classes_byte_identical": 235,
+    "source_resources_byte_identical": 34,
+    "renewable_seed_recipe": false
+  },
+  "unit": {
+    "tests": 198,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "suites": 35
+  },
+  "tcp": {
+    "shop-recovery": "Quote refreshed after three seconds without replaying purchase or changing funds",
+    "reservation": "Second TCP player denied same pot",
+    "server": "TCP purchases, placement, UV assembly, source refill, 3D pour, packet, planting, watering, eight free-order cuts, conservation and adversarial checks pass",
+    "security": "Source swap, repeat completion, three bag charges, replaced BE, veto, wall/reach, packet capacity, creative overflow, cash/bank separation, shop replay/capacity/distance, upper/lower/creative frame destruction, legacy drops pass",
+    "restart": "Actual disk restart: frame/pot/UV, exhausted soil, ordinary six-leaf roll/partial mask/UUID, leaf/seed/water/bag/tool counts and cash preserved",
+    "owner": "Actual shop buttons, replayed buy, block placement, pot/UV insertion, water-source use, Z, responsive UI, 3D soil/water gestures, packet/seed and 8 free-order snips over TCP pass",
+    "rival": "Second TCP player denied same preparation session",
+    "preparation-recovery": "Unprocessed request recovers after three seconds through cancellation/state refresh, no materials spent"
+  },
+  "visual": {
+    "gallery": "pass",
+    "screenshots_tcp": 24,
+    "screenshots_gallery": 1,
+    "resolutions_gui": [
+      [
+        1920,
+        1080,
+        2
+      ],
+      [
+        1920,
+        1080,
+        4
+      ],
+      [
+        855,
+        481,
+        2
+      ],
+      [
+        640,
+        480,
+        2
+      ]
+    ],
+    "block_atlas": "1024x512x4",
+    "frame_render_bounds_height": 2,
+    "frame_frustum_culling": true
+  },
+  "limits": [
+    "Network growth clock fast-forwarded; 18000-step growth and exposure verified in unit tests.",
+    "No large-farm FPS benchmark.",
+    "Normal disk restart tested; no forced power loss between Minecraft file writes."
+  ]
+}

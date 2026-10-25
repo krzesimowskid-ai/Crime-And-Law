@@ -30,12 +30,12 @@ public final class HarvestServerSmoke {
             Files.createDirectories(OUT);var server=event.getServer();
             if(Boolean.getBoolean("crimeandlaw.harvestRestart")){
                 var p=(AureliaPlant)server.overworld().getBlockEntity(B);check(p!=null&&PruningRules.count(p.leaves())==5,"Partial leaf mask survives real disk restart");
-                check(server.overworld().getBlockState(A).getValue(AureliaCrop.GROWTH)==1,"Young regrowth stage survives restart");
+                check(server.overworld().getBlockState(A).isAir(),"Exhausted legacy crop remains removed after restart");
                 var file=server.getWorldPath(LevelResource.ROOT).resolve("playerdata").resolve(id("HarvestOwner")+".dat");
                 var nbt=NbtIo.readCompressed(file,NbtAccounter.unlimitedHeap());int leaves=0,wear=0;
                 for(var item:nbt.getList("Inventory",Tag.TAG_COMPOUND)){var stack=ItemStack.parseOptional(server.registryAccess(),(CompoundTag)item);if(stack.is(CultivationContent.LEAF.get()))leaves+=stack.getCount();if(stack.is(CultivationContent.SHEARS.get()))wear=stack.getDamageValue();}
                 check(leaves==7&&wear==7,"Exact inventory rewards and tool wear survive player-data restart");
-                Files.writeString(OUT.resolve("restart.PASS"),"Actual disk reload retains partial crop leaves, regrowth stage, exactly seven harvested leaves and seven durability wear.\n");done=true;server.halt(false);
+                Files.writeString(OUT.resolve("restart.PASS"),"Actual disk reload retains partial crop leaves, removed exhausted crop, exactly seven harvested leaves and seven durability wear.\n");done=true;server.halt(false);
             }
         }catch(Throwable e){fail(event.getServer(),e);}
     }
@@ -53,7 +53,7 @@ public final class HarvestServerSmoke {
                 plant(server,A,4);plant(server,B,4);
                 for(var p:List.of(owner,rival)){p.setGameMode(GameType.SURVIVAL);p.setInvulnerable(true);p.setNoGravity(true);p.getInventory().clearContent();p.setItemSlot(EquipmentSlot.MAINHAND,new ItemStack(CultivationContent.SHEARS.get()));}
                 owner.connection.teleport(.5,80,3.1,180,25);rival.connection.teleport(2.5,80,3.1,180,25);
-                check(level.getRecipeManager().byKey(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("crimeandlaw","aurelia_seeds")).isPresent(),"Seed recipe decoded");
+                check(level.getRecipeManager().byKey(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("crimeandlaw","aurelia_seeds")).isEmpty(),"Renewable seed recipe removed");
                 check(level.getRecipeManager().byKey(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("crimeandlaw","pruning_shears")).isPresent(),"Special shears recipe decoded");
                 Files.writeString(OUT.resolve("server.ready"),"Garden and two actual players ready");ready=true;return;
             }

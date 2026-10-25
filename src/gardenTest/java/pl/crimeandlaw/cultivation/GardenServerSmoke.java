@@ -1,0 +1,94 @@
+package pl.crimeandlaw.cultivation;
+import java.nio.file.*;
+import java.util.*;
+import net.minecraft.core.*;
+import net.minecraft.nbt.*;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.*;
+import net.minecraft.world.level.*;
+import net.minecraft.world.level.block.*;
+import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
+import net.minecraft.world.level.storage.LevelResource;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.server.ServerStartedEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import pl.crimeandlaw.gang.*;
+
+/** Disposable world, real TCP UI flow, then adversarial server-thread and disk checks. */
+@EventBusSubscriber(modid="crimeandlaw")
+public final class GardenServerSmoke {
+    private static final Path OUT=Path.of(System.getProperty("crimeandlaw.gardenOutput","build/garden-smoke"));
+    private static final BlockPos A=new BlockPos(0,80,0),B=new BlockPos(2,80,0),C=new BlockPos(4,80,0);
+    private static long started;private static boolean ready,done,grown;private static GardenMerchant merchant;
+    private static UUID id(String name){return UUID.nameUUIDFromBytes(("OfflinePlayer:"+name).getBytes(java.nio.charset.StandardCharsets.UTF_8));}
+    @SubscribeEvent public static void start(ServerStartedEvent e){if(!Boolean.getBoolean("crimeandlaw.gardenSmoke"))return;started=System.nanoTime();try{Files.createDirectories(OUT);if(Boolean.getBoolean("crimeandlaw.gardenRestart")){restart(e.getServer());done=true;e.getServer().halt(false);}}catch(Throwable t){fail(e.getServer(),t);}}
+    @SubscribeEvent public static void tick(ServerTickEvent.Post e){if(!Boolean.getBoolean("crimeandlaw.gardenSmoke")||done)return;var server=e.getServer();try{
+        check(System.nanoTime()-started<480_000_000_000L,"Server timeout");var p=server.getPlayerList().getPlayer(id("GardenOwner"));var rival=server.getPlayerList().getPlayer(id("GardenRival"));if(p==null||rival==null)return;var l=server.overworld();
+        if(!ready){
+            l.setChunkForced(0,0,true);l.getChunk(0,0);l.getChunk(-1,0);pl.crimeandlaw.territory.CaptureSavedData.get(server).rules=pl.crimeandlaw.territory.CaptureSavedData.get(server).rules.realTime(false);l.setDayTime(6000);server.getGameRules().getRule(GameRules.RULE_DAYLIGHT).set(false,server);server.getGameRules().getRule(GameRules.RULE_RANDOMTICKING).set(0,server);
+            for(int x=-4;x<=8;x++)for(int z=-3;z<=6;z++){l.setBlock(new BlockPos(x,79,z),Blocks.STONE.defaultBlockState(),3);for(int y=80;y<=84;y++)l.setBlock(new BlockPos(x,y,z),Blocks.AIR.defaultBlockState(),3);}l.setBlock(new BlockPos(-2,80,1),Blocks.WATER.defaultBlockState(),3);
+            for(var player:List.of(p,rival)){player.setGameMode(GameType.SURVIVAL);player.setInvulnerable(true);player.setNoGravity(true);player.getInventory().clearContent();}p.connection.teleport(.5,80,3.1,180,25);rival.connection.teleport(3.5,80,3.1,180,25);
+            var saved=GangSavedData.get(server);saved.directory.finances.credit(p.getUUID(),GangFinances.Account.CASH,2000);saved.setDirty();pl.crimeandlaw.network.GangNetwork.sendMoney(p,true);
+            merchant=CultivationContent.MERCHANT.get().create(l);merchant.moveTo(2.8,80,2.4,180,0);l.addFreshEntity(merchant);
+            check(l.getRecipeManager().byKey(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("crimeandlaw","aurelia_seeds")).isEmpty(),"Renewable seed recipe removed");check(!(CultivationContent.SEEDS.get() instanceof ItemNameBlockItem),"Loose seeds cannot bypass pots on farmland");
+            Files.writeString(OUT.resolve("server.ready"),"ready");ready=true;return;
+        }
+        if(Files.exists(OUT.resolve("rival-attempt.sent"))&&!Files.exists(OUT.resolve("reservation.PASS"))){check(session(PotController.class,p)!=null&&session(PotController.class,rival)==null,"Only owner holds real TCP preparation reservation");Files.writeString(OUT.resolve("reservation.PASS"),"Second TCP player denied same pot");}
+        if(!grown&&Files.exists(OUT.resolve("grow.ready"))){
+            var pot=Planter.at(l,A);check(pot!=null&&pot.frame()&&pot.hasPot()&&pot.hasLamp(),"Two-block frame has one inserted pot and lamp");check(pot.plant.planted()&&pot.plant.water()>0,"Actual UI planted and watered");check(p.getInventory().countItem(CultivationContent.SEEDS.get())==4,"One packet becomes four seeds after planting");
+            int bag=find(p,CultivationContent.SOIL_LARGE.get()),can=find(p,CultivationContent.WATERING_CAN.get());check(bag>=0&&CultivationContent.SOIL_LARGE.get().contents(p.getInventory().getItem(bag))==2,"Three-use bag spent exactly one filling");check(can>=0&&CultivationContent.WATERING_CAN.get().contents(p.getInventory().getItem(can))==300,"Actual source refill and watering conserve 400-100 units");check(GangSavedData.get(server).directory.finances.cash(p.getUUID())==746,"Seven actual GUI purchases with replay debit exact total 1254");
+            var d=pot.plant.data();pot.plant.restore(new PlanterState.Data(true,true,17999,d.initial(),17999-d.initial(),pot.plant.water(),0,0,d.identity()));pot.plant.step(true,true,b->4);pot.changed();grown=true;Files.writeString(OUT.resolve("mature.ready"),"Fixture fast-forwarded clock; actual minigame actions unchanged");
+        }
+        if(!Files.exists(OUT.resolve("owner.PASS"))||!Files.exists(OUT.resolve("rival.PASS")))return;
+        check(p.getInventory().countItem(CultivationContent.LEAF.get())==8&&p.getMainHandItem().getDamageValue()==8,"Eight real GUI cuts give eight items and eight tool wear");var a=Planter.at(l,A);check(a!=null&&!a.plant.soil()&&!a.plant.planted()&&a.hasPot()&&a.hasLamp(),"Harvest consumes crop and soil, retains equipment");
+        security(server,p,rival);server.saveEverything(true,true,true);Files.writeString(OUT.resolve("server.PASS"),"TCP purchases, placement, UV assembly, source refill, 3D pour, packet, planting, watering, eight free-order cuts, conservation and adversarial checks pass\n");done=true;server.halt(false);
+    }catch(Throwable t){fail(server,t);}}
+    private static void security(MinecraftServer server,ServerPlayer p,ServerPlayer r)throws Exception{
+        var l=server.overworld();p.connection.teleport(2.5,80,3.1,180,25);l.setBlock(B,CultivationContent.POT.get().defaultBlockState(),3);l.setBlock(C,CultivationContent.POT.get().defaultBlockState(),3);
+        // Bind the exact source contents and reject a swap after begin.
+        int slot=find(p,CultivationContent.SOIL_LARGE.get());var bag=p.getInventory().getItem(slot).copy();fresh(PotController.class);PotController.open(p,B);var s=session(PotController.class,p);check(s!=null,"Open security pot");action(p,s,PotNetwork.POUR,slot);action(p,s,PotNetwork.FINISH,-1);check(!Planter.at(l,B).plant.soil(),"Early completion consumes nothing");action(p,s,PotNetwork.POUR,slot);p.getInventory().setItem(slot,new ItemStack(Items.DIRT));set(s,"began",l.getGameTime()-70);action(p,s,PotNetwork.FINISH,-1);check(!Planter.at(l,B).plant.soil(),"Source swapping cannot fill pot");p.getInventory().setItem(slot,bag);
+        // One charge for B and one for C; stale completion never drains/fills twice.
+        action(p,s,PotNetwork.POUR,slot);set(s,"began",l.getGameTime()-70);var replay=packet(s,PotNetwork.FINISH,-1);fresh(PotController.class);PotController.act(p,replay);fresh(PotController.class);PotController.act(p,replay);check(Planter.at(l,B).plant.soil()&&CultivationContent.SOIL_LARGE.get().contents(p.getInventory().getItem(slot))==1,"Replay cannot consume another soil charge");
+        action(p,s,PotNetwork.CLOSE,-1);fresh(PotController.class);PotController.open(p,C);s=session(PotController.class,p);action(p,s,PotNetwork.POUR,slot);set(s,"began",l.getGameTime()-70);action(p,s,PotNetwork.FINISH,-1);check(p.getInventory().countItem(CultivationContent.SOIL_LARGE.get())==0&&Planter.at(l,C).plant.soil(),"Third complete fill removes same bag");action(p,s,PotNetwork.CLOSE,-1);
+        // A pending action loses authority when a station is replaced; no materials refunded/created.
+        int water=find(p,CultivationContent.WATERING_CAN.get());fresh(PotController.class);PotController.open(p,C);s=session(PotController.class,p);action(p,s,PotNetwork.WATER,water);set(s,"began",l.getGameTime()-50);l.removeBlock(C,false);l.setBlock(C,CultivationContent.POT.get().defaultBlockState(),3);action(p,s,PotNetwork.FINISH,-1);check(!Planter.at(l,C).plant.soil()&&CultivationContent.WATERING_CAN.get().contents(p.getInventory().getItem(water))==300,"Replacing BE invalidates reserved operation");
+        // Protection veto and a wall deny a custom-key request before mutation.
+        java.util.function.Consumer<net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.RightClickBlock> veto=ev->{if(ev.getPos().equals(C))ev.setCanceled(true);};net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(veto);try{fresh(PotController.class);PotController.open(p,C);check(session(PotController.class,p)==null,"Protection veto respected");}finally{net.neoforged.neoforge.common.NeoForge.EVENT_BUS.unregister(veto);}
+        l.setBlock(new BlockPos(4,80,1),Blocks.STONE.defaultBlockState(),3);check(!PotController.problem(p,C).isEmpty(),"Wall blocks preparation");l.removeBlock(new BlockPos(4,80,1),false);check(!PotController.problem(p,C.offset(20000,0,0)).isEmpty(),"Unloaded far target rejected");
+        // All-or-nothing packet opening, including creative overflow.
+        r.setGameMode(GameType.CREATIVE);for(int i=0;i<36;i++)r.getInventory().setItem(i,new ItemStack(Items.COBBLESTONE,64));r.getInventory().setItem(0,new ItemStack(CultivationContent.SEED_PACKET.get(),2));fresh(PotController.class);PotController.openPacket(r,0);check(r.getInventory().countItem(CultivationContent.SEED_PACKET.get())==2&&r.getInventory().countItem(CultivationContent.SEEDS.get())==0,"Full inventory cannot consume a packet");r.getInventory().setItem(0,new ItemStack(CultivationContent.SEED_PACKET.get()));fresh(PotController.class);PotController.openPacket(r,0);check(r.getInventory().countItem(CultivationContent.SEEDS.get())==5,"Last packet frees its source slot for exact seed count");
+        var leaf=new ItemStack(CultivationContent.LEAF.get());InventoryExchange.giveOrDrop(r,leaf);check(drops(l,r.blockPosition(),CultivationContent.LEAF.get())==1,"Full creative reward survives as exactly one ground item");clearDrops(l,r.blockPosition());
+        // Shop nonces, insufficient cash with a funded bank, inventory capacity and distance.
+        r.setGameMode(GameType.SURVIVAL);r.connection.teleport(3.5,80,3.1,180,25);var funds=GangSavedData.get(server).directory.finances;funds.credit(r.getUUID(),GangFinances.Account.BANK,10000);r.getInventory().clearContent();fresh(ShopController.class);ShopController.open(r,merchant);var shop=session(ShopController.class,r);var req=new ShopNetwork.Request((UUID)field(shop,"id"),(UUID)field(shop,"quote"),ShopNetwork.BUY,0);fresh(ShopController.class);ShopController.request(r,req);check(funds.cash(r.getUUID())==0&&funds.bank(r.getUUID())==10000&&r.getInventory().countItem(CultivationContent.SEEDS.get())==0,"Cash-only purchase cannot drain bank");
+        funds.credit(r.getUUID(),GangFinances.Account.CASH,1000);for(int i=0;i<36;i++)r.getInventory().setItem(i,new ItemStack(Items.COBBLESTONE,64));req=new ShopNetwork.Request((UUID)field(shop,"id"),(UUID)field(shop,"quote"),0,0);fresh(ShopController.class);ShopController.request(r,req);check(funds.cash(r.getUUID())==1000,"Full inventory purchase costs nothing");r.getInventory().clearContent();req=new ShopNetwork.Request((UUID)field(shop,"id"),(UUID)field(shop,"quote"),0,0);fresh(ShopController.class);ShopController.request(r,req);fresh(ShopController.class);ShopController.request(r,req);check(funds.cash(r.getUUID())==940&&r.getInventory().countItem(CultivationContent.SEEDS.get())==1,"Replayed shop quote gives one purchase");
+        req=new ShopNetwork.Request((UUID)field(shop,"id"),(UUID)field(shop,"quote"),0,0);r.connection.teleport(30,80,30,0,0);fresh(ShopController.class);ShopController.request(r,req);check(funds.cash(r.getUUID())==940,"Walking away invalidates shop purchase");
+        // Destroy either frame half: equipment drops exactly once, no crop/seed/soil refund.
+        BlockPos d=new BlockPos(6,80,0);for(boolean upper:new boolean[]{false,true}){frame(l,d);l.destroyBlock(upper?d.above():d,true);check(l.getBlockState(d).isAir()&&l.getBlockState(d.above()).isAir(),"Both frame halves removed");check(drops(l,d,CultivationContent.FRAME_ITEM.get())==1&&drops(l,d,CultivationContent.POT_ITEM.get())==1&&drops(l,d,CultivationContent.UV_LAMP.get())==1,"Either frame half drops one of each equipment");check(drops(l,d,CultivationContent.SEEDS.get())==0&&drops(l,d,CultivationContent.LEAF.get())==0,"Breaking frame never awards crops or seeds");clearDrops(l,d);}
+        frame(l,d);r.setGameMode(GameType.CREATIVE);var ds=l.getBlockState(d.above());ds.getBlock().playerWillDestroy(l,d.above(),ds,r);l.removeBlock(d.above(),false);check(drops(l,d,CultivationContent.FRAME_ITEM.get())==0&&l.getBlockState(d).isAir(),"Creative upper break does not duplicate lower drops");
+        var blast=new BlockPos(40,80,0);l.getChunk(2,0);frame(l,blast);l.explode(null,40.5,80.7,.5,6,false,Level.ExplosionInteraction.BLOCK);check(l.getBlockState(blast).isAir()&&l.getBlockState(blast.above()).isAir(),"Explosion removes both frame halves");check(drops(l,blast,CultivationContent.FRAME_ITEM.get())==1&&drops(l,blast,CultivationContent.POT_ITEM.get())==1&&drops(l,blast,CultivationContent.UV_LAMP.get())==1,"Explosion drops equipment exactly once");clearDrops(l,blast);
+        var legacy=new BlockPos(6,80,2);l.setBlock(legacy.below(),Blocks.FARMLAND.defaultBlockState(),3);l.setBlock(legacy,CultivationContent.AURELIA.get().getStateForAge(4),3);l.destroyBlock(legacy,true);check(drops(l,legacy,CultivationContent.SEEDS.get())==0,"Legacy plant drop is empty");
+        // Persist an ordinary crop's fixed six-leaf roll with one already removed.
+        var b=Planter.at(l,B);b.plant.plant(false);b.plant.addWater(100);var data=b.plant.data();b.plant.restore(new PlanterState.Data(true,true,17999,0,0,100,0,0,data.identity()));b.plant.step(true,false,n->3);b.cut(4);b.changed();Files.writeString(OUT.resolve("persist.identity"),b.identity().toString());GangSavedData.get(server).setDirty();
+        Files.writeString(OUT.resolve("security.PASS"),"Source swap, repeat completion, three bag charges, replaced BE, veto, wall/reach, packet capacity, creative overflow, cash/bank separation, shop replay/capacity/distance, upper/lower/creative frame destruction, legacy drops pass\n");
+    }
+    private static void frame(net.minecraft.server.level.ServerLevel l,BlockPos p){l.setBlock(p,CultivationContent.FRAME.get().defaultBlockState(),3);l.setBlock(p.above(),CultivationContent.FRAME.get().defaultBlockState().setValue(GrowFrameBlock.HALF,DoubleBlockHalf.UPPER),3);var pot=Planter.at(l,p);pot.installPot();pot.installLamp();pot.plant.fillSoil();pot.plant.plant(false);pot.changed();}
+    private static int drops(net.minecraft.server.level.ServerLevel l,BlockPos p,Item item){return l.getEntitiesOfClass(ItemEntity.class,new net.minecraft.world.phys.AABB(p).inflate(1.5),e->e.getItem().is(item)).stream().mapToInt(e->e.getItem().getCount()).sum();}
+    private static void clearDrops(net.minecraft.server.level.ServerLevel l,BlockPos p){l.getEntitiesOfClass(ItemEntity.class,new net.minecraft.world.phys.AABB(p).inflate(1.5)).forEach(net.minecraft.world.entity.Entity::discard);}
+    private static void restart(MinecraftServer server)throws Exception{
+        server.overworld().getChunk(0,0);var a=Planter.at(server.overworld(),A);var b=Planter.at(server.overworld(),B);check(a!=null&&a.hasPot()&&a.hasLamp()&&!a.plant.soil(),"Reusable equipment and exhausted soil persist");check(b!=null&&b.totalLeaves()==6&&b.leaves()==47&&b.identity().toString().equals(Files.readString(OUT.resolve("persist.identity"))),"Ordinary yield, partial mask and UUID survive disk reload");
+        var nbt=NbtIo.readCompressed(server.getWorldPath(LevelResource.ROOT).resolve("playerdata").resolve(id("GardenOwner")+".dat"),NbtAccounter.unlimitedHeap());int leaves=0,seeds=0,water=0,wear=0,bags=0;for(var tag:nbt.getList("Inventory",Tag.TAG_COMPOUND)){var s=ItemStack.parseOptional(server.registryAccess(),(CompoundTag)tag);if(s.is(CultivationContent.LEAF.get()))leaves+=s.getCount();if(s.is(CultivationContent.SEEDS.get()))seeds+=s.getCount();if(s.is(CultivationContent.WATERING_CAN.get()))water=CultivationContent.WATERING_CAN.get().contents(s);if(s.is(CultivationContent.SHEARS.get()))wear=s.getDamageValue();if(s.is(CultivationContent.SOIL_LARGE.get()))bags+=s.getCount();}check(leaves==8&&seeds==4&&water==300&&wear==8&&bags==0,"All supply and harvest counts survive player-data disk reload");check(GangSavedData.get(server).directory.finances.cash(id("GardenOwner"))==746,"Purchase balance persists");Files.writeString(OUT.resolve("restart.PASS"),"Actual disk restart: frame/pot/UV, exhausted soil, ordinary six-leaf roll/partial mask/UUID, leaf/seed/water/bag/tool counts and cash preserved\n");
+    }
+    private static int find(ServerPlayer p,Item item){for(int i=0;i<36;i++)if(p.getInventory().getItem(i).is(item))return i;return -1;}
+    private static void action(ServerPlayer p,Object s,int action,int slot)throws Exception{fresh(PotController.class);PotController.act(p,packet(s,action,slot));}
+    private static PotNetwork.Action packet(Object s,int action,int slot)throws Exception{return new PotNetwork.Action((UUID)field(s,"token"),(UUID)field(s,"revision"),action,slot);}
+    private static Object session(Class<?> c,ServerPlayer p)throws Exception{var f=c.getDeclaredField("SESSIONS");f.setAccessible(true);return ((Map<?,?>)f.get(null)).get(p);}
+    private static void fresh(Class<?> c)throws Exception{var f=c.getDeclaredField("RATES");f.setAccessible(true);((Map<?,?>)f.get(null)).clear();}
+    private static Object field(Object o,String n)throws Exception{var f=o.getClass().getDeclaredField(n);f.setAccessible(true);return f.get(o);}
+    private static void set(Object o,String n,Object v)throws Exception{var f=o.getClass().getDeclaredField(n);f.setAccessible(true);f.set(o,v);}
+    private static void check(boolean v,String s){if(!v)throw new AssertionError(s);}
+    private static void fail(MinecraftServer s,Throwable t){t.printStackTrace();done=true;try{Files.createDirectories(OUT);Files.writeString(OUT.resolve("server.FAIL"),t.toString());}catch(Exception ignored){}s.halt(false);}
+}

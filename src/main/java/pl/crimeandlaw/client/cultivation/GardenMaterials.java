@@ -14,7 +14,7 @@ public final class GardenMaterials {
         make(PACK,new int[]{0x284C3C,0x3F7050,0x63895A,0xBACA84},3);make(WHITE,new int[]{0xFFFFFF},0);make(WATER,new int[]{0x347F9A,0x4DACC4,0x84D7DC},1);make(UV,new int[]{0x9D6FE8,0xCEAFFA,0xEFDBFF},1);
     }
     private static void make(ResourceLocation id,int[] palette,int style){var image=new NativeImage(16,16,false);for(int y=0;y<16;y++)for(int x=0;x<16;x++){
-        int k=switch(style){case 1->x/4;case 2->(x*13+y*7+x*y)%11;case 3->(x%4==0||y%4==0)?0:2+(x+y)%2;default->(y/4+(x*7+y*3)%3);};int rgb=palette[Math.floorMod(k,palette.length)];image.setPixelRGBA(x,y,0xFF000000|(rgb&255)<<16|(rgb&0xFF00)|(rgb>>>16&255));}
+        int k=switch(style){case 1->x/4;case 2->(x*13+y*7+x*y)%11;case 3->x%5==0?1:2+((x*7+y*3)%13==0?1:0);default->(y/4+(x*7+y*3)%3);};int rgb=palette[Math.floorMod(k,palette.length)];image.setPixelRGBA(x,y,0xFF000000|(rgb&255)<<16|(rgb&0xFF00)|(rgb>>>16&255));}
         var texture=new DynamicTexture(image){@Override public void setFilter(boolean blur,boolean mip){super.setFilter(false,false);}};Minecraft.getInstance().getTextureManager().register(id,texture);texture.setFilter(false,false);
     }
 }

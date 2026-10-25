@@ -29,7 +29,7 @@ public final class GardenMesh {
         band(p,b,.35,.395,.385,.405,light,0xFFB97E52);band(p,b,.385,.405,.385,.47,light,0xFFFFFFFF);band(p,b,.385,.47,.322,.47,light,0xFFFFDCAD);
         band(p,b,.322,.47,.322,.40,light,0xFFBB8861);band(p,b,.322,.40,.22,.055,light,0xFF835C43);
         box(p,b,GardenMaterials.CLAY,.28,.025,.28,.72,.055,.72,light,0xFF9E6949);
-        if(fill>0){double y=.09+.30*Math.clamp(fill,0,1);var v=b.getBuffer(RenderType.entityCutoutNoCull(GardenMaterials.SOIL));for(int i=0;i<8;i++)quad(p,v,new Vec3(.5,y,.5),ring(.307,y,i),ring(.307,y,i+1),new Vec3(.5,y,.5),light,wet?0xFF8D9CA1:0xFFFFFFFF);
+        if(fill>0){double y=.09+.30*Math.clamp(fill,0,1);var v=b.getBuffer(RenderType.entityCutoutNoCull(GardenMaterials.SOIL));for(int i=0;i<8;i++)quad(p,v,new Vec3(.5,y,.5),ring(.307,y,i+1),ring(.307,y,i),new Vec3(.5,y,.5),light,wet?0xFF8D9CA1:0xFFFFFFFF);
             for(int i=0;i<9;i++){double x=.35+(i%3)*.12,z=.35+(i/3)*.12;box(p,b,GardenMaterials.SOIL,x,y,z,x+.035,y+.018,z+.035,light,wet?0xFF687883:0xFFD9C4A0);}}
     }
     public static void frame(PoseStack p,MultiBufferSource b,boolean lamp,int light){
@@ -53,7 +53,7 @@ public final class GardenMesh {
         if(packet)PixelSprite.SEEDS.draw(p,b.getBuffer(RenderType.entityCutoutNoCull(PixelSprite.SEEDS.texture())),(u,v,d)->new Vec3(.37+u*.26,.32+(1-v)*.20,.288-d),.002f,-1,light,false);
         else { // embossed native-pixel capacity numeral
             String[] digit=capacity==1?new String[]{"010","110","010","010","111"}:capacity==2?new String[]{"111","001","111","100","111"}:new String[]{"111","001","111","001","111"};
-            for(int y=0;y<5;y++)for(int x=0;x<3;x++)if(digit[y].charAt(x)=='1')box(p,b,GardenMaterials.WHITE,.445+x*.04,.49-y*.038,.279,.478+x*.04,.52-y*.038,.29,light,0xFFECDFC1);
+            for(int y=0;y<5;y++)for(int x=0;x<3;x++)if(digit[y].charAt(x)=='1')box(p,b,GardenMaterials.WHITE,.445+(2-x)*.04,.49-y*.038,.279,.478+(2-x)*.04,.52-y*.038,.29,light,0xFFECDFC1);
         }
     }
     public static void can(PoseStack p,MultiBufferSource b,int water,int light){

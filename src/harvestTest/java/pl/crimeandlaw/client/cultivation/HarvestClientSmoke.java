@@ -84,8 +84,8 @@ public final class HarvestClientSmoke {
                 }
                 case 5->{
                     var screen=(HarvestScreen)mc.screen;if(state(screen).active())return;
-                    require(mc.level.getBlockState(POS).getValue(AureliaCrop.GROWTH)==1,"Exhausted crop regrows from the young stage");
-                    capture(mc,"completed");screen.onClose();Files.writeString(OUT.resolve("owner.PASS"),"Z prompt opens real 3D game; six freely ordered (5,1,3,0,4,2) physical hold/release snips over TCP, one leaf and one tool wear per cut, exhausted crop regrows.\n");done=true;
+                    require(mc.level.getBlockState(POS).isAir(),"Exhausted legacy crop is removed");
+                    capture(mc,"completed");screen.onClose();Files.writeString(OUT.resolve("owner.PASS"),"Z prompt opens real 3D game; six freely ordered (5,1,3,0,4,2) physical hold/release snips over TCP, one leaf and one tool wear per cut, exhausted legacy crop is removed.\n");done=true;
                 }
             }
         }catch(Throwable e){e.printStackTrace();done=true;try{Files.createDirectories(OUT);Files.writeString(OUT.resolve(ROLE+".FAIL"),e.toString()+" step="+step);}catch(Exception ignored){}mc.stop();}
