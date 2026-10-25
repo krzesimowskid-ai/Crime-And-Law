@@ -878,3 +878,19 @@ wymagające doboru balansu i źródła o oświetleniu zawiera
 `docs/DONICZKI_PLAN.md`. Oprócz odrostu trzeba usunąć recepturę i drop
 nasion, aby nie pozostawić alternatywnej pętli darmowego rozmnażania.
 To zapis kierunku rozwoju; JAR 0.1.42 nie został w tej rozmowie zmieniony.
+
+
+## Doprecyzowanie worków, stelaża i sklepu — 25 października 2026
+
+- Jedno użycie worka napełnia całą jedną doniczkę. Worki mają 1/2/3 użycia;
+  jednorazowy znika po napełnieniu, większy zachowuje pozostałe użycia.
+  Zastępuje to wcześniejszy roboczy przykład trzech porcji na jedną doniczkę.
+- Po cyklu zużytą ziemię trzeba zastąpić nowym nasypaniem. Można użyć
+  tego samego większego worka, jeśli nadal ma zapas.
+- Stelaż jest wysoki na dwa bloki: na dole wkładana doniczka, u góry
+  montowana lampa UV. Obsługuje jedną roślinę pod sobą.
+- Zakresy robocze plonu: zwykłe światło 3–6, UV 4–8; wynik zapisany raz.
+- NPC to wstępny wybór zwykłego sprzedawcy. Użytkownik zaznaczył, że
+  rozgrywka nie będzie RP; nie dokładać na tej podstawie systemów RP.
+- Zaktualizowany projekt: `docs/DONICZKI_PLAN.md`. To nadal plan kolejnej
+  wersji, bez zmiany wydanego JAR 0.1.42.

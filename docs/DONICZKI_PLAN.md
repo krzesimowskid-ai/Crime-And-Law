@@ -1,177 +1,161 @@
 # Doniczki i jednorazowe uprawy — projekt następnego etapu
 
-Stan: wymagania i propozycja wykonania z 25 października 2026.
-To plan. Wydany JAR 0.1.42 pozostaje bez zmian: sadzenie na zaoranej ziemi,
-odrost, receptura i dotychczasowy drop nasion nadal w nim działają.
+Aktualne wymagania z 25 października 2026. Dokument opisuje następny etap;
+wydany JAR 0.1.42 nadal ma sadzenie na zaoranej ziemi, odrost oraz starą
+recepturę i drop nasion. Opisane poniżej mechaniki wymagają wdrożenia.
 
-## Decyzje użytkownika
+## Ustalony cykl i przedmioty
 
-- Pełny zbiór zużywa roślinę. Kolejny cykl wymaga nowych kupowanych nasion
-  lub sadzonki; jeden zakup nie może stworzyć nieskończonej farmy gangu.
-- Docelowe sadzenie odbywa się we własnej doniczce. Zaorana ziemia jest
-  pierwszą uproszczoną wersją, zastępowaną przez ten system.
-- Przygotowanie doniczki obejmuje minigrę nasypywania specjalnej ziemi
-  z worka: widoczne wysypywanie, opadanie i układanie się podłoża.
-- Różne worki mają pojemność odpowiadającą jednemu, dwóm lub trzem
-  nasypaniom. Przykładowe wielkości nie są jeszcze cenami ani bilansem.
-- Istnieją oba przedmioty: woreczek z kilkoma nasionami oraz pojedyncze
-  nasiono. Można rozpakować woreczek; sadzenie rozpoznaje oba warianty.
-- Podlewanie odbywa się konewką.
-- Do stalowego stelaża można zamocować lampę nad rośliną.
-- Plon jest losowy. Lampa może poprawiać szansę lepszego wyniku i skracać
-  wzrost, ale nie ma dawać zawsze identycznej maksymalnej nagrody.
-- Zachowujemy własny pikselowy styl 3D roślin, liści i narzędzi z 0.1.42.
+- Jedno nasiono lub sadzonka daje jedną roślinę i jeden cykl zbioru.
+  Po pełnym zbiorze roślina się zużywa. Kolejny cykl wymaga nowych nasion
+  lub sadzonki z zakupu, bez samoczynnego rozmnażania farmy.
+- Doniczka jest własnym przedmiotem/blokiem z pikselowym modelem 3D.
+  Zastępuje dotychczasowe sadzenie na zaoranej ziemi. Pozostaje po zbiorze.
+- Podłoże zużywa się po cyklu; kolejne sadzenie wymaga nowego nasypania.
+- Jedno użycie worka ziemi wystarcza na pełne przygotowanie jednej doniczki.
+  Worki zawierają odpowiednio 1, 2 lub 3 pełne użycia. Worek jednorazowy
+  znika po nasypaniu; większy pozostaje z pomniejszonym zapasem i znika
+  dopiero po ostatnim użyciu. Przykładowo duży worek przechodzi 3 -> 2 -> 1
+  -> zużyty, obsługując trzy kolejne napełnienia tej samej lub różnych doniczek.
+- Napełnienie jednej doniczki nie wymaga trzech porcji. Wcześniejszy
+  przykład takiego przelicznika zastępuje powyższe doprecyzowanie użytkownika.
+- Istnieją zarówno woreczki zawierające kilka nasion, jak i luźne nasiona.
+  Interakcja sadzenia rozpoznaje oba warianty i pozwala rozpakować woreczek.
+- Podlewanie odbywa się konewką ze skończonym zapasem wody i możliwością
+  ponownego napełnienia.
+- Zachowujemy własny pikselowy styl 3D rośliny, liści, przedmiotów i narzędzi.
 
-## Proponowany przebieg w grze
+## Stalowy stelaż i lampa UV
 
-1. Gracz kupuje nasiona lub sadzonkę i potrzebne materiały.
-2. Ustawia pustą doniczkę; uruchamia przygotowanie przyciskiem interakcji.
-3. W minigrze przechyla worek, kieruje strumień do doniczki i nasypuje
-   kolejne porcje. Ziemia osiada, a poziom podłoża zmienia model.
-4. W tym samym oknie wybiera nasiono lub sadzonkę. Jeśli ma tylko woreczek,
-   może rozpakować go w tym kroku i wykorzystać jedną sztukę.
-5. Sadzi jedną roślinę i podlewa konewką. Stan wody jest widoczny w modelu
-   oraz w podpowiedzi; konewka ma skończoną zawartość i daje się napełniać.
-6. Opcjonalnie montuje stalowy stelaż i lampę. Doniczka działa także bez
-   ulepszenia; lampa jest częścią wyposażenia gracza, nie darmowym plonem.
-7. Po dojrzeniu gracz zbiera widoczne liście w dowolnej kolejności,
-   korzystając z istniejącej minigry nożyc.
-8. Po ostatnim liściu roślina kończy cykl. Doniczka, konewka, stelaż i lampa
-   pozostają do ponownego użycia. Następny cykl wymaga nowego nasiona.
+Stelaż ma wysokość **dwóch bloków** i obsługuje **jedną doniczkę**:
 
-Receptury i premie są mechanikami fikcyjnych gatunków w grze.
+| Część stelaża | Montowany przedmiot |
+|---|---|
+| Górny blok | Lampa UV skierowana na roślinę poniżej |
+| Dolny blok | Wkładana doniczka z jedną rośliną |
 
-## Otwieranie worka — doprecyzowanie użytkownika
+Doniczkę i lampę wkłada się do odpowiednich części stelaża. Rama, doniczka
+oraz lampa pozostają po cyklu. Premia obejmuje wyłącznie doniczkę należącą
+do tego stanowiska, zamiast wszystkich pobliskich roślin. Zwykłe światło
+pozwala uprawiać roślinę bez stelaża; możliwość wzrostu w ciemnym wnętrzu
+wiążemy z działającym oświetleniem stanowiska.
 
-Użytkownik rozważył krótkie nacięcie worka ziemi, aby utworzyć otwór do
-wysypywania. To osobna czynność od przycinania liści. Pod koniec wypowiedzi
-pozostawił ten pomysł otwarty, dlatego nie dodajemy obowiązku posiadania
-specjalnych nożyc do otwierania worków. Możliwa realizacja: gest otwarcia
-lub nacięcia w minigrze, następnie przechylenie worka. Otwarty worek
-zachowuje pozostałą zawartość; samo otwarcie nie zużywa porcji ziemi.
+Nazwa podstawowego przedmiotu w grze: **lampa UV**. Odniesieniem są
+mechaniki symulatorów, zwłaszcza Drug Dealer Simulator 2, gdzie stelaż
+ma montowaną doniczkę i lampę UV. Dodatkowe modele LED i inne ulepszenia
+pozostają propozycjami do późniejszego bilansu. Ceny, zasilanie i zużycie
+lampy nie są jeszcze ustalone.
 
-## Pojemność worków i obsługa nasion
+## Przebieg minigry i sadzenia
 
-Propozycja robocza: worek przechowuje 1, 2 lub 3 **porcje ziemi**.
-Doniczka potrzebuje ustalonej liczby porcji, przykładowo trzech. Wtedy można
-użyć trzech małych worków, małego i średniego albo jednego dużego.
-Każde nasypanie zużywa dokładnie jedną porcję i uruchamia osiadanie ziemi.
-To interpretacja wykonawcza przykładu użytkownika, jeszcze nie ostateczny
-przelicznik. Liczbę porcji do doniczki i wymianę podłoża między cyklami
-należy dobrać razem z czasem minigry i ekonomią.
+1. Gracz ustawia doniczkę samodzielnie lub wkłada ją w dolną część stelaża.
+2. Otwiera przygotowanie doniczki. Okno sprawdza dostępność ziemi i nasion.
+3. W minigrze otwiera worek, przechyla go i kieruje strumień do doniczki.
+   Widać wysypywanie, opadanie i osiadanie ziemi oraz zmianę poziomu podłoża.
+   Ruchy i ewentualne przerwy na osiadanie należą do jednego pełnego użycia
+   worka; nie pobierają osobnych porcji przy każdym przechyleniu.
+4. Po pełnym napełnieniu ubywa jedno użycie worka. Doniczka zachowuje ziemię,
+   a pozostała zawartość worka służy do następnych napełnień.
+5. W tym samym przebiegu gracz wybiera nasiono lub sadzonkę. Woreczek nasion
+   może otworzyć właśnie w tym kroku, zużywając jedną sztukę do sadzenia.
+6. Sadzi roślinę i podlewa konewką. Stan podłoża i nawodnienia jest widoczny
+   w modelu i podpowiedzi. Opcjonalnie montuje UV w górnej części stelaża.
+7. Po dojrzeniu zbiera widoczne liście w dowolnej kolejności, korzystając
+   z minigry nożyc. Jeden odcięty liść daje jedną nagrodę.
+8. Po ostatnim liściu cykl się kończy, a podłoże jest zużyte. Sprzęt zostaje;
+   gracz przygotowuje doniczkę ponownie, korzystając z nowego worka albo
+   pozostałych użyć większego worka, i sadzi kolejne kupione nasiono.
 
-Propozycja woreczka: zamknięty przedmiot z opisaną liczbą i typem nasion.
-Rozpakowanie zamienia go na dokładnie tę liczbę luźnych sztuk. Okno
-sadzenia wykrywa luźne nasiona, zamknięte woreczki i obsługiwane sadzonki.
-Domyślnie proponuje luźne nasiono; gracz może wybrać inne dostępne źródło.
-Jeśli wybrano woreczek, pokazuje krok rozpakowania i pozostawia pozostałe
-nasiona w ekwipunku. W przykładzie opakowania po 5 nasion po zasadzeniu
-jednej rośliny zostają 4 — liczba 5 jest wyłącznie przykładem interfejsu.
+Użytkownik rozważył nacinanie worka w celu zrobienia otworu do wysypywania,
+ale pozostawił szczegóły otwarte. To opcjonalny gest/animacja w minigrze;
+nie ustalono obowiązku posiadania specjalnych nożyc do otwierania worków.
+Samo otwarcie worka nie zużywa ziemi i zachowuje jego pozostałe użycia.
+
+## Opakowania nasion i sprzedawca
+
+Zamknięty woreczek pokazuje typ oraz liczbę nasion. Rozpakowanie zamienia
+go na dokładnie tę liczbę luźnych sztuk. Okno sadzenia obsługuje luźne
+nasiona, zamknięte woreczki i obsługiwane sadzonki. Propozycja wykonania:
+domyślnie podpowiada luźne nasiono, z możliwością wybrania innego źródła.
+Przy wyborze woreczka pokazuje rozpakowanie i pozostawia resztę nasion
+w ekwipunku. Przykładowo z woreczka 5 nasion po jednym sadzeniu zostają 4;
+pojemność 5 jest przykładem interfejsu, nie ostatecznym bilansem.
 Brak miejsca blokuje rozpakowanie przed zmianą przedmiotów.
 
-## Ekonomia i zabezpieczenia do wdrożenia
+**Sprzedawca NPC jest wstępnym wyborem użytkownika**, który zaznaczył,
+że rozgrywka nie ma być RP. NPC ma pełnić zwykłą funkcję sklepu z nasionami,
+ziemią i wyposażeniem. Ten wybór nie oznacza dodawania zawodów RP, odgrywania
+ról ani dodatkowych wymogów fabularnych. Miejsce, ceny i rodzaj używanego
+salda pozostają do ustalenia przy wdrożeniu sklepu.
 
-- Wyłączyć odrost po pełnym zbiorze, odcinając dotychczasową pętlę
-  `HarvestController` -> `regrow()` -> młody etap.
-- Usunąć recepturę dwóch nasion z pszenicy i świecących jagód oraz jej
-  odblokowanie. Zwykłe surowce nie mogą zastępować kupowanych nasion.
-- Zastąpić loot rośliny: obecnie złamanie zawsze daje nasiono i może dać
-  drugie. Zniszczona lub zebrana roślina nie oddaje nasion ani sadzonek.
-- Objąć tym również sadzenie/niszczenie młodej rośliny, narzędzia z Fortune
-  lub Silk Touch, eksplozje i ewentualne przyszłe automatyczne zbieracze.
-- Przeprowadzka doniczki nie może odnowić rośliny, zwrócić zużytego nasiona
-  ani ponownie wylosować plonu. Pusta doniczka zachowuje własny przedmiot.
-- Zakup musi pobrać pieniądze i przyznać przedmiot jako jedną operację
-  serwera, z kontrolą miejsca w ekwipunku oraz ochroną przed powtórzeniem.
-  Sprzedawca, miejsce zakupu, ceny i rodzaj salda nie są jeszcze wybrane.
-- Serwer sprawdza przedmioty przed akcją i przy jej zatwierdzeniu. Jedno
-  sadzenie zużywa jedno nasiono, nie nasiono i woreczek jednocześnie.
-- Rozpakowanie, nasypanie i sadzenie mają osobne, jednorazowe zatwierdzenia.
-  Dwie osoby nie mogą jednocześnie zmieniać tej samej doniczki.
-- Potwierdzona porcja ziemi zostaje w doniczce po zamknięciu okna;
-  ponowne wejście, rozłączenie i restart nie cofają zużycia ani postępu.
-- Ilość plonu jest losowana na serwerze raz na cykl, przy dojrzewaniu,
-  i zapisywana z tożsamością rośliny oraz pozostałymi liśćmi.
-  Ponowne otwarcie minigry, relog i restart nie dają kolejnego losowania.
-- Bonus lampy uwzględnia jej działanie podczas wzrostu; zamontowanie jej
-  tuż przed zbiorem nie przyznaje premii za cały wcześniejszy cykl.
-- Kilka lamp nie może bez ograniczenia sumować premii na tej samej roślinie.
-  Parametry zasilania, koszt utrzymania i zużycie lampy pozostają do bilansu.
+## Losowy plon i efekt UV w grze
 
-## Losowość i lampa — rozdzielenie biologii od zasad gry
-
-Rośliny korzystają ze światła do fotosyntezy; lampa ogrodnicza nie jest
-synonimem lampy UV. Materiały University of Minnesota opisują oświetlenie
-LED i światło użyteczne dla roślin. Badanie Qian i współautorów na ogórku
-pokazuje, że odpowiedź na UV zależy od zakresu promieniowania: nie ma
-uniwersalnej zasady „UV zawsze przyspiesza i zwiększa plon”.
-
-Dlatego proponowana nazwa przedmiotu to **lampa do wzrostu roślin** lub
-**lampa ogrodnicza LED**, montowana na stalowej ramie. Proponowane skrócenie
-wzrostu i poprawa szansy większego plonu są umownymi parametrami gry,
-a nie przełożeniem liczb z badań na rzeczywistą uprawę.
-
-Dalsze doprecyzowanie po pytaniu użytkownika o UV: nazwa „ogrodnicza”
-określa funkcję lampy, a „UV” zakres promieniowania. LED określa
-technologię źródła i nie jest przeciwieństwem UV. Oświetlenie podstawowe
-w uprawach obejmuje m.in. LED i HPS; dodatkowy emiter UV może być osobnym
-modułem lub częścią tej samej oprawy. UV oddziałuje biologicznie, lecz nie
-zastępuje podstawowego oświetlenia fotosyntetycznego.
-
-Badania na konopiach nie potwierdzają uniwersalnej premii UV do ilości
-plonu ani zawartości kannabinoidów. Rodriguez-Morrison et al. (2021) oraz
-Llewellyn et al. (2022) nie wykazali takich ogólnych korzyści w swoich
-warunkach; obserwowano także skutki niekorzystne. Huebner et al. (2024)
-wykazali zmiany części związków aromatycznych, bez zmiany profilu
-kannabinoidów, przy zróżnicowanych, często niekorzystnych wynikach dla
-plonu i jakości. To wyjaśnienie nazwy i roli światła, bez przenoszenia
-parametrów doświadczeń na mechanikę moda.
-
-Propozycja do gry pozostaje otwarta: podstawowa lampa ogrodnicza na
-stalowym stelażu, a moduł UV jako możliwe osobne ulepszenie dla fikcyjnej
-rośliny. Ewentualny efekt UV byłby umownym balansem gry, nie biologiczną
-gwarancją większego plonu. Nie jest to jeszcze dodany przedmiot ani
-zatwierdzona nowa gałąź ulepszeń.
-
-Aktualna propozycja użytkownika do roboczego balansu w grze:
+Robocze zakresy według propozycji użytkownika, włącznie z granicami:
 
 - Zwykłe światło: **3–6 liści** na roślinę.
 - Działająca lampa UV: **4–8 liści** na roślinę.
 
-Zakresy są włączne i zastępują wcześniejszą propozycję zachowania zakresu
-3–6 z większą szansą wyniku 5–6. Przy równych szansach każdej liczby średnia
-wynosi odpowiednio 4,5 i 6 liści, czyli UV zwiększa oczekiwany plon o około
-33,3%. To już wyraźna premia; ewentualne przyspieszenie wzrostu trzeba
-bilansować osobno, bez automatycznego dokładania dużego drugiego bonusu.
-Rozkład prawdopodobieństwa i premia do czasu nie są jeszcze ustalone.
+Przy równych szansach każdej liczby średnia wynosi odpowiednio 4,5 i 6
+liści, czyli UV zwiększa oczekiwany plon o około 33,3%. Ewentualne
+przyspieszenie wzrostu trzeba bilansować osobno. Rozkład prawdopodobieństwa
+i premia do czasu nie są jeszcze ustalone.
 
-Liczba widocznych, możliwych do odcięcia liści odpowiada wylosowanemu
-wynikowi; jeden liść jest jedną nagrodą. Model i wybieranie liści muszą
-obsługiwać do ośmiu sztuk, zamiast obecnego stałego zestawu sześciu.
-Wynik jest losowany przez serwer raz na cykl i zapisywany. Zakres UV
-uwzględnia działanie lampy podczas wzrostu, a nie samo jej zamontowanie
-przed zbiorem. To plan kolejnej wersji; JAR 0.1.42 nie został zmieniony.
+Model i wybieranie muszą obsługiwać do ośmiu liści. Liczba widocznych,
+możliwych do odcięcia liści odpowiada wynikowi losowania, nie stałemu
+zestawowi sześciu z JAR 0.1.42. Serwer losuje wynik raz przy dojrzewaniu
+i zapisuje go z tożsamością rośliny oraz pozostałymi liśćmi. Bonus UV zależy
+od działania lampy podczas wzrostu, a nie tylko jej włożenia przed zbiorem.
+Dokładny warunek naliczenia premii wymaga jeszcze doboru balansu.
 
-Źródła sprawdzone 25 października 2026:
+## Ekonomia i zabezpieczenia do wdrożenia
+
+- Wyłączyć odrost po pełnym zbiorze (`HarvestController` -> `regrow()`).
+- Usunąć recepturę nasion z pszenicy i świecących jagód oraz jej odblokowanie.
+- Usunąć zwrot i dodatkowy drop nasion z niszczonej rośliny; dotyczy to też
+  młodej rośliny, Fortune, Silk Touch, eksplozji i przyszłych zbieraczy.
+- Przestawienie doniczki lub stelaża nie może odnowić rośliny, zwrócić
+  nasiona ani wylosować nowego plonu. Zniszczenie stanowiska nie duplikuje
+  wkładanej doniczki i lampy przez osobne dropy dwóch części ramy.
+- Obie części dwublokowego stelaża odwołują się do jednego stanu stanowiska.
+  Jedna doniczka zajmuje jedno stanowisko, jedna lampa daje jedną premię.
+- Zakup pobiera pieniądze i przyznaje przedmiot jako jedną operację serwera,
+  z kontrolą miejsca w ekwipunku i ochroną przed powtórzeniem.
+- Jedno sadzenie zużywa jedno nasiono, nie nasiono i woreczek jednocześnie.
+- Jedno pełne napełnienie zużywa jedno użycie worka i napełnia jedną doniczkę.
+  Pozostałe użycia zapisują się przy przedmiocie; otwarcie okna, przełożenie
+  worka i restart nie mogą resetować licznika.
+- Rozpakowanie, napełnienie i sadzenie mają jednorazowe zatwierdzenia.
+  Dwie osoby nie mogą jednocześnie zmieniać tej samej doniczki/stelaża.
+- Zatwierdzona ziemia zostaje w doniczce po zamknięciu minigry. Rozłączenie
+  nie cofa zużycia worka ani postępu. Zapis podłoża obejmuje stan jego zużycia.
+- Ponowne wejście do zbioru, relog i restart nie losują plonu ponownie.
+- Premie kilku lamp nie sumują się bez ograniczeń na jednej roślinie.
+
+## Materiały odniesienia
+
+Wzorzec rozgrywki stanowią symulatory, a wartości dla fikcyjnej aurelii
+są bilansem naszego moda. W Drug Dealer Simulator 2 UV występuje jako
+element stelaża, a LED jako ulepszenie; nie przenosimy automatycznie jego
+parametrów na własny system:
+
+- [DDS2 — poradnik społeczności na Steam, część Weed Production 101](https://steamcommunity.com/sharedfiles/filedetails/?id=3273716171).
+- [DDS2 — katalog przedmiotów, UV Bulb i LED Bulb](https://drugdealersim.com/wiki/dds2/all-items-catalog).
+
+Wcześniej sprawdzono też ogólną rolę światła i UV w botanice. Źródła
+wyjaśniają różnicę pojęć; nie wyznaczają premii ani instrukcji w grze:
 
 - [University of Minnesota — Lighting for indoor plants and starting seeds](https://extension.umn.edu/garden-and-home/yard-and-garden/gardening-in-minnesota/lighting-for-indoor-plants).
-- [Qian et al., Plant Physiology 2021 — Downsizing in plants](https://academic.oup.com/plphys/article/187/1/378/6294311), DOI 10.1093/plphys/kiab262.
-
-Dodatkowe źródła o lampach i UV, sprawdzone 25 października 2026:
-
 - [University of Missouri — Understanding Grow Lights](https://extension.missouri.edu/publications/g6987).
-- [Rodriguez-Morrison et al. 2021 — Cannabis Inflorescence Yield and Cannabinoid Concentration Are Not Increased With Exposure to Short-Wavelength Ultraviolet-B Radiation](https://www.frontiersin.org/journals/plant-science/articles/10.3389/fpls.2021.725078/full).
-- [Llewellyn et al. 2022 — Indoor grown cannabis yield increased proportionally with light intensity, but ultraviolet radiation did not affect yield or cannabinoid content](https://www.frontiersin.org/journals/plant-science/articles/10.3389/fpls.2022.974018/full).
-- [Huebner et al. 2024 — Influence of different UV spectra and intensities on yield and quality of cannabis inflorescences](https://www.frontiersin.org/journals/plant-science/articles/10.3389/fpls.2024.1480876/full).
+- [Qian et al. 2021 — Downsizing in plants](https://academic.oup.com/plphys/article/187/1/378/6294311).
+- [Rodriguez-Morrison et al. 2021 — badanie UV-B](https://www.frontiersin.org/journals/plant-science/articles/10.3389/fpls.2021.725078/full).
+- [Llewellyn et al. 2022 — badanie światła i UV](https://www.frontiersin.org/journals/plant-science/articles/10.3389/fpls.2022.974018/full).
+- [Huebner et al. 2024 — badanie różnych zakresów UV](https://www.frontiersin.org/journals/plant-science/articles/10.3389/fpls.2024.1480876/full).
 
 ## Kolejność wykonania
 
-1. Jednorazowy cykl, kupowane wejściowe surowce i usunięcie dróg odzyskiwania
-   nasion; sposób zakupu dopasowany do istniejącej ekonomii.
-2. Doniczka, stan ziemi i wody, worki, opakowania nasion i konewka.
+1. Jednorazowy cykl, kupowane materiały i usunięcie dróg odzyskiwania nasion.
+2. Doniczka, zużywane podłoże, worki na 1/2/3 napełnienia, nasiona i konewka.
 3. Minigra nasypywania, rozpakowanie i sadzenie w jednym przebiegu okna.
-4. Stalowy stelaż, lampa, zapisany losowy plon i umiarkowane premie.
-5. Próby dwóch graczy: rezerwacja, anulowanie, pełny ekwipunek, rozpakowanie,
-   kilka worków, powtórzone pakiety, wymiana przedmiotów, relog i restart.
-
-Nie używać tego dokumentu jako wykazu funkcji już działających w JAR.
+4. Dwublokowy stelaż z doniczką na dole, UV u góry i zapisanym plonem 3–6/4–8.
+5. Sprzedawca oraz próby dwóch graczy, anulowania, pełnego ekwipunku,
+   zużywania większych worków, montażu części ramy, relogu i restartu.
