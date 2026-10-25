@@ -861,3 +861,20 @@ testów opisuje `docs/VALIDATION_0.1.40.md`. Nie utożsamiać pełnego przegląd
 - Serwer wiąże cel z początkiem cięcia, sprawdza czas i usuwa dokładnie
   jeden liść. Zmiana celu, stare pakiety i duplikaty nie dają dodatkowej nagrody.
 - Protokół 22; schemat zapisów gangów i istniejące uprawy pozostają zgodne.
+
+
+## Doniczki i ograniczony cykl uprawy — 25 października 2026, plan
+
+Użytkownik wybrał jednorazowe rośliny wymagające kolejnych zakupów nasion
+lub sadzonek. Rezygnujemy w docelowym systemie z nieskończonego odrostu.
+Sadzenie na zaoranej ziemi zastąpi doniczka z minigrą nasypywania ziemi
+z worków o pojemności 1/2/3 nasypań, następnie nasiono/sadzonka i konewka.
+Mają istnieć zarówno rozpakowywane woreczki nasion, jak i luźne nasiona;
+interakcja sadzenia ma obsługiwać oba. Stalowy stelaż przyjmuje lampę.
+Plony mają być losowe, z możliwością ograniczonej premii od oświetlenia.
+
+Szczegóły, interpretację porcji ziemi, propozycje interfejsu, ustalenia
+wymagające doboru balansu i źródła o oświetleniu zawiera
+`docs/DONICZKI_PLAN.md`. Oprócz odrostu trzeba usunąć recepturę i drop
+nasion, aby nie pozostawić alternatywnej pętli darmowego rozmnażania.
+To zapis kierunku rozwoju; JAR 0.1.42 nie został w tej rozmowie zmieniony.

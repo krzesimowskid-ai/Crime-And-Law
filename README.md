@@ -21,6 +21,7 @@ Teraz sam wybierasz kolejność wszystkich sześciu liści: kliknij liść lub j
 znacznik. Roślina, zebrany liść, nożyce i nasiona mają własne pikselowe
 materiały oraz modele z grubością w stylu Minecrafta.
 Receptury i sterowanie: [Aurelia](docs/AURELIA.md).
+Następny etap, jeszcze do wdrożenia: [doniczki i jednorazowe uprawy](docs/DONICZKI_PLAN.md).
 
 ## Uruchomienie
 
