@@ -16,19 +16,21 @@ public final class AureliaMesh {
         }
         public Vec3 marker(){return point(.25f,0);}
     }
-    public static Leaf leaf(int id){
-        int tier=id/2;float angle=(float)(tier*1.09+(id%2)*Math.PI+.22);
-        return new Leaf(id,new Vec3(.5,.40+tier*.205,.5),angle,.48f-tier*.035f,.38f-tier*.025f);
+    public static Leaf leaf(int id){return leaf(id,8);}
+    public static Leaf leaf(int id,int total){
+        int tier=id/2;int tiers=Math.max(1,(total+1)/2);float angle=(float)(tier*1.09+(id%2)*Math.PI+.22);
+        return new Leaf(id,new Vec3(.5,.36+tier*.46/Math.max(1,tiers-1),.5),angle,.48f-tier*.035f,.38f-tier*.025f);
     }
     private AureliaMesh(){}
-    public static void draw(PoseStack pose,MultiBufferSource buffers,int age,int mask,int target,float time,int light){
+    public static void draw(PoseStack pose,MultiBufferSource buffers,int age,int mask,int target,float time,int light){draw(pose,buffers,age,mask,target,time,light,8);}
+    public static void draw(PoseStack pose,MultiBufferSource buffers,int age,int mask,int target,float time,int light,int total){
         float growth=.24f+age*.19f;
         pose.pushPose();pose.translate(.5,0,.5);pose.scale(growth,growth,growth);pose.translate(-.5,0,-.5);
         var stem=buffers.getBuffer(RenderType.entityCutoutNoCull(PixelSprite.STEM));
         stem(pose,stem,new Vec3(.5,.025,.5),new Vec3(.5,.87,.5),.021f,light);
-        for(int id=0;id<6;id++)if((mask&(1<<id))!=0){var leaf=leaf(id);stem(pose,stem,leaf.base,leaf.point(.25f,0),.008f,light);}
+        for(int id=0;id<8;id++)if((mask&(1<<id))!=0){var leaf=leaf(id,total);stem(pose,stem,leaf.base,leaf.point(.25f,0),.008f,light);}
         var leaves=buffers.getBuffer(RenderType.entityCutoutNoCull(LEAF));
-        for(int id=0;id<6;id++)if((mask&(1<<id))!=0)drawLeaf(pose,leaves,leaf(id),light,id==target?0xFFFFFFCE:0xFFFFFFFF,time,id==target);
+        for(int id=0;id<8;id++)if((mask&(1<<id))!=0)drawLeaf(pose,leaves,leaf(id,total),light,id==target?0xFFFFFFCE:0xFFFFFFFF,time,id==target);
         pose.popPose();
     }
     public static void drawLeaf(PoseStack pose,VertexConsumer out,Leaf leaf,int light,int color,float time,boolean selected){

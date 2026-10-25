@@ -36,13 +36,13 @@ public final class HarvestScreen extends Screen {
     public UUID token(){return state.token();}
     public void receive(CultivationNetwork.State next){
         int removed=state.leaves()&~next.leaves();
-        for(int id=0;id<6;id++)if((removed&(1<<id))!=0){falling.add(new Falling(id,System.nanoTime()));collected++;}
+        for(int id=0;id<8;id++)if((removed&(1<<id))!=0){falling.add(new Falling(id,System.nanoTime()));collected++;}
         state=next;status=next.message();
         if(!next.holding()){awaiting=false;if(!holding)heldLeaf=-1;}
         if(!next.active()){holding=false;awaiting=false;}
         if(exit!=null)exit.setMessage(Component.literal(next.active()?"Przerwij zbiór":"Wróć do gry"));
     }
-    public void interrupted(String message){holding=awaiting=false;status=message;state=new CultivationNetwork.State(state.pos(),state.token(),state.leaves(),-1,false,false,message);}
+    public void interrupted(String message){holding=awaiting=false;status=message;state=new CultivationNetwork.State(state.pos(),state.token(),state.leaves(),state.total(),-1,false,false,message);}
     @Override public void tick(){
         if(awaiting&&System.nanoTime()-awaitingSince>3_000_000_000L){
             awaitingSince=System.nanoTime();status="Odświeżanie stanu cięcia…";
@@ -67,7 +67,7 @@ public final class HarvestScreen extends Screen {
             g.fill(x+599,y+67,x+600,y+490,0x443C786B);
             label(g,"A U R E L I A",x+29,y+21,0xFFF2E8CA);
             label(g,"PRECYZYJNY ZBIÓR LIŚCI",x+29,y+43,0xFF9CB6AA);
-            String counter="POZOSTAŁO  "+PruningRules.count(state.leaves())+" / 6";
+            String counter="POZOSTAŁO  "+PruningRules.count(state.leaves())+" / "+state.total();
             label(g,counter,x+900-font.width(text(counter))-30,y+30,0xFFCDDDAC);
             // Subtle stage pedestal and ground shadow, then a true 3D mesh.
             for(int i=0;i<18;i++)g.fill(x+140+i*5,y+420+i/3,x+445-i*5,y+443-i/3,0x07000000);
@@ -109,19 +109,19 @@ public final class HarvestScreen extends Screen {
     private void drawPlant(GuiGraphics g,int mouseX,int mouseY){
         camera=new Matrix4f().translate(left+298,top+431,170).scale(363*zoom,-363*zoom,363*zoom)
             .rotateX(.23f).rotateY(yaw).translate(-.5f,0,-.5f);
-        markers.clear();for(int i=0;i<6;i++)if(PruningRules.available(state.leaves(),i)){
-            var p=AureliaMesh.leaf(i).marker();markers.put(i,camera.transformPosition(new Vector3f((float)p.x,(float)p.y,(float)p.z)));
+        markers.clear();for(int i=0;i<8;i++)if(PruningRules.available(state.leaves(),i)){
+            var p=AureliaMesh.leaf(i,state.total()).marker();markers.put(i,camera.transformPosition(new Vector3f((float)p.x,(float)p.y,(float)p.z)));
         }
         hoveredLeaf=state.active()?pick(mouseX,mouseY):-1;
         g.flush();RenderSystem.enableDepthTest();RenderSystem.depthMask(true);Lighting.setupFor3DItems();
         var buffers=minecraft.renderBuffers().bufferSource();
         g.pose().pushPose();g.pose().mulPose(camera);
         try{
-            AureliaMesh.draw(g.pose(),buffers,4,state.leaves(),state.active()?(holding||awaiting?heldLeaf:hoveredLeaf):-1,time(),LightTexture.FULL_BRIGHT);
+            AureliaMesh.draw(g.pose(),buffers,4,state.leaves(),state.active()?(holding||awaiting?heldLeaf:hoveredLeaf):-1,time(),LightTexture.FULL_BRIGHT,state.total());
             var it=falling.iterator();while(it.hasNext()){
                 var f=it.next();float t=(System.nanoTime()-f.started)/1_000_000_000f;if(t>1.4){it.remove();continue;}
                 g.pose().pushPose();g.pose().translate(.14*t,-.30*t*t,.12*t);g.pose().mulPose(com.mojang.math.Axis.ZP.rotationDegrees(t*48));
-                AureliaMesh.drawLeaf(g.pose(),buffers.getBuffer(RenderType.entityCutoutNoCull(AureliaMesh.LEAF)),AureliaMesh.leaf(f.leaf),LightTexture.FULL_BRIGHT,0xFFFFFFFF,time(),false);g.pose().popPose();
+                AureliaMesh.drawLeaf(g.pose(),buffers.getBuffer(RenderType.entityCutoutNoCull(AureliaMesh.LEAF)),AureliaMesh.leaf(f.leaf,state.total()),LightTexture.FULL_BRIGHT,0xFFFFFFFF,time(),false);g.pose().popPose();
             }
             buffers.endBatch();
         }finally{g.pose().popPose();RenderSystem.disableDepthTest();Lighting.setupFor3DItems();}
@@ -144,8 +144,8 @@ public final class HarvestScreen extends Screen {
         for(var e:markers.entrySet()){var p=e.getValue();double d=(p.x-x)*(p.x-x)+(p.y-y)*(p.y-y);if(d<best){best=d;result=e.getKey();}}
         if(result>=0)return result;
         float nearest=-Float.MAX_VALUE;float[] rows={0,.28f,.58f,1};
-        for(int id=0;id<6;id++)if(PruningRules.available(state.leaves(),id)){
-            var leaf=AureliaMesh.leaf(id);
+        for(int id=0;id<8;id++)if(PruningRules.available(state.leaves(),id)){
+            var leaf=AureliaMesh.leaf(id,state.total());
             for(int row=0;row<3;row++)for(int col=0;col<2;col++){
                 float u0=col*.5f,u1=u0+.5f,v0=rows[row],v1=rows[row+1];
                 var a=project(leaf,u0,v0);var b=project(leaf,u0,v1);var c=project(leaf,u1,v1);var d=project(leaf,u1,v0);

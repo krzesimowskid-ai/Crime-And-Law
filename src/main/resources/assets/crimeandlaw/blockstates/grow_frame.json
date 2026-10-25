@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "half=lower,lamp=false": {
+      "model": "crimeandlaw:block/grow_frame"
+    },
+    "half=lower,lamp=true": {
+      "model": "crimeandlaw:block/grow_frame"
+    },
+    "half=upper,lamp=false": {
+      "model": "crimeandlaw:block/grow_frame"
+    },
+    "half=upper,lamp=true": {
+      "model": "crimeandlaw:block/grow_frame"
+    }
+  }
+}

@@ -20,7 +20,7 @@ public final class HarvestController {
     private static final class Session {
         final UUID token=UUID.randomUUID(),plant;final Key key;final long opened;
         int target=-1;long began=-1;
-        Session(Key key,AureliaPlant plant,long tick){this.key=key;this.plant=plant.identity();opened=tick;}
+        Session(Key key,HarvestPlant plant,long tick){this.key=key;this.plant=plant.identity();opened=tick;}
     }
     private static final Map<ServerPlayer,Session> SESSIONS=new WeakHashMap<>();
     private static final Map<Key,ServerPlayer> LOCKS=new HashMap<>();
@@ -32,15 +32,15 @@ public final class HarvestController {
         if(!player.serverLevel().hasChunkAt(pos))return "Roślina nie jest dostępna.";
         if(!player.serverLevel().mayInteract(player,pos))return "Nie możesz zbierać roślin w tym miejscu.";
         var sight=player.serverLevel().clip(new net.minecraft.world.level.ClipContext(player.getEyePosition(),Vec3.atCenterOf(pos),net.minecraft.world.level.ClipContext.Block.OUTLINE,net.minecraft.world.level.ClipContext.Fluid.NONE,player));
-        if(!sight.getBlockPos().equals(pos))return "Roślina musi być widoczna — nie można zbierać przez ścianę.";
+        if(!Planter.base(player.serverLevel(),sight.getBlockPos()).equals(pos))return "Roślina musi być widoczna — nie można zbierać przez ścianę.";
         var state=player.serverLevel().getBlockState(pos);
-        if(!state.is(CultivationContent.AURELIA.get())||state.getValue(AureliaCrop.GROWTH)<4)return "Roślina musi najpierw dojrzeć.";
+        if(!(player.serverLevel().getBlockEntity(pos) instanceof HarvestPlant p)||!p.ready())return "Roślina musi najpierw dojrzeć.";
         if(!player.getMainHandItem().is(CultivationContent.SHEARS.get()))return "Weź specjalne nożyce do przycinania do głównej ręki.";
         return "";
     }
     public static void open(ServerPlayer player,BlockPos pos){
         if(!allow(player))return;
-        pos=pos.immutable();String error=problem(player,pos);
+        pos=Planter.base(player.serverLevel(),pos).immutable();if(PotController.reserved(player,pos)){message(player,pos,"Stanowisko jest już używane.");return;}String error=problem(player,pos);
         if(!error.isEmpty()){message(player,pos,error);return;}
         if(!interactionAllowed(player,pos)){message(player,pos,"Zbiór w tym miejscu został zablokowany.");return;}
         error=problem(player,pos);if(!error.isEmpty()){message(player,pos,error);return;}
@@ -49,7 +49,7 @@ public final class HarvestController {
         if(previous!=null&&previous.key.equals(key)){send(player,previous,true,"");return;}
         if(LOCKS.containsKey(key)&&LOCKS.get(key)!=player){message(player,pos,"Tę roślinę przycina już inny gracz.");return;}
         if(SESSIONS.size()>=64){message(player,pos,"Spróbuj ponownie za chwilę.");return;}
-        close(player);var plant=(AureliaPlant)player.serverLevel().getBlockEntity(pos);
+        close(player);var plant=player.serverLevel().getBlockEntity(pos) instanceof HarvestPlant hp?hp:null;
         if(plant==null||plant.leaves()==0){message(player,pos,"Ta roślina została już zebrana.");return;}
         var session=new Session(key,plant,player.serverLevel().getGameTime());SESSIONS.put(player,session);LOCKS.put(key,player);
         send(player,session,true,"Wybierz dowolny liść. Kolejność zależy od Ciebie.");
@@ -61,7 +61,7 @@ public final class HarvestController {
         String error=problem(player,session.key.pos);
         if(!session.key.dimension.equals(player.serverLevel().dimension().location().toString()))error="Zmieniono świat — zbiór przerwany.";
         if(!error.isEmpty()){send(player,session,false,error);close(player);return;}
-        var plant=player.serverLevel().getBlockEntity(session.key.pos) instanceof AureliaPlant p?p:null;
+        var plant=player.serverLevel().getBlockEntity(session.key.pos) instanceof HarvestPlant p?p:null;
         if(plant==null||!plant.identity().equals(session.plant)){
             send(player,session,false,error.isEmpty()?"Roślina została zmieniona.":error);close(player);return;
         }
@@ -81,8 +81,8 @@ public final class HarvestController {
         player.getMainHandItem().hurtAndBreak(1,player,EquipmentSlot.MAINHAND);
         player.serverLevel().playSound(null,session.key.pos,SoundEvents.SHEEP_SHEAR,SoundSource.BLOCKS,.65f,1.1f+player.getRandom().nextFloat()*.18f);
         if(plant.leaves()==0){
-            send(player,session,false,"Zbiór ukończony. Roślina odrośnie.");
-            close(player);plant.regrow();player.serverLevel().setBlock(session.key.pos,plant.getBlockState().setValue(AureliaCrop.GROWTH,1),3);return;
+            send(player,session,false,"Zbiór ukończony. Kolejny cykl wymaga nowej ziemi i nasiona.");
+            close(player);plant.finishHarvest();return;
         }
         if(!player.getMainHandItem().is(CultivationContent.SHEARS.get())){send(player,session,false,"Nożyce się zużyły. Pozostałe liście zachowano.");close(player);return;}
         send(player,session,true,"Precyzyjne cięcie! Zebrano liść.");
@@ -95,11 +95,12 @@ public final class HarvestController {
     }
     private static void message(ServerPlayer player,BlockPos pos,String text){CultivationNetwork.send(player,new CultivationNetwork.State(pos,new UUID(0,0),0,-1,false,false,text));}
     private static void send(ServerPlayer player,Session s,boolean active,String message){
-        int mask=s.key.dimension.equals(player.serverLevel().dimension().location().toString())&&player.serverLevel().hasChunkAt(s.key.pos)&&player.serverLevel().getBlockEntity(s.key.pos) instanceof AureliaPlant p?p.leaves():0;
-        CultivationNetwork.send(player,new CultivationNetwork.State(s.key.pos,s.token,mask,s.target,s.began>=0,active,message));
+        int mask=s.key.dimension.equals(player.serverLevel().dimension().location().toString())&&player.serverLevel().hasChunkAt(s.key.pos)&&player.serverLevel().getBlockEntity(s.key.pos) instanceof HarvestPlant p?p.leaves():0;
+        CultivationNetwork.send(player,new CultivationNetwork.State(s.key.pos,s.token,mask,s.key.dimension.equals(player.serverLevel().dimension().location().toString())&&player.serverLevel().hasChunkAt(s.key.pos)&&player.serverLevel().getBlockEntity(s.key.pos) instanceof HarvestPlant p?p.totalLeaves():0,s.target,s.began>=0,active,message));
     }
+    public static boolean reserved(ServerPlayer player,BlockPos pos){return LOCKS.containsKey(new Key(player.serverLevel().dimension().location().toString(),pos));}
     private static void close(ServerPlayer player){var s=SESSIONS.remove(player);if(s!=null)LOCKS.remove(s.key,player);}
-    private static boolean interactionAllowed(ServerPlayer player,BlockPos pos){
+    static boolean interactionAllowed(ServerPlayer player,BlockPos pos){
         var event=net.neoforged.neoforge.common.CommonHooks.onRightClickBlock(player,net.minecraft.world.InteractionHand.MAIN_HAND,pos,new net.minecraft.world.phys.BlockHitResult(Vec3.atCenterOf(pos),net.minecraft.core.Direction.UP,pos,false));
         return !event.isCanceled()&&event.getUseBlock()!=net.neoforged.neoforge.common.util.TriState.FALSE;
     }

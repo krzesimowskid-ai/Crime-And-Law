@@ -111,7 +111,7 @@ public final class GangNetwork {
         @Override public Type<? extends CustomPacketPayload> type(){return TYPE;}
     }
     public static void register(RegisterPayloadHandlersEvent event){
-        var registrar=event.registrar("22");
+        var registrar=event.registrar("23");
         registrar.playToServer(Action.TYPE,Action.CODEC,GangNetwork::handle);
         registrar.playToClient(Money.TYPE,Money.CODEC,(p,c)->moneyReceiver.accept(p));
         registrar.playToClient(Clock.TYPE,Clock.CODEC,(p,c)->clockReceiver.accept(p));

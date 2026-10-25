@@ -10,6 +10,6 @@ public final class AureliaRenderer implements BlockEntityRenderer<AureliaPlant> 
     @Override public void render(AureliaPlant plant,float partial,PoseStack pose,MultiBufferSource buffers,int light,int overlay){
         int age=plant.getBlockState().getValue(AureliaCrop.GROWTH);
         float time=plant.getLevel()==null?0:plant.getLevel().getGameTime()+partial;
-        AureliaMesh.draw(pose,buffers,age,plant.leaves(),-1,time/20,light);
+        AureliaMesh.draw(pose,buffers,age,plant.leaves(),-1,time/20,light,6);
     }
 }

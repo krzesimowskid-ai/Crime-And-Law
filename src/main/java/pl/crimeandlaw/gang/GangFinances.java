@@ -38,6 +38,12 @@ public final class GangFinances {
         var accounts=account==Account.CASH?cash:wallets;long current=accounts.getOrDefault(player,0L);
         capacity(current,amount);accounts.put(player,current+amount);
     }
+    public void spend(UUID player,Account account,long amount){
+        Objects.requireNonNull(player);Objects.requireNonNull(account);amount(amount);
+        var accounts=account==Account.CASH?cash:wallets;long current=accounts.getOrDefault(player,0L);
+        require(current>=amount,account==Account.CASH?"Nie masz wystarczającej gotówki.":"Nie masz wystarczających środków na koncie.");
+        accounts.put(player,current-amount);
+    }
     public void deposit(GangDirectory directory,UUID actor,long amount,String comment){
         Gang gang=authorized(directory,actor,Permission.DEPOSIT_FUNDS);amount(amount);comment=comment(comment);
         require(wallet(actor)>=amount,"Nie masz wystarczających środków na koncie.");capacity(balance(gang.id),amount);
