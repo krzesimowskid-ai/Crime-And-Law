@@ -5,6 +5,6 @@ import net.minecraft.client.renderer.blockentity.*;
 import pl.crimeandlaw.cultivation.*;
 public final class PlanterRenderer implements BlockEntityRenderer<Planter> {
     public PlanterRenderer(BlockEntityRendererProvider.Context c){}
-    @Override public void render(Planter pot,float delta,PoseStack pose,MultiBufferSource buffers,int light,int overlay){var s=pot.plant;GardenMesh.station(pose,buffers,pot.frame(),pot.hasPot(),pot.hasLamp(),s.soil()?1:0,s.planted()?s.growth():-1,s.mature()?s.leaves():63,s.total(),s.water(),light);if(pot.hasLamp())UvLighting.spill(pose,buffers,pot);}
-    @Override public net.minecraft.world.phys.AABB getRenderBoundingBox(Planter p){var box=new net.minecraft.world.phys.AABB(p.getBlockPos()).expandTowards(0,p.frame()?1:.4,0);return p.hasLamp()?box.inflate(1,0,1):box;}
+    @Override public void render(Planter pot,float delta,PoseStack pose,MultiBufferSource buffers,int light,int overlay){var s=pot.plant;GardenMesh.station(pose,buffers,pot.frame(),pot.hasPot(),pot.hasLamp(),s.soil()?1:0,s.planted()?s.growth():-1,s.mature()?s.leaves():63,s.total(),s.water(),light);}
+    @Override public net.minecraft.world.phys.AABB getRenderBoundingBox(Planter p){var box=new net.minecraft.world.phys.AABB(p.getBlockPos()).expandTowards(0,p.frame()?1:.4,0);return box;}
 }

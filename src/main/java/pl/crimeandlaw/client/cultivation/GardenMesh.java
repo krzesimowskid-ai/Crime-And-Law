@@ -33,8 +33,7 @@ public final class GardenMesh {
         var out=b.getBuffer(RenderType.entityCutoutNoCull(GardenMaterials.PLASTIC));for(int i=0;i<8;i++)quad(p,out,new Vec3(.5,.035,.5),ring(.228,.035,i),ring(.228,.035,i+1),new Vec3(.5,.035,.5),light,0xFF929DA5);
         if(fill>0){double y=PreparationPhysics.soilY(fill),radius=PreparationPhysics.soilRadius(fill);var v=b.getBuffer(RenderType.entityCutoutNoCull(GardenMaterials.SOIL));
             // Concentric rings match the tapered cavity at every fill height.
-            for(int i=0;i<8;i++){Vec3 a=ring(radius,y,i),c=ring(radius,y,i+1);Vec3 aa=ring(.055,y-hole*.033,i),cc=ring(.055,y-hole*.033,i+1);soilFace(p,v,aa,cc,c,a,radius,light,wet?0xFFB0A2B7:-1);soilFace(p,v,new Vec3(.5,y-hole*.04,.5),cc,aa,new Vec3(.5,y-hole*.04,.5),radius,light,wet?0xFF9C8CAA:0xFFDBD1B7);}
-            for(int i=0;i<8;i++){double a=i*2.4,rr=radius*.65,x=.5+Math.cos(a)*rr,z=.5+Math.sin(a)*rr;box(p,b,GardenMaterials.SOIL,x,y,z,x+.018,y+.01,z+.018,light,wet?0xFF8D7D9D:0xFFC2AD86);}
+            for(int i=0;i<8;i++){Vec3 a=ring(radius,y,i),c=ring(radius,y,i+1);Vec3 aa=ring(.068,y-hole*.033,i),cc=ring(.068,y-hole*.033,i+1);soilFace(p,v,aa,cc,c,a,radius,light,wet?0xFFB6B0A6:-1);soilFace(p,v,new Vec3(.5,y-hole*.04,.5),cc,aa,new Vec3(.5,y-hole*.04,.5),radius,light,wet?0xFFADA598:0xFFC3B49B);}
         }
     }
     private static void soilFace(PoseStack p,VertexConsumer out,Vec3 a,Vec3 b,Vec3 c,Vec3 d,double r,int light,int color){
@@ -71,9 +70,30 @@ public final class GardenMesh {
             PixelSprite.quad(p,v,new Vec3(.78,.69,.273),new Vec3(.78,.20,.273),new Vec3(.22,.20,.273),new Vec3(.22,.69,.273),0,0,1,1,light,-1);
         }else {box(p,b,GardenMaterials.WHITE,.30,.26,.265,.70,.57,.270,light,0xFFDFE7C7);PixelSprite.SEEDS.draw(p,b.getBuffer(RenderType.entityCutoutNoCull(PixelSprite.SEEDS.texture())),(u,v,d)->new Vec3(.64-u*.28,.30+(1-v)*.22,.262-d),.002f,-1,light,false);box(p,b,GardenMaterials.WHITE,.30,.26,.731,.70,.57,.735,light,0xFFDFE7C7);PixelSprite.SEEDS.draw(p,b.getBuffer(RenderType.entityCutoutNoCull(PixelSprite.SEEDS.texture())),(u,v,d)->new Vec3(.36+u*.28,.30+(1-v)*.22,.739+d),.002f,-1,light,false);}
     }
-    public static void seed(PoseStack p,MultiBufferSource b,int light){box(p,b,GardenMaterials.CLOTH,-.025,-.035,-.018,.025,.035,.018,light,0xFFB07B35);box(p,b,GardenMaterials.CLOTH,-.018,-.045,-.013,.018,.045,.013,light,0xFFE8BB62);box(p,b,GardenMaterials.SOIL,-.004,-.035,-.019,.004,.035,.019,light,0xFF6D5432);}
+    public static void seed(PoseStack p,MultiBufferSource b,int light){
+        var out=b.getBuffer(RenderType.entityCutoutNoCull(GardenMaterials.SEED));double[] x={-.045,-.029,.008,.032,.044},ry={.001,.014,.018,.010,.001},rz={.001,.020,.024,.013,.001};
+        for(int k=0;k<4;k++)for(int i=0;i<8;i++){double a=i*Math.PI/4,c=(i+1)*Math.PI/4;quad(p,out,new Vec3(x[k],Math.cos(a)*ry[k],Math.sin(a)*rz[k]),new Vec3(x[k+1],Math.cos(a)*ry[k+1],Math.sin(a)*rz[k+1]),new Vec3(x[k+1],Math.cos(c)*ry[k+1],Math.sin(c)*rz[k+1]),new Vec3(x[k],Math.cos(c)*ry[k],Math.sin(c)*rz[k]),light,i<4?0xFFE8D7B0:0xFFB9A078);}
+        var seam=b.getBuffer(RenderType.entityCutoutNoCull(GardenMaterials.WHITE));quad(p,seam,new Vec3(-.028,.0148,-.0012),new Vec3(.008,.0188,-.0012),new Vec3(.008,.0188,.0012),new Vec3(-.028,.0148,.0012),light,0xFFDDCAA1);
+    }
+    public static void waterStream(PoseStack p,MultiBufferSource b,PreparationPhysics.Stream stream,int light){
+        if(!stream.flowing())return;boolean hits=PreparationPhysics.reachesSoil(stream,1);double end=PreparationPhysics.flight(stream.source(),stream.velocity(),hits?PreparationPhysics.TOP:.015);if(end<0)return;
+        var out=b.getBuffer(RenderType.entityTranslucent(GardenMaterials.WATER));double r=.0018;
+        for(int i=0;i<24;i++){var a=PreparationPhysics.at(stream,end*i/24);var c=PreparationPhysics.at(stream,end*(i+1)/24);quad(p,out,new Vec3(a.x()-r,a.y(),a.z()),new Vec3(c.x()-r,c.y(),c.z()),new Vec3(c.x()+r,c.y(),c.z()),new Vec3(a.x()+r,a.y(),a.z()),light,0xAAB9E7F5);quad(p,out,new Vec3(a.x(),a.y(),a.z()-r),new Vec3(c.x(),c.y(),c.z()-r),new Vec3(c.x(),c.y(),c.z()+r),new Vec3(a.x(),a.y(),a.z()+r),light,0x88B9E7F5);}
+    }
+    public static void landingGuide(PoseStack p,MultiBufferSource b,double x,double z,boolean valid,int light){
+        var out=b.getBuffer(RenderType.entityTranslucent(GardenMaterials.WHITE));double y=PreparationPhysics.TOP+.0025,r=valid?.047:.037;int col=valid?0xDADBC080:0x7793968E;
+        for(int i=0;i<32;i++){double a=i*Math.PI/16,c=(i+1)*Math.PI/16;quad(p,out,new Vec3(x+Math.cos(a)*r,y,z+Math.sin(a)*r),new Vec3(x+Math.cos(c)*r,y,z+Math.sin(c)*r),new Vec3(x+Math.cos(c)*(r-.003),y,z+Math.sin(c)*(r-.003)),new Vec3(x+Math.cos(a)*(r-.003),y,z+Math.sin(a)*(r-.003)),light,col);}
+    }
     public static void knife(PoseStack p,MultiBufferSource b,int light){box(p,b,GardenMaterials.PACK,-.12,-.025,-.025,0,.025,.025,light,-1);box(p,b,GardenMaterials.STEEL,0,-.010,-.012,.19,.010,.012,light,0xFFE5EEE8);}
-    public static void glove(PoseStack p,MultiBufferSource b,int light){box(p,b,GardenMaterials.PACK,-.045,0,-.055,.045,.025,.045,light,0xFFCDD5B7);for(int i=0;i<4;i++)box(p,b,GardenMaterials.PACK,-.045+i*.024,.005,-.10,-.026+i*.024,.022,-.05,light,0xFFB9C59F);}
+    public static void glove(PoseStack p,MultiBufferSource b,int light){
+        box(p,b,GardenMaterials.GLOVE,-.044,.002,-.024,.044,.030,.046,light,-1);box(p,b,GardenMaterials.GLOVE,-.041,.005,.043,.041,.026,.069,light,0xFF6A7779);
+        for(int i=0;i<4;i++){double x=-.032+i*.022,end=-.097+(i==0?.014:i==3?.021:0);finger(p,b,x,end,light);}
+        p.pushPose();p.translate(.036,.006,.012);p.mulPose(Axis.YP.rotationDegrees(-40));box(p,b,GardenMaterials.GLOVE,0,0,-.048,.018,.018,.010,light,0xFFE7E5D9);p.popPose();
+    }
+    private static void finger(PoseStack p,MultiBufferSource b,double x,double end,int light){
+        var out=b.getBuffer(RenderType.entityCutoutNoCull(GardenMaterials.GLOVE));double[] zs={-.018,end+.014,end},rs={.010,.009,.002};
+        for(int k=0;k<2;k++)for(int i=0;i<8;i++){double a=i*Math.PI/4,c=(i+1)*Math.PI/4;quad(p,out,new Vec3(x+Math.cos(a)*rs[k],.015+Math.sin(a)*rs[k],zs[k]),new Vec3(x+Math.cos(a)*rs[k+1],.015+Math.sin(a)*rs[k+1],zs[k+1]),new Vec3(x+Math.cos(c)*rs[k+1],.015+Math.sin(c)*rs[k+1],zs[k+1]),new Vec3(x+Math.cos(c)*rs[k],.015+Math.sin(c)*rs[k],zs[k]),light,-1);}
+    }
     public static void can(PoseStack p,MultiBufferSource b,int water,int light){
         box(p,b,GardenMaterials.STEEL,.20,.12,.29,.66,.57,.71,light,-1);box(p,b,GardenMaterials.STEEL,.17,.12,.26,.69,.17,.74,light,0xFF829995);box(p,b,GardenMaterials.STEEL,.18,.54,.27,.68,.59,.73,light,0xFFD9DFCC);
         box(p,b,GardenMaterials.STEEL,.25,.59,.34,.56,.62,.66,light,0xFF4B6564);box(p,b,GardenMaterials.WATER,.30,.612,.39,.51,.616,.61,light,water>0?0xFFFFFFFF:0xFF26332D);
@@ -83,7 +103,7 @@ public final class GardenMesh {
     }
     public static void station(PoseStack p,MultiBufferSource b,boolean rack,boolean hasPot,boolean lamp,float fill,int growth,int mask,int total,int water,int light){
         if(rack)frame(p,b,lamp,light);p.pushPose();if(rack)p.translate(0,.13,0);
-        int old=tint;tint=rack&&lamp?UvLighting.TINT:-1;try{if(hasPot){if(lamp)light=LightTexture.FULL_BRIGHT;pot(p,b,fill,water>0,light);if(growth>=0){p.translate(.11,.39,.11);p.scale(.78f,.86f,.78f);AureliaMesh.draw(p,b,Math.clamp(growth*4/CultivationRules.GROWTH_TICKS,0,4),mask,-1,0,light,total>0?total:6,tint);}}}finally{tint=old;}
+        int old=tint;tint=-1;try{if(hasPot){pot(p,b,fill,water>0,light);if(growth>=0){p.translate(.11,.39,.11);p.scale(.78f,.86f,.78f);AureliaMesh.draw(p,b,Math.clamp(growth*4/CultivationRules.GROWTH_TICKS,0,4),mask,-1,0,light,total>0?total:6,tint);}}}finally{tint=old;}
         p.popPose();
     }
     public static boolean modelItem(ItemStack s){return s.is(CultivationContent.POT_ITEM.get())||s.is(CultivationContent.FRAME_ITEM.get())||s.getItem() instanceof GardenSupplyItem;}

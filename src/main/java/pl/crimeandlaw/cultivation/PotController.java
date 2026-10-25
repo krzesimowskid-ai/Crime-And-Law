@@ -119,7 +119,7 @@ public final class PotController {
             else{s.message="Czynność nie jest już potrzebna.";send(p,s,true);return;}
             var plan=InventoryExchange.prepare(p,slot,expected,replacement,reward);
             if(plan==null||!plan.commit()){s.message="Zrób miejsce w ekwipunku. Materiały zachowano.";send(p,s,true);return;}
-            if(op==PotNetwork.CUT){s.message="Worek rozcięty. Złap go LPM, przechylaj WASD.";}
+            if(op==PotNetwork.CUT){s.message="Worek rozcięty. Złap go LPM. WASD przesuwa, Q/E koryguje przechył.";}
             else if(op==PotNetwork.POUR){plant.fillSoil();s.message="Doniczka pełna. Przygotuj nasiono.";}
             else if(op==PotNetwork.COVER){plant.plant(seedling);s.message="Nasiono przysypane. Podlej konewką.";}
             else{plant.addWater(water);s.message="Doniczka podlana.";}
@@ -134,7 +134,7 @@ public final class PotController {
         else if(a.action()==PotNetwork.PLANT){ok=plant.soil()&&!plant.planted()&&(stack.is(CultivationContent.SEEDS.get())||stack.is(CultivationContent.SEEDLING.get())||stack.is(CultivationContent.SEED_PACKET.get()));
             if(ok&&stack.is(CultivationContent.SEED_PACKET.get())){var rest=stack.copy();rest.shrink(1);ok=InventoryExchange.prepare(p,a.slot(),stack,rest,new ItemStack(CultivationContent.SEEDS.get(),4))!=null;}
         }
-        if(ok){s.reset();s.operation=a.action();s.slot=a.slot();s.expected=stack.copy();s.began=p.serverLevel().getGameTime();s.inputAt=0;s.message=s.operation==PotNetwork.CUT?"Przeciągnij ostrze wzdłuż oznaczonego szwu.":s.operation==PotNetwork.PLANT?"Podnieś nasiono LPM i puść nad dołkiem.":"Trzymaj przedmiot LPM. A/D przechyla, W/S kieruje przód/tył.";}
+        if(ok){s.reset();s.operation=a.action();s.slot=a.slot();s.expected=stack.copy();s.began=p.serverLevel().getGameTime();s.inputAt=0;s.message=s.operation==PotNetwork.CUT?"Przeciągnij ostrze wzdłuż oznaczonego szwu.":s.operation==PotNetwork.PLANT?"Podnieś nasiono LPM i puść nad dołkiem.":"Trzymaj przedmiot LPM. WASD przesuwa, Q/E koryguje przechył.";}
         else s.message="Brak odpowiedniego materiału, miejsca lub stanowisko jest już gotowe.";
         send(p,s,true);
     }
@@ -147,8 +147,8 @@ public final class PotController {
             if(p.hasDisconnected()){close(p);continue;}
             if(now%5==0&&(!valid(p,s)||p.serverLevel().getGameTime()-s.activity>1800)){s.message="Przygotowanie przerwane. Zatwierdzony postęp zachowano.";send(p,s,false);close(p);continue;}
             if((s.operation==PotNetwork.POUR||s.operation==PotNetwork.WATER)&&p.serverLevel().getGameTime()-s.inputAt<=8&&s.held&&unchanged(p,s)){
-                boolean water=s.operation==PotNetwork.WATER;var stream=PreparationPhysics.stream(s.pose,water,true);
-                if(PreparationPhysics.reachesSoil(stream,water?1:s.work/1000))s.work=Math.min(1000,s.work+1000.0/(water?30:60));
+                boolean water=s.operation==PotNetwork.WATER;double fraction=PreparationPhysics.hitFraction(s.pose,water,true,water?1:s.work/1000);
+                s.work=Math.min(1000,s.work+fraction*1000.0/(water?30:60));
             }
             if(now%5==0)send(p,s,true);
         }

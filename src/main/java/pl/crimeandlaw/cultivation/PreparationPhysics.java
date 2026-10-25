@@ -1,5 +1,8 @@
 package pl.crimeandlaw.cultivation;
 
+import java.util.List;
+import java.util.ArrayList;
+
 /** Shared local-space geometry: the mesh, stream emitter and server target use the same transforms. */
 public final class PreparationPhysics {
     public static final double SCALE=.75, GRAVITY=2.8, RIM=.48, BOTTOM=.065, TOP=.385;
@@ -17,9 +20,26 @@ public final class PreparationPhysics {
     public static boolean inside(double x,double z,double radius){x=Math.abs(x-.5);z=Math.abs(z-.5);return Math.max(x,z)<=radius*.9238795&&x+z<=radius*1.306563;}
     public static boolean bounded(Pose p){return Double.isFinite(p.x)&&Double.isFinite(p.y)&&Double.isFinite(p.z)&&Double.isFinite(p.roll)&&Double.isFinite(p.pitch)&&p.x>=-.45&&p.x<=1.45&&p.z>=-.45&&p.z<=1.45&&p.y>=.60&&p.y<=1.55&&Math.abs(p.roll)<=Math.PI+1e-5&&Math.abs(p.pitch)<=1.30001;}
     public static Stream stream(Pose pose,boolean water,boolean held){
-        var local=water?new Point(.976,.54,.50):new Point(.5,.82,.5);
+        var local=water?rose(1,1):new Point(.5,.82,.5);
         var normal=rotate(water?new Point(.809,.588,0):new Point(0,1,0),pose.roll,pose.pitch);
         return new Stream(pose.point(local),normal.scale(water?.46:.20),held&&normal.y<(water?-.12:-.30));
+    }
+    /** Nine holes are transformed with the actual rose, rather than a detached central emitter. */
+    public static List<Stream> streams(Pose pose,boolean water,boolean held){
+        if(!water)return List.of(stream(pose,false,held));
+        var list=new ArrayList<Stream>(9);var middle=stream(pose,true,held);
+        for(int i=0;i<3;i++)for(int j=0;j<3;j++){
+            var spread=rotate(new Point(-.588*(i-1)*.019,.809*(i-1)*.019,(j-1)*.019),pose.roll,pose.pitch);
+            list.add(new Stream(pose.point(rose(i,j)),middle.velocity.add(spread),middle.flowing));
+        }return list;
+    }
+    public static Point rose(int row,int column){return new Point(.61,.26,.44).add(rotate(new Point(.4625,-.0385+row*.055,-.0085+column*.055),Math.toRadians(36),0));}
+    public static double hitFraction(Pose pose,boolean water,boolean held,double fill){var jets=streams(pose,water,held);return jets.stream().filter(s->reachesSoil(s,fill)).count()/(double)jets.size();}
+    /** Camera-local horizontal translation; independent of the model's pouring rotation. */
+    public static Pose move(Pose p,double right,double forward,double yaw,double seconds){
+        double length=Math.hypot(right,forward);if(length>1){right/=length;forward/=length;}
+        double d=.46*Math.clamp(seconds,0,.12),x=p.x+d*(Math.cos(yaw)*right+Math.sin(yaw)*forward),z=p.z+d*(Math.sin(yaw)*right-Math.cos(yaw)*forward);
+        return new Pose(Math.clamp(x,-.40,1.40),p.y,Math.clamp(z,-.40,1.40),p.roll,p.pitch);
     }
     public static double flight(Point p,Point velocity,double ground){double h=p.y-ground;if(h<0||!Double.isFinite(h))return -1;return (velocity.y+Math.sqrt(velocity.y*velocity.y+2*GRAVITY*h))/GRAVITY;}
     public static Point at(Stream s,double seconds){return s.source.add(s.velocity.scale(seconds)).add(new Point(0,-.5*GRAVITY*seconds*seconds,0));}

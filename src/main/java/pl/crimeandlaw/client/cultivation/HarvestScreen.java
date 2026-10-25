@@ -28,7 +28,7 @@ public final class HarvestScreen extends Screen {
     private double dragX;
     private int heldLeaf=-1,hoveredLeaf=-1,collected;
     private String status;
-    private record Falling(int leaf,long started){}
+    private record Falling(int leaf,int total,long started,LeafMotion.Motion motion){}
     private final List<Falling> falling=new ArrayList<>();
     private final Map<Integer,Vector3f> markers=new HashMap<>();
     private Button exit;
@@ -36,7 +36,7 @@ public final class HarvestScreen extends Screen {
     public UUID token(){return state.token();}
     public void receive(CultivationNetwork.State next){
         int removed=state.leaves()&~next.leaves();
-        for(int id=0;id<8;id++)if((removed&(1<<id))!=0){falling.add(new Falling(id,System.nanoTime()));collected++;}
+        for(int id=0;id<8;id++)if((removed&(1<<id))!=0){falling.add(new Falling(id,state.total(),System.nanoTime(),LeafMotion.cut(id,System.nanoTime())));collected++;}
         state=next;status=next.message();
         if(!next.holding()){awaiting=false;if(!holding)heldLeaf=-1;}
         if(!next.active()){holding=false;awaiting=false;}
@@ -113,18 +113,20 @@ public final class HarvestScreen extends Screen {
             var p=AureliaMesh.leaf(i,state.total()).marker();markers.put(i,camera.transformPosition(new Vector3f((float)p.x,(float)p.y,(float)p.z)));
         }
         hoveredLeaf=state.active()?pick(mouseX,mouseY):-1;
-        g.flush();RenderSystem.enableDepthTest();RenderSystem.depthMask(true);Lighting.setupFor3DItems();
+        g.flush();g.enableScissor((int)((left+12)*scale),(int)((top+70)*scale),(int)((left+595)*scale),(int)((top+466)*scale));RenderSystem.enableDepthTest();RenderSystem.depthMask(true);Lighting.setupFor3DItems();
         var buffers=minecraft.renderBuffers().bufferSource();
         g.pose().pushPose();g.pose().mulPose(camera);
         try{
             AureliaMesh.draw(g.pose(),buffers,4,state.leaves(),state.active()?(holding||awaiting?heldLeaf:hoveredLeaf):-1,time(),LightTexture.FULL_BRIGHT,state.total());
             var it=falling.iterator();while(it.hasNext()){
-                var f=it.next();float t=(System.nanoTime()-f.started)/1_000_000_000f;if(t>1.4){it.remove();continue;}
-                g.pose().pushPose();g.pose().translate(.14*t,-.30*t*t,.12*t);g.pose().mulPose(com.mojang.math.Axis.ZP.rotationDegrees(t*48));
-                AureliaMesh.drawLeaf(g.pose(),buffers.getBuffer(RenderType.entityCutoutNoCull(AureliaMesh.LEAF)),AureliaMesh.leaf(f.leaf,state.total()),LightTexture.FULL_BRIGHT,0xFFFFFFFF,time(),false);g.pose().popPose();
+                var f=it.next();double elapsed=(System.nanoTime()-f.started)/1_000_000_000.;if(elapsed>2.3){it.remove();continue;}
+                var leaf=AureliaMesh.leaf(f.leaf,f.total);var pivot=leaf.point(.48f,0);var m=f.motion;double land=(m.lift()+Math.sqrt(m.lift()*m.lift()+2.32*Math.max(0,pivot.y-.055)))/1.16,t=Math.min(elapsed,land);
+                g.pose().pushPose();g.pose().translate(m.x(t),m.y(t),m.z(t));g.pose().translate(pivot.x,pivot.y,pivot.z);
+                g.pose().mulPose(com.mojang.math.Axis.XP.rotation((float)(m.spinX()*t+Math.sin(t*6+m.phase())*.20*t)));g.pose().mulPose(com.mojang.math.Axis.YP.rotation((float)(m.spinZ()*.45*t)));g.pose().mulPose(com.mojang.math.Axis.ZP.rotation((float)(m.spinZ()*t)));g.pose().translate(-pivot.x,-pivot.y,-pivot.z);
+                AureliaMesh.drawLeaf(g.pose(),buffers.getBuffer(RenderType.entityCutoutNoCull(AureliaMesh.LEAF)),leaf,LightTexture.FULL_BRIGHT,0xFFFFFFFF,time(),false);g.pose().popPose();
             }
             buffers.endBatch();
-        }finally{g.pose().popPose();RenderSystem.disableDepthTest();Lighting.setupFor3DItems();}
+        }finally{g.pose().popPose();RenderSystem.disableDepthTest();g.disableScissor();Lighting.setupFor3DItems();}
     }
     private void progress(GuiGraphics g,int x,int y,int w){
         g.fill(x,y,x+w,y+12,0xFF0B1517);

@@ -3,7 +3,18 @@
   "minVersion": "0.8",
   "package": "pl.crimeandlaw.mixin",
   "compatibilityLevel": "JAVA_21",
-  "mixins": ["CaptureDropMixin"],
-  "client": ["client.FontAccess", "client.ChatComponentAccess", "client.ChatScreenAccess", "client.CommandSuggestionsMixin", "client.ChatComponentMixin"],
-  "injectors": { "defaultRequire": 1 }
+  "mixins": [
+    "CaptureDropMixin"
+  ],
+  "client": [
+    "client.FontAccess",
+    "client.ChatComponentAccess",
+    "client.ChatScreenAccess",
+    "client.CommandSuggestionsMixin",
+    "client.ChatComponentMixin",
+    "client.UvHandLightingMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
 }
