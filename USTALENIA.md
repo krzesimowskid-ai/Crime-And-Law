@@ -4,7 +4,7 @@ Stan projektu: 25 października 2026.
 
 ## Status i sposób dalszej pracy
 
-To zapis pomysłów i decyzji użytkownika, a nie opis gotowego moda. Powstaje prototyp panelu gangów, obecnie wersja 0.1.40. 19 października użytkownik odłożył DarkPerazera i wrócił do Crime And Law. Zaakceptował rozpoczęcie od podstaw panelu gangów; obecnie doprecyzowuje jego wygląd. Dla pierwszego prototypu przyjęto Minecraft 1.21.1 i NeoForge 21.1.248: użytkownik polecił rozpoczęcie bez wskazania innej platformy. Jest to jawne założenie wykonawcze, nie wcześniejsza deklaracja użytkownika.
+To zapis pomysłów i decyzji użytkownika, a nie opis gotowego moda. Powstaje prototyp panelu gangów, obecnie wersja 0.1.41. 19 października użytkownik odłożył DarkPerazera i wrócił do Crime And Law. Zaakceptował rozpoczęcie od podstaw panelu gangów; obecnie doprecyzowuje jego wygląd. Dla pierwszego prototypu przyjęto Minecraft 1.21.1 i NeoForge 21.1.248: użytkownik polecił rozpoczęcie bez wskazania innej platformy. Jest to jawne założenie wykonawcze, nie wcześniejsza deklaracja użytkownika.
 
 Crime And Law jest nowym, osobnym modem. McArk pozostaje odłożony, zachowując cel odwzorowania ASA 1:1. Nie zmieniać projektu McArk w Crime And Law ani nie usuwać jego materiałów w ramach tej pracy.
 
@@ -828,3 +828,20 @@ Naprawiono zmianę motywu w pamięci mimo nieudanego zapisu oraz zachowanie
 starych szkiców/potwierdzeń po zmianie gangu. Wyniki i rzeczywiste granice
 testów opisuje `docs/VALIDATION_0.1.40.md`. Nie utożsamiać pełnego przeglądu
 źródeł z gwarancją braku każdego możliwego błędu.
+
+
+## Pierwsza uprawa i minigra 3D — 25 października, 0.1.41
+
+- Użytkownik doprecyzował, że własne fikcyjne produkty obejmą różne typy
+  i postacie, także proszki i kryształy. Uprawa jest pierwszą gałęzią,
+  a nie ograniczeniem zakresu całego moda.
+- Po wyborze najprostszej pierwszej części użytkownik zlecił pełną roślinę
+  z teksturami, podpowiedzią Z, wymaganymi specjalnymi nożycami i dopracowaną
+  minigrą zbierania liści w 3D. Pozwolił pracować samodzielnie podczas nieobecności.
+- Wykonano fikcyjną aurelię: pięć etapów, nasiona, modele, nożyce, sześć
+  osobnych liści, obrót/zoom, przytrzymanie i precyzyjne puszczenie, animację
+  odłączenia, odrost i zachowanie częściowego zbioru.
+- Nazwa aurelia, receptury, czasy i wytrzymałość narzędzia są roboczymi
+  decyzjami wykonawczymi pierwszej wersji; nie stanowią wzoru realnej produkcji.
+- Nagrody, zużycie narzędzia i rezerwacja rośliny są serwerowe.
+  Szczegóły gry i receptury: `docs/AURELIA.md`. Protokół 21, schemat gangów 4.

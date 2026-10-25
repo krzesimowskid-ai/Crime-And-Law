@@ -1,1 +1,9 @@
-{"key.crimeandlaw.gang":"Gang menu","key.categories.crimeandlaw":"Crime And Law"}
+{
+  "key.crimeandlaw.gang": "Gang menu",
+  "key.categories.crimeandlaw": "Crime And Law",
+  "block.crimeandlaw.aurelia": "Aurelia",
+  "item.crimeandlaw.aurelia_seeds": "Aurelia Seeds",
+  "item.crimeandlaw.aurelia_leaf": "Aurelia Leaf",
+  "item.crimeandlaw.pruning_shears": "Pruning Shears",
+  "key.crimeandlaw.harvest": "Harvest plant leaves"
+}

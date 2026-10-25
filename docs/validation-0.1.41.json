@@ -1,0 +1,89 @@
+{
+  "version": "0.1.41",
+  "date": "2026-10-25",
+  "base_commit": "f0f38e69000c826068fc3ecccef3d05cff68ccad",
+  "artifact": {
+    "file": "crimeandlaw-0.1.41.jar",
+    "size_bytes": 4124374,
+    "sha256": "b3dd9ca00b87d4465700d31e5dd40c9d2887314ca33fde4bb747adbd31e752d2",
+    "protocol": 21,
+    "nested_libraries_crc_ok": 15,
+    "smoke_classes": 0
+  },
+  "unit_tests": {
+    "tests": 181,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "suites": 33
+  },
+  "integrations": {
+    "visual": {
+      "reports": {
+        "visual.PASS": "Actual renderer: four framebuffer/GUI cases, six distinct 3D cut points, rotation and zoom, custom leaf texture, modeled shears and responsive panel.\n"
+      },
+      "screenshots": 8
+    },
+    "tcp": {
+      "reports": {
+        "security.PASS": "Server-thread checks: recipes, special-tool gate, wall/reach checks, foreign/stale token, wrong leaf, early/late timing, replay, closure, partial NBT, full creative inventory conservation.\n",
+        "rival.PASS": "Actual TCP reservation conflict denied without changing leaves.\n",
+        "restart.PASS": "Actual disk reload retains partial crop leaves, regrowth stage, exactly seven harvested leaves and seven durability wear.\n",
+        "owner.PASS": "Z prompt opens real 3D game; six physical hold/release snips over TCP, one leaf and one tool wear per cut, exhausted crop regrows.\n",
+        "recovery.PASS": "Real client waits three seconds for a simulated unprocessed cut, requests cancellation/state recovery and remains at zero rewards and zero wear.\n",
+        "server.PASS": "Actual two-client harvest, reservation isolation, six GUI cuts and hostile packet checks passed.\n"
+      },
+      "screenshots": 16
+    }
+  },
+  "source_files": [
+    {
+      "path": "src/main/java/pl/crimeandlaw/cultivation/AureliaCrop.java",
+      "sha256": "558839d27b034ce0782e36a5eb604da49f54a078fa27f5daea4a42526f6c3157"
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/cultivation/AureliaLeafItem.java",
+      "sha256": "36a7c2cc9f169bd8bdf38f8c21ded42462fd8d7c6c4628f43cf1f623b7d43064"
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/cultivation/AureliaPlant.java",
+      "sha256": "f3b492c6891e3ccea085340fc737c40fdc8f762d4055fc56a6f803fe9a464847"
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/cultivation/CultivationContent.java",
+      "sha256": "6fdac3f45f91ace7a9da4d0ee08a0757d241d7e451ae0ba9301bed53a21e479b"
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/cultivation/CultivationNetwork.java",
+      "sha256": "a86c2ad2f00fada5e4a9ad74a5c170e1a2d3bf08ba34c91e948d773ec4e9bc2e"
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/cultivation/HarvestController.java",
+      "sha256": "f9107bbd0c1e9c91303b9b58bfa5a3d527b6cb5594fe7668e4798abc2ad5ee38"
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/cultivation/PruningRules.java",
+      "sha256": "c446f6813d0ee5b1286e29981c6ee835ac6a606512b7a6808b5864c41bd09a42"
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/client/cultivation/AureliaLeafItemRenderer.java",
+      "sha256": "78c97dc3d281f58459b403a721318c656f83c7ae7177e9b8b06e8ae420ea126f"
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/client/cultivation/AureliaMesh.java",
+      "sha256": "aa438a4c3c4014b9a1c2245dcb70aea1f09d4dc0906071115c944cf88201a401"
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/client/cultivation/AureliaRenderer.java",
+      "sha256": "744487f12360866c9ba2f9d1b9677aa94cef998a17dae78e6189bff1c2ef1feb"
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/client/cultivation/CultivationClient.java",
+      "sha256": "f4f5a1eb2c1048d326f18fbc072af633869cb785fc269c5d1da817cdf50396b3"
+    },
+    {
+      "path": "src/main/java/pl/crimeandlaw/client/cultivation/HarvestScreen.java",
+      "sha256": "04f94a01eb3a0c560e92faea209b7e54a48c298f25d11b88899d52a2304f4ad2"
+    }
+  ]
+}

@@ -8,10 +8,14 @@ import org.lwjgl.opengl.GL12;
 import org.lwjgl.opengl.GL30;
 
 /** Build the minification chain once, rather than sampling four source pixels per GUI pixel. */
-final class SmoothImageTexture {
+public final class SmoothImageTexture {
     private SmoothImageTexture(){}
-    static DynamicTexture create(NativeImage image){
-        DynamicTexture texture=new DynamicTexture(image);
+    public static DynamicTexture create(NativeImage image){
+        return create(image,false);
+    }
+    public static DynamicTexture create(NativeImage image,boolean lockFilter){
+        // Entity render layers otherwise override the texture's filtering on every bind.
+        DynamicTexture texture=lockFilter?new DynamicTexture(image){@Override public void setFilter(boolean blur,boolean mipmap){super.setFilter(true,true);}}:new DynamicTexture(image);
         try{
             texture.bind();
             int levels=31-Integer.numberOfLeadingZeros(Math.max(image.getWidth(),image.getHeight()));

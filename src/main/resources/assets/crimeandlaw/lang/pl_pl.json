@@ -1,1 +1,9 @@
-{"key.crimeandlaw.gang":"Menu gangu","key.categories.crimeandlaw":"Crime And Law"}
+{
+  "key.crimeandlaw.gang": "Menu gangu",
+  "key.categories.crimeandlaw": "Crime And Law",
+  "block.crimeandlaw.aurelia": "Aurelia",
+  "item.crimeandlaw.aurelia_seeds": "Nasiona aurelii",
+  "item.crimeandlaw.aurelia_leaf": "Liść aurelii",
+  "item.crimeandlaw.pruning_shears": "Nożyce do przycinania",
+  "key.crimeandlaw.harvest": "Zbierz liście rośliny"
+}

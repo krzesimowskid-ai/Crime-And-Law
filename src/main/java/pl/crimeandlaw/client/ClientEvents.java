@@ -15,8 +15,15 @@ public final class ClientEvents {
     public static final KeyMapping OPEN=new KeyMapping("key.crimeandlaw.gang",InputConstants.Type.KEYSYM,GLFW.GLFW_KEY_G,"key.categories.crimeandlaw");
     @EventBusSubscriber(modid="crimeandlaw",value=Dist.CLIENT,bus=EventBusSubscriber.Bus.MOD)
     public static final class Registration {
-        @SubscribeEvent public static void keys(RegisterKeyMappingsEvent event){event.register(OPEN);}
-        @SubscribeEvent public static void setup(FMLClientSetupEvent event){event.enqueueWork(()->{GangNetwork.clockReceiver=p->HudClock.INSTANCE.receive(p.epochMillis(),p.zone());GangNetwork.moneyReceiver=HudMoney::receive;GangNetwork.clientReceiver=ClientState::receive;GangNetwork.terrainReceiver=TerrainClient::receive;GangNetwork.captureReceiver=CaptureClient::receive;});}
+        @SubscribeEvent public static void keys(RegisterKeyMappingsEvent event){event.register(OPEN);event.register(pl.crimeandlaw.client.cultivation.CultivationClient.HARVEST);}
+        @SubscribeEvent public static void renderers(EntityRenderersEvent.RegisterRenderers event){event.registerBlockEntityRenderer(pl.crimeandlaw.cultivation.CultivationContent.PLANT.get(),pl.crimeandlaw.client.cultivation.AureliaRenderer::new);}
+        @SubscribeEvent public static void reload(RegisterClientReloadListenersEvent event){event.registerReloadListener((net.minecraft.server.packs.resources.ResourceManagerReloadListener)manager->{
+            try(var in=manager.open(pl.crimeandlaw.client.cultivation.AureliaMesh.LEAF)){
+                var image=com.mojang.blaze3d.platform.NativeImage.read(in);
+                Minecraft.getInstance().getTextureManager().register(pl.crimeandlaw.client.cultivation.AureliaMesh.LEAF,SmoothImageTexture.create(image,true));
+            }catch(java.io.IOException error){throw new java.io.UncheckedIOException(error);}
+        });}
+        @SubscribeEvent public static void setup(FMLClientSetupEvent event){event.enqueueWork(()->{pl.crimeandlaw.cultivation.CultivationNetwork.receiver=pl.crimeandlaw.client.cultivation.CultivationClient::receive;GangNetwork.clockReceiver=p->HudClock.INSTANCE.receive(p.epochMillis(),p.zone());GangNetwork.moneyReceiver=HudMoney::receive;GangNetwork.clientReceiver=ClientState::receive;GangNetwork.terrainReceiver=TerrainClient::receive;GangNetwork.captureReceiver=CaptureClient::receive;});}
     }
     @EventBusSubscriber(modid="crimeandlaw",value=Dist.CLIENT)
     public static final class Gameplay {

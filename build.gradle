@@ -2,13 +2,14 @@ plugins {
     id 'java-library'
     id 'net.neoforged.moddev' version '2.0.148'
 }
-version = '0.1.40'
+version = '0.1.41'
 group = 'pl.crimeandlaw'
 base { archivesName = 'crimeandlaw' }
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 repositories { mavenCentral() }
 // Opt-in graphical check with fixture data; excluded from normal builds/JARs.
 def financeSmoke = providers.gradleProperty('financeSmoke').isPresent()
+if (providers.gradleProperty('harvestSmoke').isPresent()) sourceSets.main.java.srcDir('src/harvestTest/java')
 if (financeSmoke) sourceSets.main.java.srcDir('src/financeTest/java')
 if (providers.gradleProperty('hudSmoke').isPresent()) sourceSets.main.java.srcDir('src/hudTest/java')
 def uiSmoke = providers.gradleProperty('uiSmoke').isPresent()
@@ -155,6 +156,7 @@ tasks.named('jar') {
         'pl/crimeandlaw/client/CaptureClientSmoke*', 'pl/crimeandlaw/territory/CaptureServerSmoke*',
         'pl/crimeandlaw/client/FinanceClientSmoke*', 'pl/crimeandlaw/gang/FinanceServerSmoke*'
     exclude 'pl/crimeandlaw/client/CaptureHudSmoke*'
+    exclude 'pl/crimeandlaw/cultivation/HarvestServerSmoke*', 'pl/crimeandlaw/client/cultivation/HarvestClientSmoke*'
 }
 tasks.named('wrapper') { distributionType = Wrapper.DistributionType.BIN }
 

@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "age=0": {
+      "model": "crimeandlaw:block/aurelia"
+    },
+    "age=1": {
+      "model": "crimeandlaw:block/aurelia"
+    },
+    "age=2": {
+      "model": "crimeandlaw:block/aurelia"
+    },
+    "age=3": {
+      "model": "crimeandlaw:block/aurelia"
+    },
+    "age=4": {
+      "model": "crimeandlaw:block/aurelia"
+    }
+  }
+}

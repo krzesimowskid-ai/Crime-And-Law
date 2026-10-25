@@ -7,5 +7,5 @@ import pl.crimeandlaw.network.GangNetwork;
 @Mod(CrimeAndLaw.ID)
 public final class CrimeAndLaw {
     public static final String ID="crimeandlaw";
-    public CrimeAndLaw(IEventBus bus){bus.addListener(GangNetwork::register);pl.crimeandlaw.territory.TerrainOrigins.TYPES.register(bus);}
+    public CrimeAndLaw(IEventBus bus){bus.addListener(GangNetwork::register);pl.crimeandlaw.territory.TerrainOrigins.TYPES.register(bus);pl.crimeandlaw.cultivation.CultivationContent.register(bus);}
 }
