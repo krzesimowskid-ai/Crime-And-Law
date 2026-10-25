@@ -52,6 +52,7 @@ public final class FinanceServerSmoke {
             if(clockStage==0&&Files.exists(OUT.resolve("clock-change.ready"))){var clock=pl.crimeandlaw.territory.CaptureSavedData.get(event.getServer());clock.rules=clock.rules.zone("Pacific/Auckland");clock.setDirty();clockStage=1;}
             if(clockStage==1&&Files.exists(OUT.resolve("clock-restore.ready"))){var clock=pl.crimeandlaw.territory.CaptureSavedData.get(event.getServer());clock.rules=clock.rules.zone("Europe/Warsaw");clock.setDirty();clockStage=2;}
             if(!Files.exists(OUT.resolve("owner.PASS"))||!Files.exists(OUT.resolve("member.PASS")))return;
+            if(Boolean.getBoolean("crimeandlaw.financeAudit")&&!FinanceServerSmokeAudit.run(event.getServer(),OUT))return;
             var saved=GangSavedData.get(event.getServer());verify(saved.directory);saved.setDirty();event.getServer().saveEverything(true,true,true);
             Files.writeString(OUT.resolve("server.PASS"),"TCP payouts, denied operations, replay rejection and conserved bank/treasury total of $100000 plus $1802 cash verified.\n");done=true;event.getServer().halt(false);
         }catch(Throwable error){fail(event.getServer(),error);}
@@ -62,7 +63,7 @@ public final class FinanceServerSmoke {
         check(g.blacklist.entries().isEmpty()&&g.blacklist.history().size()==2,"Blacklist add/remove and history persist");
         check(d.finances.wallet(OWNER)==19500,"Owner account");check(d.finances.wallet(MEMBER)==500,"Member account");
         check(d.finances.wallet(FRIEND)==300,"Offline recipient account");check(d.finances.balance(g.id)==79700,"Gang account");
-        check(d.finances.history(g.id).size()==7,"Only successful entries are in the ledger");check(g.history.size()==4,"Public register includes the blacklist removal event");
+        check(d.finances.history(g.id).size()==(Boolean.getBoolean("crimeandlaw.financeAudit")?13:7),"Only successful entries are in the ledger");check(g.history.size()==(Boolean.getBoolean("crimeandlaw.financeAudit")?6:4),"Public register includes the blacklist removal event");
         check(GangDirectory.allowed(g,MEMBER,GangDirectory.Permission.DEPOSIT_FUNDS)&&!GangDirectory.allowed(g,MEMBER,GangDirectory.Permission.PAY_BONUSES),"Separate rank permissions persist");
     }
     private static void check(boolean ok,String message){if(!ok)throw new AssertionError(message);}

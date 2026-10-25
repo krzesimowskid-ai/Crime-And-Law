@@ -1,0 +1,23 @@
+{
+  "version": "0.1.39",
+  "protocol": 20,
+  "schema": 4,
+  "junit": {
+    "tests": 175,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "finance_tcp": "PASS",
+  "finance_server_audit": "PASS",
+  "finance_timeout_simulation": "PASS",
+  "clean_restart": "PASS",
+  "capture_server_fake_players": "PASS",
+  "security_renderer_cases": 4,
+  "bank_and_treasury_total": 100000,
+  "cash_total": 1802,
+  "finance_history_entries": 13,
+  "public_history_entries": 6,
+  "jar_bytes": 2130208,
+  "sha256": "ff03f8b675dc62860bc012922903b653c615a01466e4319a875f08c7745e2a8d"
+}

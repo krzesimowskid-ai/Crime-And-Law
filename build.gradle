@@ -2,7 +2,7 @@ plugins {
     id 'java-library'
     id 'net.neoforged.moddev' version '2.0.148'
 }
-version = '0.1.38'
+version = '0.1.39'
 group = 'pl.crimeandlaw'
 base { archivesName = 'crimeandlaw' }
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
@@ -33,6 +33,7 @@ neoForge {
                 jvmArgument '-Xmx1300m'
                 systemProperty 'crimeandlaw.financeSmoke', 'true'
                 systemProperty 'crimeandlaw.financeRestart', providers.gradleProperty('financeRestart').getOrElse('false')
+                systemProperty 'crimeandlaw.financeAudit', providers.gradleProperty('financeAudit').getOrElse('false')
                 systemProperty 'crimeandlaw.financeOutput', file('build/finance-smoke').absolutePath
             }
             ['owner', 'member'].each { financeRole ->
@@ -40,6 +41,7 @@ neoForge {
                     client(); gameDirectory = file('run-finance-' + financeRole)
                     jvmArgument '-Xmx1300m'
                     systemProperty 'crimeandlaw.financeRole', financeRole
+                    systemProperty 'crimeandlaw.financeAudit', providers.gradleProperty('financeAudit').getOrElse('false')
                     systemProperty 'crimeandlaw.financeOutput', file('build/finance-smoke').absolutePath
                     def user = financeRole == 'owner' ? 'Owner29' : 'Member29'
                     programArguments.addAll '--username', user, '--uuid', java.util.UUID.nameUUIDFromBytes(('OfflinePlayer:' + user).getBytes('UTF-8')).toString(), '--width', '1600', '--height', '900'

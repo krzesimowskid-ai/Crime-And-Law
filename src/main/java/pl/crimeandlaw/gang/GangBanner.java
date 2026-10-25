@@ -12,4 +12,5 @@ public record GangBanner(String image,int color,int opacity) {
         color&=0xFFFFFF;opacity=Math.clamp(opacity,0,255);
     }
     public static String validateImage(String image){return GangLogo.validateImage(image,READ_WIDTH,READ_HEIGHT,MAX_BYTES,"Baner",WIDTH,HEIGHT);}
+    public static String validateUpload(String image){return GangLogo.validateImage(image,WIDTH,HEIGHT,GangLogo.MAX_BYTES,"Baner");}
 }

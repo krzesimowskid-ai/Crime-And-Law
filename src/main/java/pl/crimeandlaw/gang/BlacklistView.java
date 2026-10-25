@@ -8,7 +8,7 @@ public final class BlacklistView {
     public record Query(boolean history,String search,int page){
         public static final Query DEFAULT=new Query(false,"",0);
         public Query {if(search==null||search.length()>64)throw new IllegalArgumentException("Zbyt długie wyszukiwanie.");page=Math.max(0,page);}
-        public Query update(JsonObject request){return new Query(request.has("history")?request.get("history").getAsBoolean():history,request.has("search")?request.get("search").getAsString():search,request.has("page")?request.get("page").getAsBigDecimal().intValueExact():page);}
+        public Query update(JsonObject request){return new Query(pl.crimeandlaw.network.ActionFields.flag(request,"history",history),pl.crimeandlaw.network.ActionFields.text(request,"search",search),pl.crimeandlaw.network.ActionFields.integer(request,"page",page));}
     }
     private BlacklistView(){}
     public static JsonObject snapshot(GangDirectory directory,UUID viewer,Query query){

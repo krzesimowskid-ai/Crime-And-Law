@@ -26,6 +26,8 @@ final class PermissionList extends AbstractWidget {
     private final Map<Permission,Tooltip> tooltips=new EnumMap<>(Permission.class);
     private int selected;
     private RegisterScrollBar scrollbar;
+    private Predicate<Permission> grantable=p->true;
+    PermissionList grantable(Predicate<Permission> predicate){grantable=predicate;return this;}
     void scrollbar(RegisterScrollBar scrollbar){this.scrollbar=scrollbar;updateScrollbar();}
     private void updateScrollbar(){if(scrollbar!=null){scrollbar.active=state.scroll.maximum()>0;scrollbar.visible=scrollbar.active;}}
     PermissionList(int x,int y,int width,int height,State state,Set<Permission> values,BooleanSupplier editable,Supplier<Theme> theme){
@@ -40,7 +42,7 @@ final class PermissionList extends AbstractWidget {
         updateScrollbar();
     }
     private int index(double y){return (int)((y-getY()+state.scroll.offset())/ROW);}
-    private boolean enabled(Permission p){return p.available()&&editable.getAsBoolean();}
+    private boolean enabled(Permission p){return p.available()&&editable.getAsBoolean()&&grantable.test(p);}
     @Override public void onClick(double x,double y,int button){int i=index(y);if(i>=0&&i<filtered.size()){selected=i;toggle();}}
     private void toggle(){if(filtered.isEmpty())return;var p=filtered.get(selected);if(enabled(p)&&!values.remove(p))values.add(p);}
     @Override protected void renderWidget(GuiGraphics g,int mx,int my,float delta){
@@ -61,7 +63,7 @@ final class PermissionList extends AbstractWidget {
             if(!p.available())g.drawString(font,"Wkrótce",x+width-78,y+8,0xFF756E7E,false);
             int sx=x+width-29,sy=y+7;g.fill(sx,sy,sx+23,sy+10,checked?theme.get().borderArgb():0xFF484551);
             int knob=sx+(checked?14:2);g.fill(knob,sy+2,knob+7,sy+8,enabled?0xFFF2EDF3:0xFF77717D);
-            if(hover)tooltip=tooltips.get(p);
+            if(hover)tooltip=p.available()&&!grantable.test(p)?Tooltip.create(Component.literal(p.label+" — Nie możesz nadać uprawnienia, którego nie posiadasz.")):tooltips.get(p);
         }
         if(filtered.isEmpty())g.drawString(font,"Brak pasujących uprawnień.",getX()+6,getY()+8,0xFFAAA3B3,false);
         g.disableScissor();setTooltip(tooltip);

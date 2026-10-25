@@ -15,8 +15,8 @@ import pl.crimeandlaw.gang.*;
 import pl.crimeandlaw.gang.GangDirectory.*;
 
 public final class GangNetwork {
-    public static final int ACTION_MAX_JSON=Math.max(GangLogo.MAX_ENCODED_LENGTH,GangBanner.MAX_ENCODED_LENGTH)+1024;
-    public static final int STATE_MAX_JSON=GangLogo.MAX_ENCODED_LENGTH+GangBanner.MAX_ENCODED_LENGTH+200_000;
+    public static final int ACTION_MAX_JSON=GangLogo.MAX_ENCODED_LENGTH+1024;
+    public static final int STATE_MAX_JSON=2*GangLogo.MAX_ENCODED_LENGTH+200_000;
     private static final Gson JSON=new Gson();
     public static Consumer<Money> moneyReceiver=ignored->{};
     public static Consumer<Clock> clockReceiver=ignored->{};
@@ -30,13 +30,14 @@ public final class GangNetwork {
     private static final Map<ServerPlayer,View> views=new WeakHashMap<>();
     private static final Map<ServerPlayer,Rate> rates=new WeakHashMap<>();
     private static final Map<ServerPlayer,FinanceView.Query> financeViews=new WeakHashMap<>();
-    private static final Map<ServerPlayer,String> financeTokens=new WeakHashMap<>();
+    private record FinanceToken(UUID gang,String value){}
+    private static final Map<ServerPlayer,FinanceToken> financeTokens=new WeakHashMap<>();
     public static final int ACTION_MAX_BYTES=ACTION_MAX_JSON+2048,STATE_MAX_BYTES=STATE_MAX_JSON+400_000;
     private static final Map<ServerPlayer,MessageChunks.Assembler> uploads=new WeakHashMap<>();
     private static final MessageChunks.Assembler download=new MessageChunks.Assembler();
     public static void expireUploads(){long now=System.nanoTime();uploads.entrySet().removeIf(entry->entry.getValue().expire(now));}
     private record View(String query,int page,int memberPage,int requestPage,int historyPage){}
-    private static final class Rate {long second;int requests;}
+    private static final class Rate {long second,lastImage;int requests;}
     public record Action(String json) implements CustomPacketPayload {
         public static final Type<Action> TYPE=new Type<>(ResourceLocation.fromNamespaceAndPath("crimeandlaw","action"));
         public static final StreamCodec<RegistryFriendlyByteBuf,Action> CODEC=new StreamCodec<>(){
@@ -110,7 +111,7 @@ public final class GangNetwork {
         @Override public Type<? extends CustomPacketPayload> type(){return TYPE;}
     }
     public static void register(RegisterPayloadHandlersEvent event){
-        var registrar=event.registrar("19");
+        var registrar=event.registrar("20");
         registrar.playToServer(Action.TYPE,Action.CODEC,GangNetwork::handle);
         registrar.playToClient(Money.TYPE,Money.CODEC,(p,c)->moneyReceiver.accept(p));
         registrar.playToClient(Clock.TYPE,Clock.CODEC,(p,c)->clockReceiver.accept(p));
@@ -155,8 +156,14 @@ public final class GangNetwork {
     private static void handleAction(Action packet,IPayloadContext context){
         if(!(context.player() instanceof ServerPlayer player))return;
         GangSavedData saved=GangSavedData.get(player.server);GangDirectory d=saved.directory;UUID actor=player.getUUID();
+        String operationId="";
         try{
             JsonObject a=JsonParser.parseString(packet.json).getAsJsonObject();String action=text(a,"action");
+            String proposedId=text(a,"operationId");
+            if(!proposedId.isEmpty()){
+                if(proposedId.length()!=36)throw new IllegalArgumentException("Nieprawidłowy identyfikator żądania.");
+                UUID.fromString(proposedId);operationId=proposedId;
+            }
             if(action.startsWith("capture_")||action.startsWith("marker_")){
                 var key=pl.crimeandlaw.territory.TerrainKey.at(player.serverLevel().dimension().location().toString(),player.getBlockX(),player.getBlockZ());
                 try{
@@ -166,7 +173,7 @@ public final class GangNetwork {
                         var viewport=new pl.crimeandlaw.territory.TerrainViewport(a.has("centerX")?exactInteger(a,"centerX"):key.x(),a.has("centerZ")?exactInteger(a,"centerZ"):key.z());
                         pl.crimeandlaw.territory.CaptureController.watch(player,key,viewport);
                     }
-                    else if(action.equals("marker_set")||action.equals("marker_remove"))pl.crimeandlaw.territory.CaptureController.marker(player,key,a.has("shared")&&a.get("shared").getAsBoolean(),action.equals("marker_set")?exactInteger(a,"color"):null);
+                    else if(action.equals("marker_set")||action.equals("marker_remove"))pl.crimeandlaw.territory.CaptureController.marker(player,key,ActionFields.flag(a,"shared",false),action.equals("marker_set")?exactInteger(a,"color"):null);
                     else pl.crimeandlaw.territory.CaptureController.action(player,action,key);
                 }catch(IllegalArgumentException error){pl.crimeandlaw.territory.CaptureController.respond(player,key,error.getMessage());}
                 return;
@@ -196,14 +203,19 @@ public final class GangNetwork {
                 if(d.of(actor)==null)throw new IllegalArgumentException("Najpierw dołącz do gangu.");
                 activePanels.put(player,"finances");financeViews.put(player,financeViews.getOrDefault(player,FinanceView.Query.DEFAULT).update(a));sendState(player,"");return;
             }
+            if(action.equals("finance_recover")){
+                FinanceToken token=financeTokens.get(player);
+                if(token!=null&&token.value().equals(text(a,"financeToken")))financeTokens.remove(player);
+                sendState(player,"Odświeżono salda. Sprawdź historię przed ponowną transakcją.");return;
+            }
             if(action.equals("blacklist_view")){
                 if(d.of(actor)==null)throw new IllegalArgumentException("Najpierw dołącz do gangu.");
                 activePanels.put(player,"blacklist");blacklistViews.put(player,blacklistViews.getOrDefault(player,BlacklistView.Query.DEFAULT).update(a));sendState(player,"");return;
             }
             if(action.equals("goals_view")){if(d.of(actor)==null)throw new IllegalArgumentException("Najpierw dołącz do gangu.");sendState(player,"");return;}
             if(Set.of("finance_deposit","finance_withdraw","finance_pay").contains(action)){
-                String token=financeTokens.get(player);
-                if(token==null||!token.equals(text(a,"financeToken")))throw new IllegalArgumentException("Odśwież dane przed następną transakcją.");
+                FinanceToken token=financeTokens.get(player);Gang current=d.of(actor);
+                if(token==null||current==null||!Objects.equals(token.gang(),current.id)||!token.value().equals(text(a,"financeToken")))throw new IllegalArgumentException("Odśwież dane przed następną transakcją.");
                 financeTokens.remove(player); // A repeated packet cannot execute the same payout twice.
             }
             switch(action){
@@ -221,7 +233,11 @@ public final class GangNetwork {
                 }
                 case "blacklist_add" -> d.blacklistAdd(actor,d.resolvePlayer(text(a,"player")),text(a,"reason"));
                 case "blacklist_remove" -> d.blacklistRemove(actor,uuid(a,"target"));
-                case "create" -> d.create(actor,player.getGameProfile().getName(),text(a,"name"),GangLogo.validate(text(a,"logo")));
+                case "create" -> {
+                    if(d.of(actor)!=null)throw new IllegalArgumentException("Należysz już do gangu.");
+                    imageBudget(player,text(a,"logo"));
+                    d.create(actor,player.getGameProfile().getName(),text(a,"name"),GangLogo.validate(text(a,"logo")));
+                }
                 case "request" -> d.request(actor,player.getGameProfile().getName(),uuid(a,"id"));
                 case "accept" -> {
                     UUID target=uuid(a,"target");d.accept(actor,target);
@@ -233,16 +249,23 @@ public final class GangNetwork {
                 case "transfer" -> d.transfer(actor,uuid(a,"target"));
                 case "role" -> {
                     Set<Permission> permissions=EnumSet.noneOf(Permission.class);
-                    for(Permission p:Permission.values())if(a.has(p.name())&&a.get(p.name()).getAsBoolean())permissions.add(p);
+                    for(Permission p:Permission.values())if(ActionFields.flag(a,p.name(),false))permissions.add(p);
                     d.role(actor,text(a,"role"),text(a,"name"),permissions);
                 }
                 case "assign" -> d.assign(actor,uuid(a,"target"),text(a,"role"));
                 case "reorder_roles" -> {
-                    List<String> order=new ArrayList<>();for(JsonElement id:a.getAsJsonArray("order"))order.add(id.getAsString());d.reorderRoles(actor,order);
+                    if(!a.has("order")||!a.get("order").isJsonArray()||a.getAsJsonArray("order").size()>GangDirectory.MAX_ROLES)throw new IllegalArgumentException("Nieprawidłowa kolejność rang.");
+                    List<String> order=new ArrayList<>();for(JsonElement id:a.getAsJsonArray("order")){
+                        if(!id.isJsonPrimitive()||!id.getAsJsonPrimitive().isString())throw new IllegalArgumentException("Nieprawidłowa ranga.");
+                        order.add(id.getAsString());
+                    }d.reorderRoles(actor,order);
                 }
                 case "theme" -> d.theme(actor,new Theme(integer(a,"background",Theme.DEFAULT.background()),integer(a,"border",Theme.DEFAULT.border()),integer(a,"opacity",235)));
-                case "banner" -> d.banner(actor,new GangBanner(text(a,"image"),integer(a,"color",0x15161C),integer(a,"opacity",255)));
-                case "logo" -> d.logo(actor,GangLogo.validate(text(a,"logo")));
+                case "banner" -> {
+                    authorizeImage(d,actor);String image=text(a,"image");imageBudget(player,image);
+                    d.bannerUpload(actor,new GangBanner(image,integer(a,"color",0x15161C),integer(a,"opacity",255)));
+                }
+                case "logo" -> {authorizeImage(d,actor);String logo=text(a,"logo");imageBudget(player,logo);d.logo(actor,GangLogo.validate(logo));}
                 case "map_color" -> d.mapColor(actor,exactInteger(a,"color"));
                 default -> throw new IllegalArgumentException("Nieznana czynność.");
             }
@@ -251,23 +274,29 @@ public final class GangNetwork {
             saved.setDirty();syncMoney(player.server);
             // Every viewer receives authoritative membership/permissions, including kicked members.
             for(ServerPlayer online:player.server.getPlayerList().getPlayers()){
-                if(online==player || views.containsKey(online))sendState(online,online==player?"Zapisano.":"");
+                if(online==player || views.containsKey(online))sendState(online,online==player?"Zapisano.":"",null,online==player?operationId:"");
             }
-        }catch(IllegalArgumentException exception){sendState(player,exception.getMessage()==null?"Nieprawidłowe dane.":exception.getMessage());}
-        catch(RuntimeException exception){sendState(player,"Nie udało się wykonać czynności. Sprawdź dane i spróbuj ponownie.");}
+        }catch(IllegalArgumentException exception){sendState(player,exception.getMessage()==null?"Nieprawidłowe dane.":exception.getMessage(),null,operationId);}
+        catch(RuntimeException exception){sendState(player,"Nie udało się wykonać czynności. Sprawdź dane i spróbuj ponownie.",null,operationId);}
     }
     public static void sendState(ServerPlayer player,String message){
         sendState(player,message,null);
     }
     private static void sendState(ServerPlayer player,String message,UUID disconnected){
+        sendState(player,message,disconnected,"");
+    }
+    private static void sendState(ServerPlayer player,String message,UUID disconnected,String operationId){
         GangDirectory d=GangSavedData.get(player.server).directory;
         View view=views.computeIfAbsent(player,p->new View("",0,0,0,0));
         JsonObject result=new JsonObject();result.addProperty("player",player.getUUID().toString());result.addProperty("message",message);
+        if(!operationId.isEmpty())result.addProperty("operationId",operationId);
         result.addProperty("walletBalance",d.finances.bank(player.getUUID()));
         result.addProperty("bankBalance",d.finances.bank(player.getUUID()));result.addProperty("cashBalance",d.finances.cash(player.getUUID()));
         sendMoney(player,false);
-        result.addProperty("financeToken",financeTokens.computeIfAbsent(player,p->UUID.randomUUID().toString()));
         Gang current=d.of(player.getUUID());
+        UUID gangId=current==null?null:current.id;
+        FinanceToken token=financeTokens.compute(player,(p,old)->old!=null&&Objects.equals(old.gang(),gangId)?old:new FinanceToken(gangId,UUID.randomUUID().toString()));
+        result.addProperty("financeToken",token.value());
         if(current!=null){
             result.addProperty("gangBalance",d.finances.balance(current.id));
             result.add("goals",d.goals.snapshot(current.id,java.time.Instant.now(),java.time.ZoneId.of(pl.crimeandlaw.territory.CaptureSavedData.get(player.server).rules.zone())));
@@ -312,8 +341,16 @@ public final class GangNetwork {
         var gang=GangSavedData.get(player.server).directory.of(player.getUUID());if(gang==null)return;
         for(var viewer:player.server.getPlayerList().getPlayers())if(viewer!=player&&gang.members.containsKey(viewer.getUUID())&&views.containsKey(viewer))sendState(viewer,"",joined?null:player.getUUID());
     }
-    private static String text(JsonObject a,String key){return a.has(key)&&!a.get(key).isJsonNull()?a.get(key).getAsString():"";}
-    private static int integer(JsonObject a,String key,int fallback){return a.has(key)?a.get(key).getAsInt():fallback;}
+    private static void authorizeImage(GangDirectory directory,UUID actor){
+        if(!GangDirectory.allowed(directory.of(actor),actor,Permission.MANAGE_THEME))throw new IllegalArgumentException("Nie masz uprawnień do tej czynności.");
+    }
+    private static void imageBudget(ServerPlayer player,String image){
+        if(image.isEmpty())return;Rate rate=rates.computeIfAbsent(player,p->new Rate());long now=System.nanoTime();
+        if(rate.lastImage!=0&&now-rate.lastImage<2_000_000_000L)throw new IllegalArgumentException("Poczekaj chwilę przed następną zmianą obrazu.");
+        rate.lastImage=now;
+    }
+    private static String text(JsonObject a,String key){return ActionFields.text(a,key,"");}
+    private static int integer(JsonObject a,String key,int fallback){return ActionFields.integer(a,key,fallback);}
     private static int exactInteger(JsonObject a,String key){
         if(!a.has(key)||!a.get(key).isJsonPrimitive()||!a.getAsJsonPrimitive(key).isNumber())
             throw new IllegalArgumentException("Nieprawidłowa pozycja mapy.");

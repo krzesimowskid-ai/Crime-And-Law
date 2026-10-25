@@ -239,10 +239,10 @@ public final class GangScreen extends Screen {
         }))).active=can(Permission.MANAGE_ROLES)&&g.roles.size()<GangDirectory.MAX_ROLES;
         Role current=g.roles.get(selectedRole);
         if(!selectedRole.equals(roleDraftFor)&&current!=null){roleDraftFor=selectedRole;roleName=current.name;rolePermissions=current.permissions.isEmpty()?EnumSet.noneOf(Permission.class):EnumSet.copyOf(current.permissions);}
-        field(rx,cy+26,cw-listWidth-12,24,roleName,v->{roleName=v;if(saveRoleButton!=null)saveRoleButton.active=can(Permission.MANAGE_ROLES)&&!selectedRole.equals("leader")&&validName(v,2);}).active=can(Permission.MANAGE_ROLES)&&!selectedRole.equals("leader");
+        field(rx,cy+26,cw-listWidth-12,24,roleName,v->{roleName=v;if(saveRoleButton!=null)saveRoleButton.active=GangDirectory.canEditRole(gang(),ClientState.player(),selectedRole)&&validName(v,2);}).active=GangDirectory.canEditRole(gang(),ClientState.player(),selectedRole);
         int filterY=cy+52,editorWidth=cw-listWidth-12,groupWidth=Math.min(112,editorWidth/2);
         var catalog=new PermissionList(rx,cy+78,editorWidth-14,top+h-78-(cy+78),permissionState,rolePermissions,
-            ()->can(Permission.MANAGE_ROLES)&&!selectedRole.equals("leader"),this::theme);
+            ()->GangDirectory.canEditRole(gang(),ClientState.player(),selectedRole),this::theme).grantable(this::can);
         var group=button(rx,filterY,groupWidth,permissionState.group.label+" ▸",b->{permissionState.nextGroup();b.setMessage(Component.literal(permissionState.group.label+" ▸"));catalog.filter();});
         group.setTooltip(Tooltip.create(Component.literal("Zmień grupę uprawnień")));
         field(rx+groupWidth+6,filterY,editorWidth-groupWidth-6,64,permissionState.query,v->{permissionState.query=v;permissionState.scroll.reset();catalog.filter();}).setHint(Component.literal("Szukaj…"));
@@ -250,7 +250,7 @@ public final class GangScreen extends Screen {
         catalog.scrollbar(addRenderableWidget(new RegisterScrollBar(rx+editorWidth-10,cy+78,catalog.getHeight(),permissionState.scroll,this::theme,"Przewijanie uprawnień")));
         saveRoleButton=button(rx,top+h-48,editorWidth,"Zapisz rangę",b->{JsonObject a=new JsonObject();a.addProperty("role",selectedRole);a.addProperty("name",roleName);
             for(Permission p:Permission.values())a.addProperty(p.name(),p.available()&&rolePermissions.contains(p));send("role",a);
-        });saveRoleButton.active=can(Permission.MANAGE_ROLES)&&!selectedRole.equals("leader")&&validName(roleName,2);
+        });saveRoleButton.active=GangDirectory.canEditRole(gang(),ClientState.player(),selectedRole)&&validName(roleName,2);
     }
 
     private void buildMembers(){
@@ -289,10 +289,11 @@ public final class GangScreen extends Screen {
                 }else{
                     label(rx,y+5,member.name);label(rx,y+23,"Ranga: "+(assigned==null?"Członek":assigned.name),0xFFAAAAB7);
                     button(rx,y+49,cw-listWidth-16,"Zmień rangę",b->{
-                        List<Role> roles=g.roles.values().stream().filter(r->!r.id.equals("leader")).toList();
+                        List<Role> roles=g.roles.values().stream().filter(r->GangDirectory.canAssignRole(g,ClientState.player(),selected,r.id)).toList();
+                        if(roles.isEmpty())return;
                         int index=0;for(int i=0;i<roles.size();i++)if(roles.get(i).id.equals(member.role))index=i;
                         JsonObject a=new JsonObject();a.addProperty("target",selectedMember);a.addProperty("role",roles.get((index+1)%roles.size()).id);send("assign",a);
-                    }).active=can(Permission.ASSIGN_ROLES)&&!g.owner.equals(selected);
+                    }).active=g.roles.values().stream().anyMatch(r->!r.id.equals(member.role)&&GangDirectory.canAssignRole(g,ClientState.player(),selected,r.id));
                     button(rx,y+73,cw-listWidth-16,"Usuń z gangu",b->confirm("Usunąć członka?",member.name,()->target("kick",selectedMember))).active=can(Permission.MANAGE_MEMBERS)&&!g.owner.equals(selected)&&!selected.equals(ClientState.player());
                     button(rx,y+97,cw-listWidth-16,"Przekaż przywództwo",b->confirm("Przekazać przywództwo?","Nowy lider: "+member.name,()->target("transfer",selectedMember))).active=isLeader()&&!g.owner.equals(selected);
                 }

@@ -11,6 +11,16 @@ import pl.crimeandlaw.client.*;
 import pl.crimeandlaw.gang.GangDirectory.Permission;
 
 class GangBannerTest {
+    @Test void newUploadsHaveCurrentDimensionsWhileLegacyWorldImagesStillLoad()throws Exception{
+        String wide=Base64.getEncoder().encodeToString(LogoImages.png(new BufferedImage(2049,16,BufferedImage.TYPE_INT_ARGB)));
+        assertThrows(IllegalArgumentException.class,()->GangBanner.validateUpload(wide));
+        assertFalse(GangBanner.validateImage(wide).isEmpty());
+        var d=new GangDirectory();UUID owner=new UUID(39,1);var gang=d.create(owner,"Owner","Obraz audytu","");String before=d.toJson();
+        assertThrows(IllegalArgumentException.class,()->d.bannerUpload(owner,new GangBanner(wide,1,255)));assertEquals(before,d.toJson());
+        String current=Base64.getEncoder().encodeToString(LogoImages.png(new BufferedImage(2048,512,BufferedImage.TYPE_INT_ARGB)));
+        d.bannerUpload(owner,new GangBanner(current,0x123456,177));assertEquals(177,gang.banner.opacity());
+        assertEquals(gang.banner,GangDirectory.fromJson(d.toJson()).of(owner).banner);
+    }
     @Test void wideCropClampsAtEverySourceEdgeWithoutStretching(){
         for(int[] size:new int[][]{{80,640},{640,80},{256,256}}){
             var crop=new LogoCrop(size[0],size[1],4);crop.zoom(8);crop.pan(1e8,-1e8);

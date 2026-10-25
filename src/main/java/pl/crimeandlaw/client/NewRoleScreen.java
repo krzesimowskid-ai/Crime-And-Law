@@ -22,7 +22,9 @@ final class NewRoleScreen extends MenuDialog {
     @Override protected void build(){
         name=addRenderableWidget(new EditBox(font,left+22,top+61,panelWidth-44,18,Component.literal("Nazwa rangi")));
         name.setMaxLength(24);name.setValue(draftName);name.setResponder(value->{draftName=value;updateSave();});
-        var catalog=new PermissionList(left+22,top+140,panelWidth-58,162,catalogState,permissions,()->true,this::theme);
+        var catalog=new PermissionList(left+22,top+140,panelWidth-58,162,catalogState,permissions,
+            ()->pl.crimeandlaw.gang.GangDirectory.allowed(ClientState.gang(),ClientState.player(),Permission.MANAGE_ROLES),this::theme)
+            .grantable(p->pl.crimeandlaw.gang.GangDirectory.allowed(ClientState.gang(),ClientState.player(),p));
         button(left+22,top+110,150,catalogState.group.label+" ▸",b->{catalogState.nextGroup();b.setMessage(Component.literal(catalogState.group.label+" ▸"));catalog.filter();});
         var search=addRenderableWidget(new EditBox(font,left+180,top+110,panelWidth-202,20,Component.literal("Szukaj uprawnienia")));
         search.setMaxLength(64);search.setValue(catalogState.query);search.setHint(Component.literal("Szukaj uprawnienia…"));

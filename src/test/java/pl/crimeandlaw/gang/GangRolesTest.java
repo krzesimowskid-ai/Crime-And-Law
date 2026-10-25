@@ -33,6 +33,37 @@ class GangRolesTest {
         assertThrows(IllegalArgumentException.class,()->d.transfer(member,applicant));
         assertEquals(owner,d.of(member).owner);
     }
+    @Test void roleManagerCannotGiveFinancialRightsToSelfOrEditProtectedRoles(){
+        var d=setup();
+        d.role(owner,"member","Kadry",Set.of(Permission.MANAGE_ROLES));
+        String treasury=add(d,"Skarbnik",Set.of(Permission.WITHDRAW_FUNDS));
+        String before=d.toJson();
+        assertThrows(IllegalArgumentException.class,()->d.role(member,"member","Kadry",Set.of(Permission.MANAGE_ROLES,Permission.WITHDRAW_FUNDS)));
+        assertThrows(IllegalArgumentException.class,()->d.role(member,"","Kopia",Set.of(Permission.PAY_BONUSES)));
+        assertThrows(IllegalArgumentException.class,()->d.role(member,treasury,"Skarbnik",Set.of()));
+        assertEquals(before,d.toJson());
+        assertFalse(GangDirectory.allowed(d.of(member),member,Permission.WITHDRAW_FUNDS));
+    }
+    @Test void assigningRanksCannotBypassFinancialPermissionsOrDemoteProtectedMembers(){
+        var d=setup();d.request(applicant,"Skarbnik",d.of(owner).id);d.accept(owner,applicant);
+        String treasury=add(d,"Finanse",Set.of(Permission.WITHDRAW_FUNDS));d.assign(owner,applicant,treasury);
+        d.role(owner,"member","Kadry",Set.of(Permission.ASSIGN_ROLES));
+        String before=d.toJson();
+        assertThrows(IllegalArgumentException.class,()->d.assign(member,member,treasury));
+        assertThrows(IllegalArgumentException.class,()->d.assign(member,applicant,"member"));
+        assertEquals(before,d.toJson());
+    }
+    @Test void delegatedPersonnelCanStillGrantAndAssignRightsTheyActuallyHave(){
+        var d=setup();
+        d.role(owner,"member","Kadry",Set.of(Permission.MANAGE_ROLES,Permission.ASSIGN_ROLES,Permission.INVITE));
+        String recruiter=add(d,"Rekruter",Set.of(Permission.INVITE));
+        d.role(member,recruiter,"Rekruter",Set.of());d.role(member,recruiter,"Rekruter",Set.of(Permission.INVITE));
+        d.request(applicant,"Nowy",d.of(owner).id);d.accept(member,applicant);d.assign(member,applicant,recruiter);
+        assertTrue(GangDirectory.allowed(d.of(applicant),applicant,Permission.INVITE));
+        d.role(owner,recruiter,"Rekruter",Set.of(Permission.INVITE,Permission.WITHDRAW_FUNDS));
+        assertTrue(GangDirectory.allowed(d.of(applicant),applicant,Permission.WITHDRAW_FUNDS));
+        GangDirectory.fromJson(d.toJson());
+    }
     @Test void visualOrderingDoesNotGrantPermissionsEvenAboveLeader(){
         var d=setup();String rank=add(d,"Nowicjusz",Set.of());d.assign(owner,member,rank);
         d.reorderRoles(owner,List.of(rank,"member","leader"));

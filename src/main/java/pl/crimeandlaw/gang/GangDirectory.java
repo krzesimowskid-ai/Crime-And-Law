@@ -93,6 +93,16 @@ public final class GangDirectory {
         Role role=g.roles.get(g.members.get(actor).role);
         return role!=null&&role.permissions.contains(permission);
     }
+    private static boolean controls(Gang g,UUID actor,Role role){
+        return role!=null&&(g.owner.equals(actor)||role.permissions.stream().allMatch(p->allowed(g,actor,p)));
+    }
+    public static boolean canEditRole(Gang g,UUID actor,String role){
+        return allowed(g,actor,Permission.MANAGE_ROLES)&&!"leader".equals(role)&&controls(g,actor,g.roles.get(role));
+    }
+    public static boolean canAssignRole(Gang g,UUID actor,UUID target,String role){
+        return allowed(g,actor,Permission.ASSIGN_ROLES)&&g.members.containsKey(target)&&!g.owner.equals(target)
+            &&!"leader".equals(role)&&controls(g,actor,g.roles.get(g.members.get(target).role))&&controls(g,actor,g.roles.get(role));
+    }
     private static void defaultRoles(Gang g){
         if(g.roles==null)g.roles=new LinkedHashMap<>();
         g.roles.putIfAbsent("leader",new Role("leader","Lider",Permission.activePermissions()));
@@ -148,7 +158,11 @@ public final class GangDirectory {
         require(permissions!=null&&permissions.stream().allMatch(p->p!=null&&p.available()),"To uprawnienie jest jeszcze w przygotowaniu.");
         boolean creating=roleId==null||roleId.isBlank();
         if(creating){require(g.roles.size()<MAX_ROLES,"Maksymalnie 12 rang.");roleId=UUID.randomUUID().toString();}
-        else require(g.roles.containsKey(roleId),"Nie ma takiej rangi.");
+        else {
+            require(g.roles.containsKey(roleId),"Nie ma takiej rangi.");
+            require(canEditRole(g,actor,roleId),"Nie możesz edytować rangi z uprawnieniami, których nie posiadasz.");
+        }
+        require(permissions.stream().allMatch(p->allowed(g,actor,p)),"Nie możesz nadawać uprawnień, których nie posiadasz.");
         g.roles.put(roleId,new Role(roleId,name,permissions));
     }
     public void assign(UUID actor,UUID target,String role){
@@ -156,6 +170,7 @@ public final class GangDirectory {
         require(g.members.containsKey(target),"Nie ma takiego członka.");
         require(!g.owner.equals(target)&&!"leader".equals(role),"Lidera zmienia się przez przekazanie przywództwa.");
         require(g.roles.containsKey(role),"Nie ma takiej rangi.");
+        require(canAssignRole(g,actor,target,role),"Nie możesz zmieniać ani nadawać rangi z uprawnieniami, których nie posiadasz.");
         if(role.equals(g.members.get(target).role))return;
         g.members.get(target).role=role;
         record(g,g.members.get(actor).name+" zmienia rangę gracza "+g.members.get(target).name+" na "+g.roles.get(role).name+".");
@@ -173,6 +188,10 @@ public final class GangDirectory {
     public void banner(UUID actor,GangBanner banner){
         Gang g=own(actor,Permission.MANAGE_THEME);
         g.banner=new GangBanner(GangBanner.validateImage(banner.image()),banner.color(),banner.opacity());
+    }
+    public void bannerUpload(UUID actor,GangBanner banner){
+        Gang g=own(actor,Permission.MANAGE_THEME);
+        g.banner=new GangBanner(GangBanner.validateUpload(banner.image()),banner.color(),banner.opacity());
     }
     public boolean rememberProfile(UUID player,String name,String textures,String signature){
         boolean known=!Objects.equals(profiles.put(player,name),name);

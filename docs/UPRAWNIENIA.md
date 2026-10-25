@@ -1,4 +1,4 @@
-# Katalog uprawnień — 0.1.30
+# Katalog uprawnień — 0.1.39
 
 Opcje z referencyjnych ekranów rang, dopasowane do gangu w Minecraft.
 Dodatkowo zachowane prawo wyglądu menu/logo/baneru.
@@ -50,3 +50,13 @@ członkom dołączyć do już zapisanej drużyny; nie zastępuje decyzji lidera.
 
 Czarna lista usuwa obecnego członka tylko wtedy, gdy działająca osoba ma
 również prawo usuwania członków. Lidera ani siebie nie można zablokować.
+
+## Granice delegowania praw
+
+Poza liderem osoba edytująca rangę musi posiadać wszystkie dotychczasowe
+prawa tej rangi i wszystkie prawa, które chce zapisać. Przypisanie rangi
+wymaga posiadania praw zarówno obecnej, jak i docelowej rangi członka.
+Nie można w ten sposób nadać sobie lub komuś praw finansowych, których
+samemu się nie posiada. Ograniczenia sprawdza serwer, również dla ręcznie
+wygenerowanych pakietów. Edytor blokuje niedostępne przełączniki i zapis
+chronionej rangi. Zmiana kolejności nadal nie nadaje żadnego prawa.

@@ -50,9 +50,8 @@ public final class FinanceView {
             default->e.actorName()+" "+e.recipientName()+" "+e.actorRole()+" "+e.recipientRole()+" "+e.kind().label+" "+e.comment()+" "+e.amount();};
         return value.toLowerCase(Locale.ROOT).contains(query);
     }
-    private static String string(JsonObject request,String key,String fallback){return request.has(key)?request.get(key).getAsString():fallback;}
+    private static String string(JsonObject request,String key,String fallback){return pl.crimeandlaw.network.ActionFields.text(request,key,fallback);}
     private static int number(JsonObject request,String key,int fallback){
-        if(!request.has(key))return fallback;
-        try{return request.get(key).getAsBigDecimal().intValueExact();}catch(RuntimeException e){throw new IllegalArgumentException("Nieprawidłowa strona.");}
+        return pl.crimeandlaw.network.ActionFields.integer(request,key,fallback);
     }
 }

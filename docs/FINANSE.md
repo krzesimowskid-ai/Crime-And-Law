@@ -1,4 +1,4 @@
-# Finanse — 0.1.30
+# Finanse — 0.1.39
 
 Zakładka **Saldo gangu** pokazuje wspólne saldo i własne konto gracza.
 **Wpłać** przenosi pieniądze z własnego konta bankowego do gangu; **Wypłać** robi przelew
@@ -66,3 +66,12 @@ bez otwierania menu i przy otrzymaniu premii przez gracza z zamkniętym panelem.
 Walidacja odczytu odrzuca także ułamkowe i przekroczone kwoty w pliku kont,
 zamiast pozwalać Gsonowi obcinać je przy konwersji na long. Lista wypłat
 jest kopiowana przed sprawdzeniem i wykonaniem całej transakcji.
+
+## Brak odpowiedzi i stare formularze
+
+Jednorazowy token należy do konkretnej sesji gracza i gangu. Nie działa
+na cudzym koncie, po zmianie gangu ani po wcześniejszym wykorzystaniu.
+Po pięciu sekundach bez potwierdzenia klient prosi o aktualny stan i
+unieważnienie niewykonanego żądania. Nie wysyła automatycznie drugiego
+przelewu. Po odzyskaniu danych należy sprawdzić historię przed następną
+operacją. Obie strony połączenia wymagają wersji 0.1.39 / protokołu 20.

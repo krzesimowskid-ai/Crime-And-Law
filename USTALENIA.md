@@ -795,3 +795,25 @@ gdy właściwe systemy własności oraz mapy będą rozwijane.
 - Ukryte wiersze nie przechwytują kliknięć w nagłówku ani stopce.
 - „Ulepszenia” i „Kontrakty” nadal pokazują „W przygotowaniu”.
   Protokół 19 i schemat danych 4 pozostają bez zmian.
+
+## Przegląd menu, uprawnień i duplikacji — 0.1.39
+
+- Użytkownik poprosił o szeroki przegląd przed dalszą rozbudową.
+- Odtworzono i naprawiono dwie ścieżki zdobycia praw finansowych przez
+  edycję własnej rangi lub przypisanie silniejszej rangi. Delegowanie
+  jest ograniczone do posiadanych praw, bez ograniczania lidera.
+- Token transakcji jest związany również z gangiem. Ponowienie, cudza
+  sesja i stary formularz nie mogą wykonać nieuprawnionej operacji.
+- Formularz transakcji odzyskuje stan po pięciu sekundach bez odpowiedzi;
+  nigdy nie ponawia automatycznie przelewu.
+- Czarna lista rozpoznaje odpowiedź przez identyfikator operacji,
+  odblokowuje formularz po braku potwierdzenia i zamyka go po zmianie gangu.
+- Pola pakietów mają jawne typy. Głęboko zagnieżdżone tablice nie mogą
+  udawać tekstu, liczby lub flagi i doprowadzać do rekurencyjnego odczytu.
+- Uprawnienia obrazów są sprawdzane przed dekodowaniem; nowe banery
+  mają limit 2048×512, stare zapisy 8K zachowują migrację. Zmniejszono
+  limity wiadomości i dodano odstęp dwóch sekund między zmianami obrazów.
+- Protokół 20, schemat danych 4. Ulepszenia i kontrakty nadal oczekują
+  na przyszłe aktywności, bez nowych mechanik w tym wydaniu.
+- 175 testów, serwer z dwoma klientami i restart, kontrole depozytu
+  captu oraz kontrola przycisków w prawdziwym rendererze.

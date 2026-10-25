@@ -26,6 +26,8 @@ public final class FinanceClientSmoke {
     private static final UUID MEMBER=id("Member29"),FRIEND=id("Friend29");
     private static long start;private static int frames,step=-1;private static boolean done;
     private static JsonObject previous;private static String pending="",paidToken="";
+    private static String recoveryToken="";
+    private static long recoveryStarted;
     private static UUID id(String name){return UUID.nameUUIDFromBytes(("OfflinePlayer:"+name).getBytes(java.nio.charset.StandardCharsets.UTF_8));}
     @SubscribeEvent public static void frame(RenderFrameEvent.Post event){
         if(ROLE.isEmpty()||done)return;var mc=Minecraft.getInstance();
@@ -67,7 +69,9 @@ public final class FinanceClientSmoke {
             case 16->{if(ClientState.state==previous)return;check(FinanceClient.money("gangBalance")==79650,"Overdraft rejected");badWithdraw(-1);step=17;}
             case 17->{if(ClientState.state==previous)return;check(FinanceClient.money("gangBalance")==79650,"Negative amount rejected");badWithdraw(0.5);step=18;}
             case 18->{if(ClientState.state==previous)return;check(FinanceClient.money("gangBalance")==79650,"Fraction rejected");var request=payments(FinanceClient.token(),1);request.getAsJsonArray("payments").add(request.getAsJsonArray("payments").get(0).deepCopy());previous=ClientState.state;GangNetwork.send(request);step=19;}
-            case 19->{if(ClientState.state==previous)return;check(ClientState.message.contains("więcej niż raz")&&FinanceClient.money("gangBalance")==79650,"Duplicate recipient rejected");Files.writeString(OUT.resolve("owner-payments.PASS"),"Owner UI and raw invalid packet checks pass\n");step=20;}
+            case 19->{if(ClientState.state==previous)return;check(ClientState.message.contains("więcej niż raz")&&FinanceClient.money("gangBalance")==79650,"Duplicate recipient rejected");
+                if(Boolean.getBoolean("crimeandlaw.financeAudit")){press(mc,"Saldo gangu");step=80;}
+                else{Files.writeString(OUT.resolve("owner-payments.PASS"),"Owner UI and raw invalid packet checks pass\n");step=20;}}
             case 20->{if(!Files.exists(OUT.resolve("member.PASS")))return;ClientState.message="";mc.setScreen(null);pending="hud-scale2";step=21;}
             case 21->{check(HudMoney.ready&&HudMoney.cash==1235&&HudMoney.bank==19500,"HUD receives actual independent accounts");check(HudClock.INSTANCE.ready()&&HudClock.INSTANCE.zoneId().equals("Europe/Warsaw"),"HUD receives the actual server clock");check(ClientMinimap.cacheSize()>0&&ClientMinimap.cacheSize()<=256,"Minimap samples loaded terrain within its cache bound");mc.options.guiScale().set(4);mc.resizeDisplay();pending="hud-scale4";step=22;}
             case 22->{mc.setScreen(new GangScreen());previous=ClientState.state;ClientState.refresh("",0);step=23;}
@@ -104,7 +108,27 @@ public final class FinanceClientSmoke {
             case 53->{if(hasChat(mc,"Usuwalna wiadomość testowa 033"))return;pending="chat-deleted-message";step=54;}
             case 54->{var l=ChatView.layout(true);mc.screen.mouseClicked((l.x()+l.width()-12)*l.scale(),(l.y()+6)*l.scale(),0);check(mc.screen instanceof net.minecraft.client.gui.screens.options.ChatOptionsScreen,"Gear opens real chat settings");mc.screen.onClose();check(mc.screen instanceof RpChatScreen&&chatInput(mc).getValue().equals("szkic po ustawieniach"),"Returning from settings keeps the input draft");step=55;}
             case 55->{var l=ChatView.layout(true);mc.screen.mouseClicked((l.x()+l.width()+4)*l.scale(),(l.historyY()+2)*l.scale(),0);check(ChatView.scrollOffset()>0,"Scrollbar click selects older history");mc.screen.mouseDragged((l.x()+l.width()+4)*l.scale(),(l.historyY()+l.historyHeight())*l.scale(),0,0,20);mc.screen.mouseReleased(0,0,0);check(ChatView.scrollOffset()==0,"Dragging the scrollbar reaches the newest row");pending="chat-settings-return";step=56;}
-            case 56->{Files.writeString(OUT.resolve("owner.PASS"),"Financial TCP checks; HUD/clock/minimap at GUI 2/4 with focused chat; actual native chat sends and echo; history/draft; completion; wheel and scrollbar; clickable component; native message deletion; GUI resize; settings round trip; send button; clock zone changes; blacklist and goals.\n");done=true;mc.stop();}
+            case 56->{Files.writeString(OUT.resolve("owner.PASS"),"Financial TCP checks; HUD/clock/minimap at GUI 2/4 with focused chat; actual native chat sends and echo; history/draft; completion; wheel and scrollbar; clickable component; native message deletion; GUI resize; settings round trip; send button; clock zone changes; blacklist and goals.\n");done=true;if(!Boolean.getBoolean("crimeandlaw.financeAudit"))mc.stop();}
+            case 80->{if(!kind("balance"))return;press(mc,"Wpłać");fields(mc,"37","Nieprzetworzone żądanie");step=81;}
+            case 81->{
+                var dialog=(FinanceResponseScreen)mc.screen;recoveryToken=FinanceClient.token();
+                var token=FinanceResponseScreen.class.getDeclaredField("submittedToken");token.setAccessible(true);token.set(dialog,recoveryToken);
+                var since=FinanceResponseScreen.class.getDeclaredField("awaitingSince");since.setAccessible(true);since.setLong(dialog,System.nanoTime());
+                dialog.pending=true;mc.resizeDisplay();recoveryStarted=System.nanoTime();step=82;
+            }
+            case 82->{
+                if(((FinanceResponseScreen)mc.screen).pending)return;
+                check(System.nanoTime()-recoveryStarted>=5_000_000_000L,"Recovery waits for deadline");
+                check(!recoveryToken.equals(FinanceClient.token())&&FinanceClient.money("walletBalance")==19500&&FinanceClient.money("gangBalance")==79650,"Lost-request recovery changes nonce without transferring money");
+                check(button(mc,"Wpłać").active,"Transfer dialog becomes usable after recovery");pending="recovered-dialog";
+                var stale=new JsonObject();stale.addProperty("action","finance_withdraw");stale.addProperty("financeToken",recoveryToken);stale.addProperty("amount",1);stale.addProperty("comment","");previous=ClientState.state;GangNetwork.send(stale);step=83;
+            }
+            case 83->{
+                if(ClientState.state==previous)return;
+                check(ClientState.message.contains("Odśwież")&&FinanceClient.money("walletBalance")==19500&&FinanceClient.money("gangBalance")==79650,"Recovered nonce cannot execute a delayed transfer");
+                press(mc,"Anuluj");Files.writeString(OUT.resolve("recovery.PASS"),"Real dialog waits five seconds, recovers server state and invalidates a simulated unprocessed request without resending money.\n");
+                Files.writeString(OUT.resolve("owner-payments.PASS"),"Owner UI, raw invalid packets and timeout recovery pass\n");step=20;
+            }
         }
     }
     private static void look(Minecraft mc,float yaw){mc.player.setYRot(yaw);mc.player.yRotO=yaw;mc.player.setXRot(38);mc.player.xRotO=38;}
@@ -129,7 +153,7 @@ public final class FinanceClientSmoke {
             case 6->{press(mc,"Wpłać");step=7;}
             case 7->{if(FinanceClient.money("walletBalance")!=500)return;check(FinanceClient.money("gangBalance")==79700,"Member deposit authoritative");Files.writeString(OUT.resolve("member-death.ready"),"ready");step=8;}
             case 8->{if(!mc.player.isDeadOrDying())return;mc.player.respawn();mc.setScreen(null);step=9;}
-            case 9->{if(mc.player.isDeadOrDying())return;check(HudMoney.cash==567&&HudMoney.bank==500,"Actual death and respawn preserve both balances");Files.writeString(OUT.resolve("member.PASS"),"Permissions, received bonuses, authorized bank deposit, actual death/respawn and cash/bank synchronization.\n");done=true;mc.stop();}
+            case 9->{if(mc.player.isDeadOrDying())return;check(HudMoney.cash==567&&HudMoney.bank==500,"Actual death and respawn preserve both balances");Files.writeString(OUT.resolve("member.PASS"),"Permissions, received bonuses, authorized bank deposit, actual death/respawn and cash/bank synchronization.\n");done=true;if(!Boolean.getBoolean("crimeandlaw.financeAudit"))mc.stop();}
         }
     }
     private static void badWithdraw(Number amount){var request=new JsonObject();request.addProperty("action","finance_withdraw");request.addProperty("amount",amount);request.addProperty("comment","");request.addProperty("financeToken",FinanceClient.token());previous=ClientState.state;GangNetwork.send(request);}
