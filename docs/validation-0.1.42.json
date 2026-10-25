@@ -1,0 +1,30 @@
+{
+  "version": "0.1.42",
+  "protocol": 22,
+  "date": "2026-10-25",
+  "jar": "crimeandlaw-0.1.42.jar",
+  "size_bytes": 3817162,
+  "sha256": "e9e5d185ada814027db1d6f2e00bc36b1c649dc921fa980bc5b62726797d71d4",
+  "production_classes": 200,
+  "junit_suites": 33,
+  "junit": {
+    "tests": 181,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "runtime": {
+    "final-visual/visual.PASS": "Four responsive 3D camera cases; six free leaf targets; exact 32px limited-palette sprites; nearest min/mag filters; solid stepped outlines; custom item gallery.",
+    "final-tcp/security.PASS": "Server-thread checks: recipes, special-tool gate, wall/reach checks, foreign/stale token, malformed leaf IDs, free choice, selection binding, early/late timing, replay, closure, partial NBT, full creative inventory conservation.",
+    "final-tcp/rival.PASS": "Actual TCP reservation conflict denied without changing leaves.",
+    "final-tcp/restart.PASS": "Actual disk reload retains partial crop leaves, regrowth stage, exactly seven harvested leaves and seven durability wear.",
+    "final-tcp/owner.PASS": "Z prompt opens real 3D game; six freely ordered (5,1,3,0,4,2) physical hold/release snips over TCP, one leaf and one tool wear per cut, exhausted crop regrows.",
+    "final-tcp/recovery.PASS": "Real client waits three seconds for a simulated unprocessed cut, requests cancellation/state recovery and remains at zero rewards and zero wear.",
+    "final-tcp/server.PASS": "Actual two-client harvest, reservation isolation, six GUI cuts and hostile packet checks passed."
+  },
+  "screenshots": {
+    "final-visual": 9,
+    "final-tcp": 16
+  },
+  "limits": "Focused validation of the pixel-art/free-choice harvest change; not a new full-mod source audit or a guarantee against all bugs."
+}

@@ -1,7 +1,7 @@
 # Aurelia — pierwsza fikcyjna uprawa
 
-Wersja 0.1.41, Minecraft 1.21.1, NeoForge 21.1.248, Java 21.
-Na serwerze i u graczy potrzebny jest nowy JAR. Protokół sieciowy: **21**.
+Wersja 0.1.42, Minecraft 1.21.1, NeoForge 21.1.248, Java 21.
+Na serwerze i u graczy potrzebny jest nowy JAR. Protokół sieciowy: **22**.
 
 ## Nasiona i sadzenie
 
@@ -34,8 +34,10 @@ Zwykłe nożyce nie uruchamiają zbioru.
 2. Naciśnij **Z** zgodnie z podpowiedzią. Skrót można zmienić w sterowaniu.
 3. Obracaj roślinę przeciąganiem tła lub prawym przyciskiem myszy.
    Kółko przybliża i oddala; strzałki lewo/prawo również obracają model.
-4. Przytrzymaj lewy przycisk na jasnym znaczniku cięcia i puść w zielonym
-   obszarze wskaźnika. Poprawnie odcięty liść odłącza się od modelu.
+4. Wybierz **dowolny z sześciu liści**. Przytrzymaj lewy przycisk na samym
+   liściu albo jego znaczniku u nasady i puść w zielonym obszarze wskaźnika.
+   Kolejność jest dowolna; podświetla się liść pod kursorem. Poprawnie
+   odcięty liść odłącza się od modelu.
 5. Każde poprawne cięcie daje **jeden liść** i zużywa narzędzie.
    Z dojrzałej rośliny można zebrać sześć liści. Po ostatnim odrasta
    od młodego etapu bez ponownego sadzenia.
@@ -48,7 +50,9 @@ Zniszczenie rośliny daje nasiona, a nie pominięcie minigry z nagrodą w liści
 
 Roślina jest rezerwowana na czas zbioru dla jednego gracza. Serwer sprawdza
 narzędzie, odległość, widoczność, ochronę miejsca, tożsamość rośliny,
-konkretnego liścia oraz czas cięcia. Stary pakiet nie daje ponownej nagrody.
+konkretnego liścia oraz czas cięcia. Wybrany liść jest wiązany z początkiem
+cięcia; podmiana celu w trakcie przytrzymania nie przenosi postępu.
+Stary pakiet nie daje ponownej nagrody.
 Przy utracie potwierdzenia okno odzyskuje stan bez ponawiania cięcia.
 
 Liście są na razie surowcem do przyszłych fikcyjnych procesów. To pierwsza
@@ -57,8 +61,10 @@ sposoby ich wytwarzania.
 
 ## Grafika
 
-Roślina w świecie, model w minigrze i zebrany przedmiot korzystają z
-rzeczywistej geometrii 3D. Liście mają zakrzywione powierzchnie, żyłkowanie,
-ząbkowaną sylwetkę, delikatny ruch i animację odłączenia. Tekstura ma
-własne mipmapy i filtrowanie trójliniowe; nie obniża mipmap atlasu Minecrafta.
-Pochodzenie tekstury i pełny prompt: [AURELIA_ASSETS.md](AURELIA_ASSETS.md).
+Roślina w świecie, model w minigrze i wszystkie trzy przedmioty mają
+przestrzenną geometrię z grubością oraz własne pikselowe materiały.
+Liście mają kanciaste zagięcia, schodkową sylwetkę i animację odłączenia.
+Wszystkie sześć widocznych liści można zebrać. Tekstury mają 32×32 piksele,
+ograniczone palety oraz ostre filtrowanie nearest. Łodyga ma własny materiał.
+Nie zapożyczają materiałów bloków Minecrafta ani nie zmieniają jego atlasu.
+Pochodzenie grafik i pełne prompty: [AURELIA_ASSETS.md](AURELIA_ASSETS.md).

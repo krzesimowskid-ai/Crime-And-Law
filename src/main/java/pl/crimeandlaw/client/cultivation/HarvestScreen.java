@@ -26,7 +26,7 @@ public final class HarvestScreen extends Screen {
     private long awaitingSince;
     private boolean holding,awaiting,rotating;
     private double dragX;
-    private int heldLeaf=-1,collected;
+    private int heldLeaf=-1,hoveredLeaf=-1,collected;
     private String status;
     private record Falling(int leaf,long started){}
     private final List<Falling> falling=new ArrayList<>();
@@ -72,22 +72,22 @@ public final class HarvestScreen extends Screen {
             // Subtle stage pedestal and ground shadow, then a true 3D mesh.
             for(int i=0;i<18;i++)g.fill(x+140+i*5,y+420+i/3,x+445-i*5,y+443-i/3,0x07000000);
             g.fillGradient(x+44,y+414,x+557,y+447,0x001F4238,0x203F6853);
-            drawPlant(g);
+            drawPlant(g,mxLocal,myLocal);
             g.flush();RenderSystem.depthMask(true);RenderSystem.clear(256,Minecraft.ON_OSX);RenderSystem.disableDepthTest();
-            int target=state.target();
+            int target=holding||awaiting?heldLeaf:hoveredLeaf;
             for(var e:markers.entrySet()){
                 var p=e.getValue();int px=Math.round(p.x),py=Math.round(p.y);boolean chosen=e.getKey()==target;
                 if(chosen&&state.active()){
                     int r=holding?13:11+(int)(Math.sin(time()*3)*1.5);ring(g,px,py,r,0xFFCAE89A);ring(g,px,py,r+3,0x665DAD80);
                     g.fill(px-2,py-2,px+3,py+3,0xFFF0F7C5);g.fill(px+r+4,py,px+r+28,py+1,0xAACAE89A);
-                    label(g,"TNIJ TUTAJ",px+r+31,py-6,0xFFE1EDC8);
+                    label(g,holding?"TNIESZ TEN LIŚĆ":"WYBRANY LIŚĆ",px+r+31,py-6,0xFFE1EDC8);
                 }else if(state.active()){g.fill(px-2,py-2,px+2,py+2,0x8892B7A3);}
             }
             label(g,"Przeciągnij tło lub PPM, aby obrócić • kółko: zbliżenie",x+32,y+478,0xFF8BA59F);
-            label(g,"01  OBEJRZYJ ROŚLINĘ",x+630,y+86,0xFFCEE2B5);
-            label(g,"Obróć model i znajdź jasny znacznik.",x+630,y+111,0xFFAEC2B8);
+            label(g,"01  WYBIERZ DOWOLNY LIŚĆ",x+630,y+86,0xFFCEE2B5);
+            label(g,"Ty decydujesz o kolejności zbioru.",x+630,y+111,0xFFAEC2B8);
             label(g,"02  PRZYTRZYMAJ LPM",x+630,y+152,0xFFCEE2B5);
-            label(g,"Przyłóż nożyce do nasady liścia.",x+630,y+177,0xFFAEC2B8);
+            label(g,"Kliknij liść lub znacznik u nasady.",x+630,y+177,0xFFAEC2B8);
             label(g,"03  PUŚĆ W ZIELONYM POLU",x+630,y+218,0xFFCEE2B5);
             label(g,"Spokojne cięcie zachowuje cały liść.",x+630,y+243,0xFFAEC2B8);
             progress(g,x+630,y+280,240);
@@ -106,17 +106,18 @@ public final class HarvestScreen extends Screen {
         }finally{g.pose().popPose();}
     }
     private float time(){return (System.nanoTime()-opened)/1_000_000_000f;}
-    private void drawPlant(GuiGraphics g){
+    private void drawPlant(GuiGraphics g,int mouseX,int mouseY){
         camera=new Matrix4f().translate(left+298,top+431,170).scale(363*zoom,-363*zoom,363*zoom)
             .rotateX(.23f).rotateY(yaw).translate(-.5f,0,-.5f);
         markers.clear();for(int i=0;i<6;i++)if(PruningRules.available(state.leaves(),i)){
             var p=AureliaMesh.leaf(i).marker();markers.put(i,camera.transformPosition(new Vector3f((float)p.x,(float)p.y,(float)p.z)));
         }
+        hoveredLeaf=state.active()?pick(mouseX,mouseY):-1;
         g.flush();RenderSystem.enableDepthTest();RenderSystem.depthMask(true);Lighting.setupFor3DItems();
         var buffers=minecraft.renderBuffers().bufferSource();
         g.pose().pushPose();g.pose().mulPose(camera);
         try{
-            AureliaMesh.draw(g.pose(),buffers,4,state.leaves(),state.active()?state.target():-1,time(),LightTexture.FULL_BRIGHT);
+            AureliaMesh.draw(g.pose(),buffers,4,state.leaves(),state.active()?(holding||awaiting?heldLeaf:hoveredLeaf):-1,time(),LightTexture.FULL_BRIGHT);
             var it=falling.iterator();while(it.hasNext()){
                 var f=it.next();float t=(System.nanoTime()-f.started)/1_000_000_000f;if(t>1.4){it.remove();continue;}
                 g.pose().pushPose();g.pose().translate(.14*t,-.30*t*t,.12*t);g.pose().mulPose(com.mojang.math.Axis.ZP.rotationDegrees(t*48));
@@ -137,13 +138,36 @@ public final class HarvestScreen extends Screen {
     private static void ring(GuiGraphics g,int x,int y,int radius,int color){
         for(int i=0;i<48;i++){double a=i*Math.PI/24;int px=x+(int)Math.round(Math.cos(a)*radius),py=y+(int)Math.round(Math.sin(a)*radius);g.fill(px,py,px+2,py+2,color);}
     }
-    private int pick(double x,double y){int result=-1;double best=22*22;for(var e:markers.entrySet()){var p=e.getValue();double d=(p.x-x)*(p.x-x)+(p.y-y)*(p.y-y);if(d<best){best=d;result=e.getKey();}}return result;}
+    private Vector3f project(AureliaMesh.Leaf leaf,float u,float v){var p=leaf.point(1-v,u*2-1);return camera.transformPosition(new Vector3f((float)p.x,(float)p.y,(float)p.z));}
+    private int pick(double x,double y){
+        int result=-1;double best=22*22;
+        for(var e:markers.entrySet()){var p=e.getValue();double d=(p.x-x)*(p.x-x)+(p.y-y)*(p.y-y);if(d<best){best=d;result=e.getKey();}}
+        if(result>=0)return result;
+        float nearest=-Float.MAX_VALUE;float[] rows={0,.28f,.58f,1};
+        for(int id=0;id<6;id++)if(PruningRules.available(state.leaves(),id)){
+            var leaf=AureliaMesh.leaf(id);
+            for(int row=0;row<3;row++)for(int col=0;col<2;col++){
+                float u0=col*.5f,u1=u0+.5f,v0=rows[row],v1=rows[row+1];
+                var a=project(leaf,u0,v0);var b=project(leaf,u0,v1);var c=project(leaf,u1,v1);var d=project(leaf,u1,v0);
+                float z=hit(x,y,a,b,c,u0,v0,u0,v1,u1,v1);if(z>nearest){nearest=z;result=id;}
+                z=hit(x,y,a,c,d,u0,v0,u1,v1,u1,v0);if(z>nearest){nearest=z;result=id;}
+            }
+        }
+        return result;
+    }
+    private static float hit(double x,double y,Vector3f a,Vector3f b,Vector3f c,float au,float av,float bu,float bv,float cu,float cv){
+        double denominator=(b.y-c.y)*(a.x-c.x)+(c.x-b.x)*(a.y-c.y);if(Math.abs(denominator)<.01)return -Float.MAX_VALUE;
+        double wa=((b.y-c.y)*(x-c.x)+(c.x-b.x)*(y-c.y))/denominator,wb=((c.y-a.y)*(x-c.x)+(a.x-c.x)*(y-c.y))/denominator,wc=1-wa-wb;
+        if(wa<0||wb<0||wc<0)return -Float.MAX_VALUE;
+        int u=(int)((wa*au+wb*bu+wc*cu)*PixelSprite.SIZE),v=(int)((wa*av+wb*bv+wc*cv)*PixelSprite.SIZE);
+        return PixelSprite.LEAF.opaque(u,v)?(float)(wa*a.z+wb*b.z+wc*c.z):-Float.MAX_VALUE;
+    }
     @Override public boolean mouseClicked(double x,double y,int button){
         x/=scale;y/=scale;
         if(super.mouseClicked(x,y,button))return true;
         if(x<left||x>left+596||y<top+68||y>top+463)return false;
-        if(button==0&&state.active()&&!holding&&!awaiting&&pick(x,y)==state.target()){
-            heldLeaf=state.target();holding=true;pressed=System.nanoTime();CultivationNetwork.cut(state.token(),heldLeaf,0);return true;
+        if(button==0&&state.active()&&!holding&&!awaiting&&pick(x,y)>=0){
+            heldLeaf=pick(x,y);holding=true;pressed=System.nanoTime();CultivationNetwork.cut(state.token(),heldLeaf,0);return true;
         }
         if(button==0||button==1){rotating=true;dragX=x;return true;}return false;
     }

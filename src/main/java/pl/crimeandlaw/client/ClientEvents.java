@@ -17,11 +17,14 @@ public final class ClientEvents {
     public static final class Registration {
         @SubscribeEvent public static void keys(RegisterKeyMappingsEvent event){event.register(OPEN);event.register(pl.crimeandlaw.client.cultivation.CultivationClient.HARVEST);}
         @SubscribeEvent public static void renderers(EntityRenderersEvent.RegisterRenderers event){event.registerBlockEntityRenderer(pl.crimeandlaw.cultivation.CultivationContent.PLANT.get(),pl.crimeandlaw.client.cultivation.AureliaRenderer::new);}
+        @SubscribeEvent public static void itemRenderers(net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent event){
+            event.registerItem(new net.neoforged.neoforge.client.extensions.common.IClientItemExtensions(){
+                private net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer renderer;
+                @Override public net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer getCustomRenderer(){if(renderer==null)renderer=new pl.crimeandlaw.client.cultivation.CultivationItemRenderer();return renderer;}
+            },pl.crimeandlaw.cultivation.CultivationContent.LEAF.get(),pl.crimeandlaw.cultivation.CultivationContent.SEEDS.get(),pl.crimeandlaw.cultivation.CultivationContent.SHEARS.get());
+        }
         @SubscribeEvent public static void reload(RegisterClientReloadListenersEvent event){event.registerReloadListener((net.minecraft.server.packs.resources.ResourceManagerReloadListener)manager->{
-            try(var in=manager.open(pl.crimeandlaw.client.cultivation.AureliaMesh.LEAF)){
-                var image=com.mojang.blaze3d.platform.NativeImage.read(in);
-                Minecraft.getInstance().getTextureManager().register(pl.crimeandlaw.client.cultivation.AureliaMesh.LEAF,SmoothImageTexture.create(image,true));
-            }catch(java.io.IOException error){throw new java.io.UncheckedIOException(error);}
+            pl.crimeandlaw.client.cultivation.PixelSprite.reloadAll(manager);
         });}
         @SubscribeEvent public static void setup(FMLClientSetupEvent event){event.enqueueWork(()->{pl.crimeandlaw.cultivation.CultivationNetwork.receiver=pl.crimeandlaw.client.cultivation.CultivationClient::receive;GangNetwork.clockReceiver=p->HudClock.INSTANCE.receive(p.epochMillis(),p.zone());GangNetwork.moneyReceiver=HudMoney::receive;GangNetwork.clientReceiver=ClientState::receive;GangNetwork.terrainReceiver=TerrainClient::receive;GangNetwork.captureReceiver=CaptureClient::receive;});}
     }

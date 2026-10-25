@@ -16,7 +16,7 @@ public final class CultivationContent {
     public static final DeferredRegister<BlockEntityType<?>> ENTITIES=DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE,CrimeAndLaw.ID);
     public static final DeferredBlock<AureliaCrop> AURELIA=BLOCKS.register("aurelia",()->new AureliaCrop(BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).noCollission().instabreak().randomTicks().sound(net.minecraft.world.level.block.SoundType.CROP)));
     public static final DeferredItem<ItemNameBlockItem> SEEDS=ITEMS.register("aurelia_seeds",()->new ItemNameBlockItem(AURELIA.get(),new Item.Properties()));
-    public static final DeferredItem<AureliaLeafItem> LEAF=ITEMS.register("aurelia_leaf",()->new AureliaLeafItem(new Item.Properties()));
+    public static final DeferredItem<Item> LEAF=ITEMS.register("aurelia_leaf",()->new Item(new Item.Properties()));
     public static final DeferredItem<ShearsItem> SHEARS=ITEMS.register("pruning_shears",()->new ShearsItem(new Item.Properties().durability(192)));
     public static final DeferredHolder<BlockEntityType<?>,BlockEntityType<AureliaPlant>> PLANT=ENTITIES.register("aurelia",()->BlockEntityType.Builder.of(AureliaPlant::new,AURELIA.get()).build(null));
     private CultivationContent(){}

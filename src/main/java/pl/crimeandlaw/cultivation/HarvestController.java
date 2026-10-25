@@ -19,8 +19,8 @@ public final class HarvestController {
     private record Key(String dimension,BlockPos pos){}
     private static final class Session {
         final UUID token=UUID.randomUUID(),plant;final Key key;final long opened;
-        int target;long began=-1;
-        Session(Key key,AureliaPlant plant,long tick,int choice){this.key=key;this.plant=plant.identity();opened=tick;target=PruningRules.target(plant.leaves(),choice);}
+        int target=-1;long began=-1;
+        Session(Key key,AureliaPlant plant,long tick){this.key=key;this.plant=plant.identity();opened=tick;}
     }
     private static final Map<ServerPlayer,Session> SESSIONS=new WeakHashMap<>();
     private static final Map<Key,ServerPlayer> LOCKS=new HashMap<>();
@@ -51,8 +51,8 @@ public final class HarvestController {
         if(SESSIONS.size()>=64){message(player,pos,"Spróbuj ponownie za chwilę.");return;}
         close(player);var plant=(AureliaPlant)player.serverLevel().getBlockEntity(pos);
         if(plant==null||plant.leaves()==0){message(player,pos,"Ta roślina została już zebrana.");return;}
-        var session=new Session(key,plant,player.serverLevel().getGameTime(),player.getRandom().nextInt());SESSIONS.put(player,session);LOCKS.put(key,player);
-        send(player,session,true,"Wybierz oznaczony liść i przytrzymaj przy jego nasadzie.");
+        var session=new Session(key,plant,player.serverLevel().getGameTime());SESSIONS.put(player,session);LOCKS.put(key,player);
+        send(player,session,true,"Wybierz dowolny liść. Kolejność zależy od Ciebie.");
     }
     public static void cut(ServerPlayer player,CultivationNetwork.Cut packet){
         var session=SESSIONS.get(player);if(session==null||!session.token.equals(packet.token()))return;
@@ -65,12 +65,13 @@ public final class HarvestController {
         if(plant==null||!plant.identity().equals(session.plant)){
             send(player,session,false,error.isEmpty()?"Roślina została zmieniona.":error);close(player);return;
         }
-        if(packet.phase()==3){session.began=-1;send(player,session,true,"Cięcie anulowane. Spróbuj ponownie.");return;}
-        if(packet.leaf()!=session.target||!PruningRules.available(plant.leaves(),packet.leaf()))return;
+        if(packet.phase()==3){session.began=-1;session.target=-1;send(player,session,true,"Cięcie anulowane. Wybierz dowolny liść.");return;}
+        if(!PruningRules.available(plant.leaves(),packet.leaf()))return;
         long now=player.serverLevel().getGameTime();
-        if(packet.phase()==0){if(session.began<0){session.began=now;send(player,session,true,"Puść przycisk w zielonym polu.");}return;}
-        if(packet.phase()!=1||session.began<0)return;
-        long held=now-session.began;session.began=-1;
+        if(packet.phase()==0){if(session.began<0){session.target=packet.leaf();session.began=now;send(player,session,true,"Puść przycisk w zielonym polu.");}return;}
+        // A free choice is bound at begin: switching leaves cannot reuse a timed hold.
+        if(packet.phase()!=1||session.began<0||packet.leaf()!=session.target)return;
+        long held=now-session.began;session.began=-1;session.target=-1;
         if(!PruningRules.precise(held)){send(player,session,true,held<PruningRules.MIN_HOLD?"Za szybko. Przytrzymaj dłużej.":"Za długo. Spróbuj łagodniejszego cięcia.");return;}
         if(!interactionAllowed(player,session.key.pos)||player.serverLevel().getBlockEntity(session.key.pos)!=plant||!problem(player,session.key.pos).isEmpty()){
             send(player,session,false,"Zbiór został zablokowany lub roślina się zmieniła.");close(player);return;
@@ -83,7 +84,6 @@ public final class HarvestController {
             send(player,session,false,"Zbiór ukończony. Roślina odrośnie.");
             close(player);plant.regrow();player.serverLevel().setBlock(session.key.pos,plant.getBlockState().setValue(AureliaCrop.GROWTH,1),3);return;
         }
-        session.target=PruningRules.target(plant.leaves(),player.getRandom().nextInt());
         if(!player.getMainHandItem().is(CultivationContent.SHEARS.get())){send(player,session,false,"Nożyce się zużyły. Pozostałe liście zachowano.");close(player);return;}
         send(player,session,true,"Precyzyjne cięcie! Zebrano liść.");
     }

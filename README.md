@@ -1,7 +1,7 @@
 # Crime And Law
 
 Autorski mod gangsterski: panel gangów, członkostwo i własny wygląd menu.
-Wersja **0.1.41**.
+Wersja **0.1.42**.
 
 Pierwsza propozycja własnej ekonomii w dolarach i rozwoju terenów:
 [Balans terytoriów](docs/BALANS_TERYTORIOW.md) oraz
@@ -17,14 +17,17 @@ Przejmowanie terenów, zegar świata oraz oznaczenia mapy już działają:
 Dodano pierwszą fikcyjną roślinę, własne nasiona i specjalne nożyce.
 Podpowiedź **Z** otwiera obracaną minigrę 3D z cięciem pojedynczych liści,
 animacją odłączenia, zużyciem narzędzia i zapisem częściowego zbioru.
+Teraz sam wybierasz kolejność wszystkich sześciu liści: kliknij liść lub jego
+znacznik. Roślina, zebrany liść, nożyce i nasiona mają własne pikselowe
+materiały oraz modele z grubością w stylu Minecrafta.
 Receptury i sterowanie: [Aurelia](docs/AURELIA.md).
 
 ## Uruchomienie
 
 - Minecraft **1.21.1**, Java **21**, NeoForge **21.1.248**.
-- Włóż `crimeandlaw-0.1.41.jar` do `mods`, zastępując poprzedni JAR tego moda.
+- Włóż `crimeandlaw-0.1.42.jar` do `mods`, zastępując poprzedni JAR tego moda.
 - W rozgrywce sieciowej mod musi być **u graczy i na serwerze**.
-  **0.1.41 korzysta z protokołu 21** — używaj aktualnej wersji na obu stronach.
+  **0.1.42 korzysta z protokołu 22** — używaj aktualnej wersji na obu stronach.
   Starsze wersje od 0.1.26 do 0.1.28 używają protokołu 16.
 - W świecie jednoosobowym część serwerowa działa razem ze światem.
 - **G** otwiera panel; skrót można zmienić w sterowaniu. Esc lub X zamyka okno.

@@ -68,19 +68,23 @@ public final class HarvestServerSmoke {
                     java.util.function.Consumer<net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.RightClickBlock> veto=e->{if(e.getPos().equals(B))e.setCanceled(true);};
                     net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(veto);
                     try{HarvestController.open(owner,B);check(session(owner)==null,"Protection event can veto custom-key harvest");}finally{net.neoforged.neoforge.common.NeoForge.EVENT_BUS.unregister(veto);}
-                    HarvestController.open(owner,B);var s=session(owner);token=(UUID)field(s,"token");target=(int)field(s,"target");
+                    HarvestController.open(owner,B);var s=session(owner);token=(UUID)field(s,"token");check((int)field(s,"target")==-1,"Opening a session does not force a target");target=4;
                     HarvestController.cut(rival,new CultivationNetwork.Cut(token,target,0));HarvestController.cut(rival,new CultivationNetwork.Cut(token,target,1));
                     HarvestController.cut(owner,new CultivationNetwork.Cut(UUID.randomUUID(),target,1));
                     HarvestController.cut(owner,new CultivationNetwork.Cut(token,(target+1)%6,1));
+                    for(int invalid:new int[]{-1,6,32,Integer.MIN_VALUE,Integer.MAX_VALUE})HarvestController.cut(owner,new CultivationNetwork.Cut(token,invalid,0));
                     HarvestController.cut(owner,new CultivationNetwork.Cut(token,target,0));HarvestController.cut(owner,new CultivationNetwork.Cut(token,target,1));
                     check(count(owner)==6&&((AureliaPlant)level.getBlockEntity(B)).leaves()==63,"Foreign/stale nonce, wrong leaf and premature release award nothing");
                     at=level.getGameTime();stage=1;
                 }
                 case 1->{if(level.getGameTime()-at<25)return;HarvestController.cut(owner,new CultivationNetwork.Cut(token,target,0));at=level.getGameTime();stage=2;}
-                case 2->{if(level.getGameTime()-at<34)return;HarvestController.cut(owner,new CultivationNetwork.Cut(token,target,1));check(count(owner)==6,"Overlong hold does not award a leaf");at=level.getGameTime();stage=3;}
+                case 2->{if(level.getGameTime()-at<34)return;HarvestController.cut(owner,new CultivationNetwork.Cut(token,target,1));check(count(owner)==6,"Overlong hold does not award a leaf");check((int)field(session(owner),"target")==-1,"Failed attempt releases the selection for another free choice");target=1;at=level.getGameTime();stage=3;}
                 case 3->{if(level.getGameTime()-at<22)return;HarvestController.cut(owner,new CultivationNetwork.Cut(token,target,0));at=level.getGameTime();stage=4;}
                 case 4->{
                     if(level.getGameTime()-at<20)return;
+                    long originalBegin=(long)field(session(owner),"began");
+                    HarvestController.cut(owner,new CultivationNetwork.Cut(token,5,0));HarvestController.cut(owner,new CultivationNetwork.Cut(token,5,1));
+                    check(count(owner)==6&&(int)field(session(owner),"target")==target&&(long)field(session(owner),"began")==originalBegin,"Changing a leaf cannot transfer the timed hold or award anything");
                     replay=new CultivationNetwork.Cut(token,target,1);HarvestController.cut(owner,replay);HarvestController.cut(owner,replay);
                     check(count(owner)==7&&owner.getMainHandItem().getDamageValue()==7,"Replayed final packet cannot double the reward or tool wear");
                     check(PruningRules.count(((AureliaPlant)level.getBlockEntity(B)).leaves())==5,"Only one exact leaf disappears");
@@ -91,7 +95,7 @@ public final class HarvestServerSmoke {
                     var give=HarvestController.class.getDeclaredMethod("give",ServerPlayer.class,ItemStack.class);give.setAccessible(true);var reward=new ItemStack(CultivationContent.LEAF.get());give.invoke(null,rival,reward);
                     check(rival.getInventory().countItem(CultivationContent.LEAF.get())==0,"Full creative inventory is not mutated by an impossible insertion");
                     var drops=level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,rival.getBoundingBox().inflate(3),e->e.getItem().is(CultivationContent.LEAF.get()));check(drops.stream().mapToInt(e->e.getItem().getCount()).sum()==1,"Overflow reward survives as exactly one ground item");drops.forEach(net.minecraft.world.entity.Entity::discard);
-                    Files.writeString(OUT.resolve("security.PASS"),"Server-thread checks: recipes, special-tool gate, wall/reach checks, foreign/stale token, wrong leaf, early/late timing, replay, closure, partial NBT, full creative inventory conservation.\n");
+                    Files.writeString(OUT.resolve("security.PASS"),"Server-thread checks: recipes, special-tool gate, wall/reach checks, foreign/stale token, malformed leaf IDs, free choice, selection binding, early/late timing, replay, closure, partial NBT, full creative inventory conservation.\n");
                     server.saveEverything(true,true,true);Files.writeString(OUT.resolve("server.PASS"),"Actual two-client harvest, reservation isolation, six GUI cuts and hostile packet checks passed.\n");done=true;server.halt(false);
                 }
             }

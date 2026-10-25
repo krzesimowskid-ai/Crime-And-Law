@@ -845,3 +845,19 @@ testów opisuje `docs/VALIDATION_0.1.40.md`. Nie utożsamiać pełnego przegląd
   decyzjami wykonawczymi pierwszej wersji; nie stanowią wzoru realnej produkcji.
 - Nagrody, zużycie narzędzia i rezerwacja rośliny są serwerowe.
   Szczegóły gry i receptury: `docs/AURELIA.md`. Protokół 21, schemat gangów 4.
+
+
+## Korekta stylu i swobodny wybór liści — 25 października, 0.1.42
+
+- Użytkownik wskazał niespójność realistycznego liścia i rośliny względem
+  Minecrafta oraz modeli nożyc i nasion z materiałami bloków. Chce własnego
+  wyglądu w stylu pikselowym, przy zachowaniu prawdziwego 3D.
+- Zastąpiono grafikę trzema własnymi materiałami 32×32, ograniczoną paletą,
+  ostrym filtrowaniem i modelami ze schodkowymi bocznymi ściankami.
+  Roślina ma kanciaste, grube liście i własny materiał łodygi.
+- Użytkownik wybiera każdy pozostały liść, klikając powierzchnię lub znacznik.
+  Nie ma losowego celu ani narzuconej kolejności. Widocznych jest sześć
+  liści i wszystkie podlegają zbiorowi.
+- Serwer wiąże cel z początkiem cięcia, sprawdza czas i usuwa dokładnie
+  jeden liść. Zmiana celu, stare pakiety i duplikaty nie dają dodatkowej nagrody.
+- Protokół 22; schemat zapisów gangów i istniejące uprawy pozostają zgodne.
