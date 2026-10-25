@@ -18,9 +18,9 @@ public final class PotController {
     private record Key(String dimension,BlockPos pos){}
     private static final class Session {
         final UUID token=UUID.randomUUID(); UUID revision=UUID.randomUUID();final Key key;final Planter planter;
-        long activity,began;int operation,slot=-1;ItemStack expected=ItemStack.EMPTY;String message="Przygotuj doniczkę.";
+        long activity,began,inputAt,inputSecond;int inputCount;int operation,slot=-1,sequence=-1;double work,coverX,coverZ;boolean held,coverStarted;PreparationPhysics.Pose pose=new PreparationPhysics.Pose(.8,1,.5,0,0);ItemStack expected=ItemStack.EMPTY;String message="Przygotuj doniczkę.";
         Session(Key k,Planter p,long now){key=k;planter=p;activity=now;}
-        void reset(){operation=0;slot=-1;expected=ItemStack.EMPTY;}
+        void reset(){operation=0;slot=-1;expected=ItemStack.EMPTY;work=0;held=false;sequence=-1;coverStarted=false;}
     }
     private static final Map<ServerPlayer,Session> SESSIONS=new WeakHashMap<>();
     private static final Map<Key,ServerPlayer> LOCKS=new HashMap<>();
@@ -68,53 +68,91 @@ public final class PotController {
         close(p);var s=new Session(key,pot,p.serverLevel().getGameTime());SESSIONS.put(p,s);LOCKS.put(key,p);send(p,s,true);
     }
     private static boolean valid(ServerPlayer p,Session s){return s.key.dimension.equals(p.serverLevel().dimension().location().toString())&&problem(p,s.key.pos).isEmpty()&&Planter.at(p.serverLevel(),s.key.pos)==s.planter;}
+    public static void control(ServerPlayer p,PotNetwork.Control c){
+        var s=SESSIONS.get(p);if(s==null||!s.token.equals(c.token())||!s.revision.equals(c.revision())||c.sequence()<0||c.sequence()<=s.sequence)return;
+        long second=System.nanoTime()/1_000_000_000L;if(s.inputSecond!=second){s.inputSecond=second;s.inputCount=0;}if(++s.inputCount>24)return;
+        if(s.operation!=PotNetwork.POUR&&s.operation!=PotNetwork.WATER&&s.operation!=PotNetwork.PLANT&&s.operation!=PotNetwork.COVER)return;
+        var pose=new PreparationPhysics.Pose(c.x(),c.y(),c.z(),c.roll(),c.pitch());
+        if(s.operation==PotNetwork.COVER){
+            if(!Float.isFinite(c.x())||!Float.isFinite(c.y())||!Float.isFinite(c.z())||Math.abs(c.y()-PreparationPhysics.TOP)>.05||!PreparationPhysics.inside(c.x(),c.z(),.25))return;
+        }else if(!PreparationPhysics.bounded(pose))return;
+        if(!valid(p,s)||!ItemStack.matches(p.getInventory().getItem(s.slot),s.expected))return;
+        long now=p.serverLevel().getGameTime();
+        if(now==s.inputAt&&c.held()==s.held)return; // at most one accepted sample per simulation tick
+        if(s.operation==PotNetwork.COVER&&now>=s.began){
+            if(c.held()&&s.coverStarted){double d=Math.hypot(c.x()-s.coverX,c.z()-s.coverZ);if(d<=.22&&Math.hypot(c.x()-.5,c.z()-.5)<.20)s.work=Math.min(1000,s.work+d/.48*1000);}
+            s.coverX=c.x();s.coverZ=c.z();s.coverStarted=c.held();
+        }
+        s.pose=pose;s.held=c.held();s.sequence=c.sequence();s.inputAt=now;s.activity=now;
+    }
+    private static boolean unchanged(ServerPlayer p,Session s){return InventoryExchange.sourceSlot(s.slot)&&ItemStack.matches(p.getInventory().getItem(s.slot),s.expected);}
     public static void act(ServerPlayer p,PotNetwork.Action a){
         var s=SESSIONS.get(p);if(s==null||!s.token.equals(a.token()))return;
         if(a.action()==PotNetwork.CLOSE){close(p);return;}if(!allow(p))return;
         if(!valid(p,s)){s.message="Przygotowanie przerwane. Zapisano zatwierdzone czynności.";send(p,s,false);close(p);return;}
         s.activity=p.serverLevel().getGameTime();
         if(a.action()==PotNetwork.RECOVER){s.reset();s.revision=UUID.randomUUID();s.message="Stan odświeżony. Możesz kontynuować.";send(p,s,true);return;}
-        if(!s.revision.equals(a.revision())){send(p,s,true);return;}
-        s.revision=UUID.randomUUID(); // retire even rejected mutations, so delayed packets cannot repeat later
+        if(!s.revision.equals(a.revision())){send(p,s,true);return;}s.revision=UUID.randomUUID();
         if(!HarvestController.interactionAllowed(p,s.key.pos)||!valid(p,s)){s.reset();s.message="Czynność zablokowana lub stanowisko zmienione.";send(p,s,false);close(p);return;}
         var pot=s.planter;var plant=pot.plant;
         if(a.action()==PotNetwork.CANCEL){s.reset();s.message="Przerwano. Materiały zachowano.";send(p,s,true);return;}
         if(a.action()==PotNetwork.HARVEST){s.message="Przejście do zbioru.";send(p,s,false);close(p);HarvestController.open(p,s.key.pos);return;}
+        if(a.action()==PotNetwork.DROP){
+            if(s.operation!=PotNetwork.PLANT||!unchanged(p,s)){s.reset();s.message="Zmieniono nasiono. Wybierz je ponownie.";send(p,s,true);return;}
+            if(p.serverLevel().getGameTime()-s.inputAt>8||s.held||!PreparationPhysics.inside(s.pose.x(),s.pose.z(),.17)){
+                s.message="Nasiono minęło dołek. Podnieś je i spróbuj ponownie.";send(p,s,true);return;
+            }
+            double t=PreparationPhysics.flight(new PreparationPhysics.Point(s.pose.x(),s.pose.y(),s.pose.z()),new PreparationPhysics.Point(0,0,0),PreparationPhysics.TOP-.035);
+            if(t<0||t>2){send(p,s,true);return;}
+            s.operation=PotNetwork.COVER;s.began=p.serverLevel().getGameTime()+(long)Math.ceil(t*20);s.work=0;s.held=false;s.coverStarted=false;s.message="Nasiono opada. Przysuń ziemię nad dołek LPM.";send(p,s,true);return;
+        }
         if(a.action()==PotNetwork.FINISH){
-            int operation=s.operation,slot=s.slot;long held=p.serverLevel().getGameTime()-s.began;var expected=s.expected.copy();s.reset();
-            if(!CultivationRules.validHold(operation,held)||!InventoryExchange.sourceSlot(slot)||!ItemStack.matches(p.getInventory().getItem(slot),expected)){s.message="Nie ukończono czynności lub zmieniono przedmiot.";send(p,s,true);return;}
-            ItemStack replacement;int water=0;
-            if(operation==PotNetwork.POUR&&!plant.soil()&&expected.getItem() instanceof GardenSupplyItem item&&item.kind==GardenSupplyItem.Kind.SOIL&&item.contents(expected)>0)replacement=item.usedSoil(expected);
-            else if(operation==PotNetwork.WATER&&plant.soil()&&expected.getItem() instanceof GardenSupplyItem item&&item.kind==GardenSupplyItem.Kind.WATER&&(water=Math.min(item.contents(expected),CultivationRules.WATER_CAPACITY-plant.water()))>0)replacement=item.withContents(expected,item.contents(expected)-water);
-            else {s.message="Czynność nie jest już potrzebna.";send(p,s,true);return;}
-            var plan=InventoryExchange.prepare(p,slot,expected,replacement,ItemStack.EMPTY);
-            if(plan==null||!plan.commit()){s.message="Ekwipunek się zmienił. Spróbuj ponownie.";send(p,s,true);return;}
-            if(operation==PotNetwork.POUR)plant.fillSoil();else plant.addWater(water);
-            pot.changed();s.message=operation==PotNetwork.POUR?"Ziemia wsypana. Wybierz nasiono lub sadzonkę.":"Doniczka podlana.";
-            p.serverLevel().playSound(null,s.key.pos,operation==PotNetwork.POUR?SoundEvents.GRAVEL_PLACE:SoundEvents.BUCKET_EMPTY,SoundSource.BLOCKS,.65f,1);send(p,s,true);return;
+            int op=s.operation,slot=s.slot;double work=s.work;long held=p.serverLevel().getGameTime()-s.began;var expected=s.expected.copy();
+            boolean source=unchanged(p,s);s.reset();
+            if(!source||!CultivationRules.validHold(op,held)||op!=PotNetwork.CUT&&work<999){s.message="Nie ukończono gestu lub zmieniono przedmiot. Materiały zachowano.";send(p,s,true);return;}
+            ItemStack replacement,reward=ItemStack.EMPTY;int water=0;boolean seedling=expected.is(CultivationContent.SEEDLING.get());
+            if(op==PotNetwork.CUT&&expected.getItem() instanceof GardenSupplyItem item&&item.kind==GardenSupplyItem.Kind.SOIL&&!item.opened(expected)){
+                var opened=item.openSoil(expected);replacement=expected.copy();replacement.shrink(1);if(replacement.isEmpty())replacement=opened;else reward=opened;
+            }else if(op==PotNetwork.POUR&&!plant.soil()&&expected.getItem() instanceof GardenSupplyItem item&&item.kind==GardenSupplyItem.Kind.SOIL&&item.opened(expected)&&item.contents(expected)>0)replacement=item.usedSoil(expected);
+            else if(op==PotNetwork.WATER&&plant.soil()&&expected.getItem() instanceof GardenSupplyItem item&&item.kind==GardenSupplyItem.Kind.WATER&&(water=Math.min(item.contents(expected),100-plant.water()))>0)replacement=item.withContents(expected,item.contents(expected)-water);
+            else if(op==PotNetwork.COVER&&plant.soil()&&!plant.planted()&&(expected.is(CultivationContent.SEEDS.get())||seedling||expected.is(CultivationContent.SEED_PACKET.get()))){replacement=expected.copy();replacement.shrink(1);if(expected.is(CultivationContent.SEED_PACKET.get()))reward=new ItemStack(CultivationContent.SEEDS.get(),CultivationRules.PACK_SEEDS-1);}
+            else{s.message="Czynność nie jest już potrzebna.";send(p,s,true);return;}
+            var plan=InventoryExchange.prepare(p,slot,expected,replacement,reward);
+            if(plan==null||!plan.commit()){s.message="Zrób miejsce w ekwipunku. Materiały zachowano.";send(p,s,true);return;}
+            if(op==PotNetwork.CUT){s.message="Worek rozcięty. Złap go LPM, przechylaj WASD.";}
+            else if(op==PotNetwork.POUR){plant.fillSoil();s.message="Doniczka pełna. Przygotuj nasiono.";}
+            else if(op==PotNetwork.COVER){plant.plant(seedling);s.message="Nasiono przysypane. Podlej konewką.";}
+            else{plant.addWater(water);s.message="Doniczka podlana.";}
+            pot.changed();p.serverLevel().playSound(null,s.key.pos,op==PotNetwork.WATER?SoundEvents.BUCKET_EMPTY:SoundEvents.GRAVEL_PLACE,SoundSource.BLOCKS,.60f,1);send(p,s,true);return;
         }
         if(s.operation!=0){s.message="Najpierw zakończ lub anuluj trwającą czynność.";send(p,s,true);return;}
         if(!InventoryExchange.sourceSlot(a.slot())){s.message="Wybierz przedmiot z ekwipunku.";send(p,s,true);return;}
-        var stack=p.getInventory().getItem(a.slot());
-        if(a.action()==PotNetwork.POUR||a.action()==PotNetwork.WATER){
-            boolean ok=stack.getItem() instanceof GardenSupplyItem item&&item.contents(stack)>0&&(a.action()==PotNetwork.POUR?item.kind==GardenSupplyItem.Kind.SOIL&&!plant.soil():item.kind==GardenSupplyItem.Kind.WATER&&plant.soil()&&plant.water()<100);
-            if(ok){s.operation=a.action();s.slot=a.slot();s.expected=stack.copy();s.began=p.serverLevel().getGameTime();s.message=s.operation==PotNetwork.POUR?"Kieruj ziemię do otworu doniczki.":"Kieruj wodę do doniczki.";}
-            else s.message="Brak odpowiedniego materiału lub doniczka jest już pełna.";
-        }else if(a.action()==PotNetwork.UNPACK){s.message=unpack(p,a.slot())?"Woreczek otwarty. Masz 5 luźnych nasion.":"Brak woreczka lub miejsca na nasiona.";}
-        else if(a.action()==PotNetwork.PLANT){
-            boolean seedling=stack.is(CultivationContent.SEEDLING.get());
-            if(plant.soil()&&!plant.planted()&&(stack.is(CultivationContent.SEEDS.get())||seedling)){
-                var replacement=stack.copy();replacement.shrink(1);var plan=InventoryExchange.prepare(p,a.slot(),stack,replacement,ItemStack.EMPTY);
-                if(plan!=null&&plan.commit()){plant.plant(seedling);pot.changed();s.message="Roślina zasadzona. Podlej ją konewką.";}
-            }else s.message="Najpierw wsyp ziemię i wybierz nasiono lub sadzonkę.";
+        var stack=p.getInventory().getItem(a.slot());boolean ok=false;
+        if(a.action()==PotNetwork.CUT||a.action()==PotNetwork.POUR||a.action()==PotNetwork.WATER){
+            ok=stack.getItem() instanceof GardenSupplyItem item&&item.contents(stack)>0&&(a.action()==PotNetwork.WATER?item.kind==GardenSupplyItem.Kind.WATER&&plant.soil()&&plant.water()<100:item.kind==GardenSupplyItem.Kind.SOIL&&!plant.soil()&&(a.action()==PotNetwork.CUT?!item.opened(stack):item.opened(stack)));
+        }else if(a.action()==PotNetwork.UNPACK){s.message=unpack(p,a.slot())?"Woreczek otwarty. Masz 5 luźnych nasion.":"Brak woreczka lub miejsca na nasiona.";send(p,s,true);return;}
+        else if(a.action()==PotNetwork.PLANT){ok=plant.soil()&&!plant.planted()&&(stack.is(CultivationContent.SEEDS.get())||stack.is(CultivationContent.SEEDLING.get())||stack.is(CultivationContent.SEED_PACKET.get()));
+            if(ok&&stack.is(CultivationContent.SEED_PACKET.get())){var rest=stack.copy();rest.shrink(1);ok=InventoryExchange.prepare(p,a.slot(),stack,rest,new ItemStack(CultivationContent.SEEDS.get(),4))!=null;}
         }
+        if(ok){s.reset();s.operation=a.action();s.slot=a.slot();s.expected=stack.copy();s.began=p.serverLevel().getGameTime();s.inputAt=0;s.message=s.operation==PotNetwork.CUT?"Przeciągnij ostrze wzdłuż oznaczonego szwu.":s.operation==PotNetwork.PLANT?"Podnieś nasiono LPM i puść nad dołkiem.":"Trzymaj przedmiot LPM. A/D przechyla, W/S kieruje przód/tył.";}
+        else s.message="Brak odpowiedniego materiału, miejsca lub stanowisko jest już gotowe.";
         send(p,s,true);
     }
     private static boolean unpack(ServerPlayer p,int slot){var stack=p.getInventory().getItem(slot);if(!stack.is(CultivationContent.SEED_PACKET.get()))return false;var replacement=stack.copy();replacement.shrink(1);var plan=InventoryExchange.prepare(p,slot,stack,replacement,new ItemStack(CultivationContent.SEEDS.get(),CultivationRules.PACK_SEEDS));return plan!=null&&plan.commit();}
     public static void openPacket(ServerPlayer p,int slot){if(allow(p)&&!p.isSpectator()&&!p.isDeadOrDying()&&InventoryExchange.sourceSlot(slot))notice(p,unpack(p,slot)?"Rozpakowano 5 nasion.":"Zrób miejsce w ekwipunku na nasiona.");}
-    private static void send(ServerPlayer p,Session s,boolean active){var pot=s.planter;var plant=pot.plant;PotNetwork.send(p,new PotNetwork.State(s.key.pos,s.token,s.revision,plant.stage(),plant.growth(),plant.water(),plant.leaves(),plant.total(),pot.frame(),pot.hasPot(),pot.hasLamp(),pot.lit(),active,s.operation,s.message));}
+    private static void send(ServerPlayer p,Session s,boolean active){var pot=s.planter;var plant=pot.plant;PotNetwork.send(p,new PotNetwork.State(s.key.pos,s.token,s.revision,plant.stage(),plant.growth(),plant.water(),plant.leaves(),plant.total(),pot.frame(),pot.hasPot(),pot.hasLamp(),pot.lit(),active,s.operation,(int)s.work,s.slot,s.message));}
     private static void close(ServerPlayer p){var s=SESSIONS.remove(p);if(s!=null)LOCKS.remove(s.key,p);}
-    @SubscribeEvent public static void tick(ServerTickEvent.Post e){if(e.getServer().getTickCount()%20!=0)return;for(var p:new ArrayList<>(SESSIONS.keySet())){var s=SESSIONS.get(p);if(p.server!=e.getServer())continue;if(p.hasDisconnected()){close(p);continue;}if(!valid(p,s)||p.serverLevel().getGameTime()-s.activity>1800){s.message="Przygotowanie przerwane. Zatwierdzony postęp zachowano.";send(p,s,false);close(p);}else send(p,s,true);}}
+    @SubscribeEvent public static void tick(ServerTickEvent.Post e){
+        long now=e.getServer().getTickCount();for(var p:new ArrayList<>(SESSIONS.keySet())){var s=SESSIONS.get(p);if(p.server!=e.getServer())continue;
+            if(p.hasDisconnected()){close(p);continue;}
+            if(now%5==0&&(!valid(p,s)||p.serverLevel().getGameTime()-s.activity>1800)){s.message="Przygotowanie przerwane. Zatwierdzony postęp zachowano.";send(p,s,false);close(p);continue;}
+            if((s.operation==PotNetwork.POUR||s.operation==PotNetwork.WATER)&&p.serverLevel().getGameTime()-s.inputAt<=8&&s.held&&unchanged(p,s)){
+                boolean water=s.operation==PotNetwork.WATER;var stream=PreparationPhysics.stream(s.pose,water,true);
+                if(PreparationPhysics.reachesSoil(stream,water?1:s.work/1000))s.work=Math.min(1000,s.work+1000.0/(water?30:60));
+            }
+            if(now%5==0)send(p,s,true);
+        }
+    }
     @SubscribeEvent public static void logout(PlayerEvent.PlayerLoggedOutEvent e){if(e.getEntity() instanceof ServerPlayer p){close(p);RATES.remove(p);}}
     @SubscribeEvent public static void stop(ServerStoppedEvent e){SESSIONS.keySet().removeIf(p->p.server==e.getServer());LOCKS.entrySet().removeIf(x->x.getValue().server==e.getServer());RATES.keySet().removeIf(p->p.server==e.getServer());}
 }

@@ -23,23 +23,24 @@ public final class AureliaMesh {
     }
     private AureliaMesh(){}
     public static void draw(PoseStack pose,MultiBufferSource buffers,int age,int mask,int target,float time,int light){draw(pose,buffers,age,mask,target,time,light,8);}
-    public static void draw(PoseStack pose,MultiBufferSource buffers,int age,int mask,int target,float time,int light,int total){
+    public static void draw(PoseStack pose,MultiBufferSource buffers,int age,int mask,int target,float time,int light,int total){draw(pose,buffers,age,mask,target,time,light,total,-1);}
+    public static void draw(PoseStack pose,MultiBufferSource buffers,int age,int mask,int target,float time,int light,int total,int tint){
         float growth=.24f+age*.19f;
         pose.pushPose();pose.translate(.5,0,.5);pose.scale(growth,growth,growth);pose.translate(-.5,0,-.5);
         var stem=buffers.getBuffer(RenderType.entityCutoutNoCull(PixelSprite.STEM));
-        stem(pose,stem,new Vec3(.5,.025,.5),new Vec3(.5,.87,.5),.021f,light);
-        for(int id=0;id<8;id++)if((mask&(1<<id))!=0){var leaf=leaf(id,total);stem(pose,stem,leaf.base,leaf.point(.25f,0),.008f,light);}
+        stem(pose,stem,new Vec3(.5,.025,.5),new Vec3(.5,.87,.5),.021f,light,tint);
+        for(int id=0;id<8;id++)if((mask&(1<<id))!=0){var leaf=leaf(id,total);stem(pose,stem,leaf.base,leaf.point(.25f,0),.008f,light,tint);}
         var leaves=buffers.getBuffer(RenderType.entityCutoutNoCull(LEAF));
-        for(int id=0;id<8;id++)if((mask&(1<<id))!=0)drawLeaf(pose,leaves,leaf(id,total),light,id==target?0xFFFFFFCE:0xFFFFFFFF,time,id==target);
+        for(int id=0;id<8;id++)if((mask&(1<<id))!=0)drawLeaf(pose,leaves,leaf(id,total),light,id==target?0xFFFFFFCE:tint,time,id==target);
         pose.popPose();
     }
     public static void drawLeaf(PoseStack pose,VertexConsumer out,Leaf leaf,int light,int color,float time,boolean selected){
         PixelSprite.LEAF.draw(pose,out,(u,v,d)->leaf.point(1-v,u*2-1).add(0,d,0),.0065f,color,light,true);
     }
-    private static void stem(PoseStack pose,VertexConsumer out,Vec3 a,Vec3 b,float radius,int light){
+    private static void stem(PoseStack pose,VertexConsumer out,Vec3 a,Vec3 b,float radius,int light,int tint){
         Vec3 direction=b.subtract(a).normalize(),u=direction.cross(new Vec3(0,0,1)).normalize();if(u.lengthSqr()<.1)u=new Vec3(1,0,0);Vec3 v=direction.cross(u).normalize();
         Vec3[] corners=new Vec3[4];for(int i=0;i<4;i++){double p=Math.PI/4+i*Math.PI/2;corners[i]=u.scale(Math.cos(p)*radius).add(v.scale(Math.sin(p)*radius));}
-        for(int i=0;i<4;i++)PixelSprite.quad(pose,out,a.add(corners[i]),b.add(corners[i]),b.add(corners[(i+1)%4]),a.add(corners[(i+1)%4]),0,0,1,1,light,0xFFFFFFFF);
-        PixelSprite.quad(pose,out,b.add(corners[0]),b.add(corners[1]),b.add(corners[2]),b.add(corners[3]),0,0,1,1,light,0xFFFFFFFF);
+        for(int i=0;i<4;i++)PixelSprite.quad(pose,out,a.add(corners[i]),b.add(corners[i]),b.add(corners[(i+1)%4]),a.add(corners[(i+1)%4]),0,0,1,1,light,tint);
+        PixelSprite.quad(pose,out,b.add(corners[0]),b.add(corners[1]),b.add(corners[2]),b.add(corners[3]),0,0,1,1,light,tint);
     }
 }

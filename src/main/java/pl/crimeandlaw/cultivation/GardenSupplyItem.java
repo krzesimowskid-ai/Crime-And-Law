@@ -19,12 +19,14 @@ public final class GardenSupplyItem extends Item {
     public GardenSupplyItem(Kind kind,int capacity,Properties props){super(props);this.kind=kind;this.capacity=capacity;}
     public int contents(ItemStack stack){var tag=stack.getOrDefault(DataComponents.CUSTOM_DATA,CustomData.EMPTY).copyTag();String key=kind==Kind.WATER?"water":"uses";return tag.contains(key)?Math.clamp(tag.getInt(key),0,capacity):kind==Kind.WATER?0:capacity;}
     public ItemStack withContents(ItemStack stack,int n){var copy=stack.copy();var tag=copy.getOrDefault(DataComponents.CUSTOM_DATA,CustomData.EMPTY).copyTag();tag.putInt(kind==Kind.WATER?"water":"uses",Math.clamp(n,0,capacity));copy.set(DataComponents.CUSTOM_DATA,CustomData.of(tag));return copy;}
+    public boolean opened(ItemStack s){return s.getOrDefault(DataComponents.CUSTOM_DATA,CustomData.EMPTY).copyTag().getBoolean("opened");}
+    public ItemStack openSoil(ItemStack s){var copy=s.copyWithCount(1);var tag=copy.getOrDefault(DataComponents.CUSTOM_DATA,CustomData.EMPTY).copyTag();tag.putBoolean("opened",true);copy.set(DataComponents.CUSTOM_DATA,CustomData.of(tag));return copy;}
     public ItemStack usedSoil(ItemStack stack){int left=contents(stack)-1;if(left<=0){var c=stack.copy();c.shrink(1);return c;}return withContents(stack,left);}
     @Override public boolean isBarVisible(ItemStack stack){return (kind==Kind.WATER||kind==Kind.SOIL&&capacity>1)&&contents(stack)<capacity;}
     @Override public int getBarWidth(ItemStack stack){return Math.round(13f*contents(stack)/Math.max(1,capacity));}
     @Override public int getBarColor(ItemStack stack){return kind==Kind.WATER?0x63BEE0:0xC6AC77;}
     @Override public void appendHoverText(ItemStack stack,TooltipContext context,List<Component> lines,TooltipFlag flag){
-        if(kind==Kind.SOIL)lines.add(Component.literal("Pozostało pełnych napełnień: "+contents(stack)+" / "+capacity));
+        if(kind==Kind.SOIL){lines.add(Component.literal("Pozostało pełnych napełnień: "+contents(stack)+" / "+capacity));lines.add(Component.literal(opened(stack)?"Worek rozcięty":"Rozetnij worek w przygotowaniu doniczki"));}
         if(kind==Kind.PACK)lines.add(Component.literal("5 nasion • PPM, aby rozpakować"));
         if(kind==Kind.WATER){lines.add(Component.literal("Woda: "+contents(stack)+" / "+capacity));lines.add(Component.literal("Napełnij PPM przy źródle wody"));}
         if(kind==Kind.LAMP)lines.add(Component.literal("Montowana w górnym bloku stelaża • jedna doniczka"));
