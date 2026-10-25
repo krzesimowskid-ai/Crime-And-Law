@@ -783,3 +783,15 @@ gdy właściwe systemy własności oraz mapy będą rozwijane.
   i „Opuść gang” pozostają w stopce bez nakładania się przycisków.
 - Nowe identyfikatory 11 i 12 nie zmieniają wcześniejszych zakładek.
   Protokół 19 i schemat danych 4 pozostają bez zmian.
+
+## Przewijana nawigacja — 0.1.38
+
+- Użytkownik wskazał, że zamiast zmniejszać odstępy można przewijać zakładki.
+- Przywrócono odstęp 24 jednostek i wysokość przycisków 19 jednostek.
+- Lista ma osobne przewijanie kółkiem, paskiem oraz klawiaturą po
+  zaznaczeniu paska. „Ustawienia” i „Opuść gang” pozostają w stopce.
+- Pozycja listy jest zachowana po przełączeniu zakładki, zmianie skali
+  i odświeżeniu danych. Zmiana gangu przywraca początek listy.
+- Ukryte wiersze nie przechwytują kliknięć w nagłówku ani stopce.
+- „Ulepszenia” i „Kontrakty” nadal pokazują „W przygotowaniu”.
+  Protokół 19 i schemat danych 4 pozostają bez zmian.

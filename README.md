@@ -1,7 +1,7 @@
 # Crime And Law
 
 Autorski mod gangsterski: panel gangów, członkostwo i własny wygląd menu.
-Wersja **0.1.37**.
+Wersja **0.1.38**.
 
 Pierwsza propozycja własnej ekonomii w dolarach i rozwoju terenów:
 [Balans terytoriów](docs/BALANS_TERYTORIOW.md) oraz
@@ -15,9 +15,9 @@ Przejmowanie terenów, zegar świata oraz oznaczenia mapy już działają:
 ## Uruchomienie
 
 - Minecraft **1.21.1**, Java **21**, NeoForge **21.1.248**.
-- Włóż `crimeandlaw-0.1.37.jar` do `mods`, zastępując poprzedni JAR tego moda.
+- Włóż `crimeandlaw-0.1.38.jar` do `mods`, zastępując poprzedni JAR tego moda.
 - W rozgrywce sieciowej mod musi być **u graczy i na serwerze**.
-  **0.1.37 korzysta z protokołu 19** — wymaga tej samej wersji na obu stronach.
+  **0.1.38 korzysta z protokołu 19** — wymaga tej samej wersji na obu stronach.
   Starsze wersje od 0.1.26 do 0.1.28 używają protokołu 16.
 - W świecie jednoosobowym część serwerowa działa razem ze światem.
 - **G** otwiera panel; skrót można zmienić w sterowaniu. Esc lub X zamyka okno.
@@ -89,6 +89,9 @@ obszaru treści. Poniżej „Informacje o gangu” i trzy równomierne kolumny:
 liczba członków, lider oraz miejsce na poziom gangu. Członkowie nie mają limitu.
 Pole poziomu pokazuje „— / Wkrótce”; system zdobywania poziomów jest do ustalenia.
 „Ustawienia” znajdują się na dole nawigacji, nad „Opuść gang”.
+Listę zakładek przewija się kółkiem myszy lub paskiem po jej prawej stronie.
+Przyciski zachowują poprzednie odstępy, a stopka pozostaje na miejscu.
+Po przełączeniu zakładki i odświeżeniu danych pozycja listy jest zachowana.
 Dostępne są też „Ulepszenia” i „Kontrakty”: obie zakładki pokazują
 „W przygotowaniu”. Ich szczegóły i mechaniki zostaną ustalone później.
 Mapa pokazuje rozpoznane tereny, pozwala przesuwać zapisany obraz, ręcznie oznaczać
@@ -251,7 +254,7 @@ Windows: gradlew.bat build
 Linux/macOS: ./gradlew build
 ```
 
-Wynik: `build/libs/crimeandlaw-0.1.37.jar`.
+Wynik: `build/libs/crimeandlaw-0.1.38.jar`.
 Gradle Wrapper 9.2.1, ModDevGradle 2.0.148, NeoForge 21.1.248.
 `./gradlew test` sprawdza model, migrację zapisów, duże listy i prywatność
 zgłoszeń, walidację/edycję logo, kolory oraz skalowanie menu.

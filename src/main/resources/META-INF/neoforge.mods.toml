@@ -3,7 +3,7 @@ loaderVersion="[4,)"
 license="All Rights Reserved"
 [[mods]]
 modId="crimeandlaw"
-version="0.1.37"
+version="0.1.38"
 displayName="Crime And Law"
 description='''Gangi graczy: własne logo, członkostwo i kompaktowy panel.'''
 [[mixins]]

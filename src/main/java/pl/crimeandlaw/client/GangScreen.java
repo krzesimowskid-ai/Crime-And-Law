@@ -33,6 +33,9 @@ public final class GangScreen extends Screen {
     private boolean roleMoved;
     private final Map<String,FlatButton> roleButtons=new LinkedHashMap<>();
     private final Map<FlatButton,Integer> listRows=new LinkedHashMap<>();
+    private final Map<FlatButton,Integer> navigationRows=new LinkedHashMap<>();
+    private final ScrollPosition navigationScroll=new ScrollPosition();
+    private int navigationTop,navigationBottom;
     private final List<DirectoryRow> directoryRows=new ArrayList<>();
     private record DirectoryRow(String name,int y){}
     private final ScrollPosition directoryScroll=new ScrollPosition(),roleScroll=new ScrollPosition();
@@ -93,7 +96,7 @@ public final class GangScreen extends Screen {
             lastGang=id;tab=0;selectedMember="";memberPage=0;previewTheme=false;lastHistoryPage=-1;historyScroll.reset();
             Theme t=theme();background=String.format("%06X",t.background());border=String.format("%06X",t.border());opacity=t.opacity();
             draftLogo="";selectedRole="member";roleName="";rolePermissions.clear();draggedRole="";roleMoved=false;
-            roleDraftFor="";roleScroll.reset();directoryScroll.reset();draftBanner=null;terrainCenter="";terrainSelection=null;
+            roleDraftFor="";roleScroll.reset();directoryScroll.reset();navigationScroll.reset();draftBanner=null;terrainCenter="";terrainSelection=null;
         }
         if(g!=null&&draftBanner!=null&&draftBanner.equals(g.banner))draftBanner=null;
         if(g!=null&&!draftLogo.isEmpty()&&draftLogo.equals(g.logo))draftLogo="";
@@ -102,7 +105,7 @@ public final class GangScreen extends Screen {
     @Override protected void init(){
         layout=GangLayout.of(width,height);w=layout.panelWidth();h=layout.panelHeight();
         left=(layout.canvasWidth()-w)/2;top=(layout.canvasHeight()-h)/2;
-        labels.clear();historyRows.clear();roleButtons.clear();listRows.clear();directoryRows.clear();activeList=null;
+        labels.clear();historyRows.clear();roleButtons.clear();listRows.clear();navigationRows.clear();directoryRows.clear();activeList=null;
         createGangButton=null;saveRoleButton=null;memberCard=null;financeTable=null;goalsPanel=null;
         Gang g=gang();
         if(!ClientState.ready()){addRenderableWidget(new CloseButton(left+w-30,top+11,b->onClose(),this::theme));return;}
@@ -118,11 +121,16 @@ public final class GangScreen extends Screen {
             cx=left+116;cy=top+55;cw=w-130;
             addRenderableWidget(new CloseButton(left+w-30,top+11,b->onClose(),this::theme));
             int settingsY=top+h-75;
-            // Keep every category above the footer, including the upcoming panels.
-            int tabSpacing=Math.min(24,(settingsY-cy-23)/Math.max(1,TABS.size()-1));
+            navigationTop=cy;navigationBottom=settingsY-8;
+            navigationScroll.range(navigationBottom-navigationTop,Math.max(0,TABS.size()*24-5));
+            int navigationWidth=navigationScroll.maximum()>0?86:96;
             for(int i=0;i<TABS.size();i++){
-                final GangCategory category=TABS.get(i);final int chosen=category.tabId();button(left+10,cy+i*tabSpacing,96,category==GangCategory.BALANCE?"Saldo gangu":category.label(),b->{tab=chosen;requestedFinanceTab=-1;requestedBlacklist=-1;memberPage=0;bodyScroll=0;historyScroll.reset();if(chosen==9)send("goals_view",new JsonObject());rebuildWidgets();},tab==chosen);
+                final GangCategory category=TABS.get(i);final int chosen=category.tabId();int rowY=cy+i*24;
+                var row=button(left+10,rowY,navigationWidth,category==GangCategory.BALANCE?"Saldo gangu":category.label(),b->{tab=chosen;requestedFinanceTab=-1;requestedBlacklist=-1;memberPage=0;bodyScroll=0;historyScroll.reset();if(chosen==9)send("goals_view",new JsonObject());rebuildWidgets();},tab==chosen);
+                navigationRows.put(row,rowY);
             }
+            positionNavigationRows();
+            addRenderableWidget(new RegisterScrollBar(left+96,navigationTop,navigationBottom-navigationTop,navigationScroll,this::theme,"Przewijanie zakładek"));
             button(left+10,settingsY,96,"Ustawienia",b->{tab=3;bodyScroll=0;rebuildWidgets();},tab==3);
             String leaveMessage=ClientState.memberCount()==1?"Ostatni członek opuszcza gang — gang zostanie usunięty.":isLeader()?"Lider musi najpierw przekazać przywództwo.":"Czy chcesz opuścić ten gang?";
             button(left+10,top+h-48,96,"Opuść gang",b->confirm("Opuścić gang?",leaveMessage,()->send("leave",new JsonObject())));
@@ -193,6 +201,13 @@ public final class GangScreen extends Screen {
         button(cx+cw-42,y,42,"›",b->{directoryScroll.reset();listPage=page+1;ClientState.refresh(query,page+1);}).active=page+1<pages;
     }
     private void search(){directoryScroll.reset();listPage=0;memberPage=0;ClientState.refresh(query,0);}
+    private void positionNavigationRows(){
+        for(var entry:navigationRows.entrySet()){
+            var row=entry.getKey();row.setY(entry.getValue()-(int)Math.round(navigationScroll.offset()));
+            row.visible=row.getY()>=navigationTop&&row.getY()+row.getHeight()<=navigationBottom;
+            if(!row.visible&&getFocused()==row)setFocused(null);
+        }
+    }
     private void positionListRows(){
         if(activeList==null)return;
         for(var entry:listRows.entrySet()){
@@ -541,7 +556,7 @@ public final class GangScreen extends Screen {
         g.pose().popPose();
     }
     private void paint(GuiGraphics g,int mouseX,int mouseY,float delta){
-        scrollDraggedRole();positionListRows();
+        scrollDraggedRole();positionListRows();positionNavigationRows();
         g.fill(0,0,layout.canvasWidth(),layout.canvasHeight(),0x55000000);
         g.fill(left+3,top+3,left+w+3,top+h+3,0x44000000);
         Theme t=theme();g.fill(left,top,left+w,top+h,t.backgroundArgb());
@@ -672,7 +687,7 @@ public final class GangScreen extends Screen {
     private static int mix(int a,int b,float ratio){int r=(int)((a>>16&255)*(1-ratio)+(b>>16&255)*ratio),g=(int)((a>>8&255)*(1-ratio)+(b>>8&255)*ratio),blue=(int)((a&255)*(1-ratio)+(b&255)*ratio);return r<<16|g<<8|blue;}
     private int roleDropIndex(double y){return Math.clamp((int)Math.floor((y+roleScroll.offset()-listTop)/22),0,gang().roles.size()-1);}
     @Override public boolean mouseClicked(double x,double y,int button){
-        positionListRows();
+        positionListRows();positionNavigationRows();
         x=layout.local(x);y=layout.local(y);
         if(memberCard!=null&&!memberCard.isMouseOver(x,y)){selectedMember="";rebuildWidgets();}
         String role="";
@@ -704,6 +719,9 @@ public final class GangScreen extends Screen {
     @Override public void mouseMoved(double x,double y){super.mouseMoved(layout.local(x),layout.local(y));}
     @Override public boolean mouseScrolled(double x,double y,double horizontal,double vertical){
         x=layout.local(x);y=layout.local(y);
+        if(gang()!=null&&x>=left+3&&x<left+108&&y>=navigationTop&&y<navigationBottom){
+            navigationScroll.scroll(-vertical*24);positionNavigationRows();return true;
+        }
         if(activeList!=null&&x>=cx&&x<cx+(gang()==null?cw:Math.min(150,(cw-12)/2))&&y>=listTop&&y<listBottom){
             activeList.scroll(-vertical*23);positionListRows();return true;
         }
