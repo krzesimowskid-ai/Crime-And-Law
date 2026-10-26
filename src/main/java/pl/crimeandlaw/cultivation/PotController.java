@@ -102,7 +102,7 @@ public final class PotController {
             if(p.serverLevel().getGameTime()-s.inputAt>8||s.held||!PreparationPhysics.inside(s.pose.x(),s.pose.z(),.17)){
                 s.message="Nasiono minęło dołek. Podnieś je i spróbuj ponownie.";send(p,s,true);return;
             }
-            double t=PreparationPhysics.flight(new PreparationPhysics.Point(s.pose.x(),s.pose.y(),s.pose.z()),new PreparationPhysics.Point(0,0,0),PreparationPhysics.TOP-.035);
+            double t=PreparationPhysics.flight(new PreparationPhysics.Point(s.pose.x(),s.pose.y(),s.pose.z()),new PreparationPhysics.Point(0,0,0),PreparationPhysics.seedRestY());
             if(t<0||t>2){send(p,s,true);return;}
             s.operation=PotNetwork.COVER;s.began=p.serverLevel().getGameTime()+(long)Math.ceil(t*20);s.work=0;s.held=false;s.coverStarted=false;s.message="Nasiono opada. Przysuń ziemię nad dołek LPM.";send(p,s,true);return;
         }

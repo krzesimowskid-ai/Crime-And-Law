@@ -33,6 +33,14 @@ public final class GardenClientSmoke {
         if(ROLE.equals("visual")){visual(mc);return;}if(++frames%3!=0)return;if(frames%30==0&&mc.screen instanceof PreparationScreen z)Files.writeString(OUT.resolve("debug-client.txt"),"step="+step+" op="+z.state().operation()+" work="+z.state().work()+" pose="+z.toolPose()+" grabbed="+field(z,"grabbed")+" pending="+field(z,"pending"));
         if(step<0){if(!(mc.screen instanceof TitleScreen)||mc.getOverlay()!=null)return;mc.options.tutorialStep=net.minecraft.client.tutorial.TutorialSteps.NONE;mc.getToasts().clear();mc.options.guiScale().set(2);mc.options.framerateLimit().set(45);mc.resizeDisplay();ConnectScreen.startConnecting(mc.screen,mc,ServerAddress.parseString("127.0.0.1:25598"),new ServerData("Garden QA","127.0.0.1:25598",ServerData.Type.OTHER),false,null);step=0;return;}
         if(mc.player==null||mc.level==null)return;
+        if(mc.screen instanceof PreparationScreen prep&&prep.state().operation()==PotNetwork.POUR){
+            for(var part:(java.util.List<?>)field(prep,"particles")){
+                if((boolean)field(part,"water"))continue;
+                var stream=new PreparationPhysics.Stream((PreparationPhysics.Point)field(part,"start"),(PreparationPhysics.Point)field(part,"velocity"),true);
+                var point=PreparationPhysics.at(stream,((Number)field(part,"age")).doubleValue());
+                check(!PreparationPhysics.insideBag(prep.toolPose(),point,.007),"Rendered soil particle never penetrates rotating bag");
+            }
+        }
         if(ROLE.equals("rival")){
             if(step==0&&Files.exists(OUT.resolve("owner-open.ready"))&&mc.screen==null&&mc.player.tickCount>40){PotNetwork.open(A);pressed=System.nanoTime();step=1;return;}
             if(step==1&&System.nanoTime()-pressed>2_000_000_000L){check(!(mc.screen instanceof PreparationScreen),"Rival cannot open owner's locked pot");Files.writeString(OUT.resolve("rival-attempt.sent"),"actual packet sent");Files.writeString(OUT.resolve("rival.PASS"),"Second TCP player denied same preparation session\n");done=true;}return;
@@ -55,8 +63,8 @@ public final class GardenClientSmoke {
             case 23->{var s=(PreparationScreen)mc.screen;if(field(s,"pending")!=null)return;check(System.nanoTime()-pressed>=3_000_000_000L,"Prep recovery waits three seconds");check(s.state().stage()==0&&mc.player.getInventory().countItem(CultivationContent.SOIL_LARGE.get())==1,"Recovery doesn't use soil");Files.writeString(OUT.resolve("preparation-recovery.PASS"),"Unprocessed request recovers after three seconds through cancellation/state refresh, no materials spent\n");round=0;configure(mc,round);waitFrames=0;step=8;}
             case 24->{var s=(GardenShopScreen)mc.screen;if(field(s,"pending")!=null)return;check(System.nanoTime()-pressed>=3_000_000_000L,"Shop recovery waits three seconds");check(s.state().cash()==expectedCash&&mc.player.getInventory().countItem(CultivationContent.POT_ITEM.get())==1,"Shop recovery doesn't repeat purchase");Files.writeString(OUT.resolve("shop-recovery.PASS"),"Quote refreshed after three seconds without replaying purchase or changing funds\n");shopRecovered=true;step=1;}
             case 8->{if(++waitFrames<7)return;var s=(PreparationScreen)mc.screen;check(s.state().stage()==0,"Preparation starts empty");capture(mc,"responsive-"+round);if(++round<CASES.length){configure(mc,round);waitFrames=0;return;}configure(mc,0);step=9;}
-            case 9->{if(!Files.exists(OUT.resolve("rival.PASS")))return;var s=(PreparationScreen)mc.screen;capture(mc,"empty-black-pot");click(s,740,291);gesture=0;step=25;}
-            case 25->{var s=(PreparationScreen)mc.screen;if(s.state().operation()!=PotNetwork.CUT)return;if(seam(s)){capture(mc,"bag-cut");step=26;}}
+            case 9->{if(!Files.exists(OUT.resolve("rival.PASS")))return;var s=(PreparationScreen)mc.screen;capture(mc,"empty-black-pot");click(s,740,291);gesture=0;pressed=System.nanoTime();step=25;}
+            case 25->{var s=(PreparationScreen)mc.screen;if(s.state().operation()!=PotNetwork.CUT)return;if(System.nanoTime()-pressed<450_000_000L){check(((Number)field(s,"cut")).floatValue()==0,"Fresh sealed bag cannot open without cutting gesture");capture(mc,"sealed-bag-before-cut");return;}if(gesture==6)capture(mc,"half-cut-bag");if(seam(s)){capture(mc,"bag-cut");step=26;}}
             case 26->{var s=(PreparationScreen)mc.screen;if(s.state().operation()!=PotNetwork.POUR)return;grabTool(s);parked=s.toolPose();pressed=System.nanoTime();step=54;}
             case 10->{var s=(PreparationScreen)mc.screen;if(s.toolPose().roll()<3.10)return;s.keyReleased(GLFW.GLFW_KEY_A,0,0);capture(mc,"tilted-bag-stream");step=11;}
             case 11->{var s=(PreparationScreen)mc.screen;if(s.state().work()<300)return;s.mouseReleased(0,0,0);parked=s.toolPose();pressed=System.nanoTime();step=12;}
@@ -68,8 +76,17 @@ public final class GardenClientSmoke {
             case 14->{var s=(PreparationScreen)mc.screen;if(s.state().operation()!=PotNetwork.COVER||(boolean)field(s,"falling"))return;capture(mc,"seed-in-hole");var point=project(s,new PreparationPhysics.Point(.40,PreparationPhysics.TOP,.5));s.mouseClicked(point.x*s.scale,point.y*s.scale,0);gesture=0;step=33;}
             case 33->{var s=(PreparationScreen)mc.screen;if(s.state().stage()==2){capture(mc,"seed-covered");check(mc.player.getInventory().countItem(CultivationContent.SEEDS.get())==4&&mc.player.getInventory().countItem(CultivationContent.SEED_PACKET.get())==0,"Covering spends one seed and returns four from packet");click(s,740,291);step=15;return;}var pt=project(s,new PreparationPhysics.Point(.5+Math.sin(gesture*.55)*.095,PreparationPhysics.TOP,.5));s.mouseDragged(pt.x*s.scale,pt.y*s.scale,0,0,0);if(++gesture==12)capture(mc,"covering-seed");}
             case 15->{var s=(PreparationScreen)mc.screen;if(s.state().operation()!=PotNetwork.WATER)return;grabTool(s);dragTool(s,.5,1,.5);parked=s.toolPose();pressed=System.nanoTime();step=55;}
-            case 34->{var s=(PreparationScreen)mc.screen;if(s.toolPose().roll()>-Math.PI/2)return;s.keyReleased(GLFW.GLFW_KEY_D,0,0);step=35;}
-            case 35->{var s=(PreparationScreen)mc.screen;if(s.state().operation()==PotNetwork.WATER&&s.state().work()>200&&!waterMoved){var before=PreparationPhysics.stream(s.toolPose(),true,true).source();dragTool(s,.45,1,.5);var after=PreparationPhysics.stream(s.toolPose(),true,true).source();check(Math.abs(after.x()-before.x()+.05)<.002,"Actual mouse movement carries water emitter with spout");waterMoved=true;capture(mc,"water-follows-can");}if(s.state().stage()==3){capture(mc,"watered");step=16;}}
+            case 34->{var s=(PreparationScreen)mc.screen;
+                if(!waterStartCaptured&&PreparationPhysics.stream(s.toolPose(),true,true).flowing()){
+                    for(var part:(java.util.List<?>)field(s,"particles"))if((boolean)field(part,"water")){
+                        double age=((Number)field(part,"age")).doubleValue();
+                        var stream=new PreparationPhysics.Stream((PreparationPhysics.Point)field(part,"start"),(PreparationPhysics.Point)field(part,"velocity"),true);
+                        check(age<PreparationPhysics.flight(stream.source(),stream.velocity(),PreparationPhysics.TOP),"Initial water front has not instantly reached soil");
+                        capture(mc,"water-first-moving-front");waterStartCaptured=true;break;
+                    }
+                }
+                if(s.toolPose().roll()>-Math.PI/2)return;s.keyReleased(GLFW.GLFW_KEY_D,0,0);step=35;}
+            case 35->{var s=(PreparationScreen)mc.screen;if(s.state().operation()==PotNetwork.WATER&&s.state().work()>200&&!waterMoved){var before=PreparationPhysics.stream(s.toolPose(),true,true).source();dragTool(s,.45,1,.5);var after=PreparationPhysics.stream(s.toolPose(),true,true).source();check(waterStartCaptured,"Water starts progressively at rose");check(Math.abs(after.x()-before.x()+.05)<.002,"Actual mouse movement carries water emitter with spout");waterMoved=true;capture(mc,"water-follows-can");}if(s.state().stage()==3){capture(mc,"watered");step=16;}}
             case 16->{var s=(PreparationScreen)mc.screen;if(s.state().stage()!=3)return;capture(mc,"planted-watered");Files.writeString(OUT.resolve("grow.ready"),"planted and watered");select(mc,CultivationContent.SHEARS.get());pressed=System.nanoTime();step=17;}
             case 17->{var s=(PreparationScreen)mc.screen;if(s.state().stage()!=4||System.nanoTime()-pressed<1_000_000_000L)return;capture(mc,"mature-eight-leaves");click(s,740,291);step=18;}
             case 18->{if(!(mc.screen instanceof HarvestScreen s))return;var state=(CultivationNetwork.State)field(s,"state");check(state.total()==8,"UV crop displays eight actual leaves");capture(mc,"harvest-eight");step=19;}
@@ -105,6 +122,7 @@ public final class GardenClientSmoke {
     @SuppressWarnings("unchecked")private static Vector3f marker(HarvestScreen s,int id)throws Exception{return ((Map<Integer,Vector3f>)field(s,"markers")).get(id);}
     private static Object field(Object o,String n)throws Exception{for(Class<?> c=o.getClass();c!=null;c=c.getSuperclass())try{var f=c.getDeclaredField(n);f.setAccessible(true);return f.get(o);}catch(NoSuchFieldException ignored){}throw new NoSuchFieldException(n);}
     private static void set(Object o,String n,Object v)throws Exception{var f=o.getClass().getDeclaredField(n);f.setAccessible(true);f.set(o,v);}
+    private static boolean waterStartCaptured;
     private static int uvFrame;private static double[] uvMin,uvMax,uvCeiling;
     private static void uvPose(Minecraft mc,double x,double y,double z,Vec3 target){var p=mc.player;p.setPos(x,y,z);p.xo=x;p.yo=y;p.zo=z;var d=target.subtract(p.getEyePosition());p.setYRot((float)(Math.toDegrees(Math.atan2(d.z,d.x))-90));p.setXRot((float)-Math.toDegrees(Math.atan2(d.y,Math.hypot(d.x,d.z))));p.yRotO=p.getYRot();p.xRotO=p.getXRot();}
     private static double[] uvPixel(Minecraft mc)throws Exception{try(var image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){double[] c=new double[3];for(int y=-5;y<=5;y++)for(int x=-5;x<=5;x++){int p=image.getPixelRGBA(image.getWidth()/2+x,image.getHeight()/2+y);c[0]+=p&255;c[1]+=p>>>8&255;c[2]+=p>>>16&255;}for(int i=0;i<3;i++)c[i]/=121;return c;}}

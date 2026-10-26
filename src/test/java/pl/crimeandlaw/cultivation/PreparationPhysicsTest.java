@@ -4,7 +4,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import pl.crimeandlaw.cultivation.PreparationPhysics.*;
 class PreparationPhysicsTest {
-    @Test void bagEmitterStaysAtRealOpeningAfterRotation(){var p=new Pose(.5,1,.5,Math.PI,0);var s=PreparationPhysics.stream(p,false,true);assertEquals(.5,s.source().x(),1e-8);assertEquals(1-.37*.75,s.source().y(),1e-8);assertTrue(s.flowing());}
+    @Test void bagEmitterStaysAtRealOpeningAfterRotation(){var p=new Pose(.5,1,.5,Math.PI,0);var s=PreparationPhysics.stream(p,false,true);assertEquals(.5,s.source().x(),1e-8);assertEquals(1-.40*.75,s.source().y(),1e-8);assertTrue(s.flowing());}
     @Test void uprightOrReleasedToolsDoNotPour(){for(boolean water:new boolean[]{true,false}){assertFalse(PreparationPhysics.stream(new Pose(.5,1,.5,0,0),water,true).flowing());assertFalse(PreparationPhysics.stream(new Pose(.5,1,.5,water?-Math.PI/2:Math.PI,0),water,false).flowing());}}
     @Test void centeredBagReachesEveryFillHeight(){for(int i=0;i<=100;i++)assertTrue(PreparationPhysics.reachesSoil(PreparationPhysics.stream(new Pose(.5,1,.5,Math.PI,0),false,true),i/100.),"fill "+i);}
     @Test void tiltedCanFeedsTheActualSpout(){var p=new Pose(.5,1,.5,-Math.PI/2,0);var s=PreparationPhysics.stream(p,true,true);var rose=PreparationPhysics.rose(1,1);assertEquals(.5+(rose.y()-.45)*.75,s.source().x(),1e-8);assertEquals(1-(rose.x()-.5)*.75,s.source().y(),1e-8);assertTrue(PreparationPhysics.reachesSoil(s,1));}
@@ -63,6 +63,32 @@ class PreparationPhysicsTest {
             var p=new Pose(.5,1,.5,0,0);for(int i=0;i<20;i++)p=PreparationPhysics.tilt(p,0,direction,.1);
             assertTrue(PreparationPhysics.bounded(p));assertTrue(PreparationPhysics.stream(p,false,true).flowing());
             assertEquals(1,PreparationPhysics.hitFraction(p,false,true,1),1e-9);
+        }
+    }
+
+    @Test void everySoilEmitterClearsTheLipWithParticleRadiusDuringRotation(){
+        for(double roll=-Math.PI;roll<=Math.PI;roll+=.12)for(double pitch=-Math.PI;pitch<=Math.PI;pitch+=.19){
+            var pose=new Pose(.5,1,.5,roll,pitch);
+            for(var stream:PreparationPhysics.streams(pose,false,true))if(stream.flowing()){
+                assertFalse(PreparationPhysics.insideBag(pose,stream.source(),.007));
+                for(double t=0;t<.3;t+=.025)assertFalse(PreparationPhysics.insideBag(pose,PreparationPhysics.at(stream,t),.007),"Soil must leave through the mouth");
+            }
+        }
+    }
+    @Test void bagCollisionUsesTheRotatedBodyRatherThanAWorldAxisBox(){
+        for(double roll:new double[]{0,.7,Math.PI})for(double pitch:new double[]{0,-.8,2.4}){
+            var pose=new Pose(.8,1.1,.4,roll,pitch);
+            assertTrue(PreparationPhysics.insideBag(pose,pose.point(new Point(.5,.4,.5)),0));
+            assertFalse(PreparationPhysics.insideBag(pose,pose.point(new Point(.9,.4,.5)),0));
+            assertFalse(PreparationPhysics.insideBag(pose,pose.point(new Point(.5,.85,.5)),.007));
+        }
+    }
+    @Test void landingGuideBelongsToTheDepressionInsteadOfTheUpperSoilPlane(){
+        assertEquals(PreparationPhysics.TOP-.04,PreparationPhysics.seedBedY(.5,.5),1e-9);
+        assertEquals(PreparationPhysics.seedBedY(.5,.5)+.018,PreparationPhysics.seedRestY(),1e-9);
+        for(int i=0;i<32;i++){
+            double a=i*Math.PI/16,y=PreparationPhysics.seedBedY(.5+Math.cos(a)*.047,.5+Math.sin(a)*.047)+.0015;
+            assertTrue(y<PreparationPhysics.TOP-.03&&y>PreparationPhysics.TOP-.04);
         }
     }
 }

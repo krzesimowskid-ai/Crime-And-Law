@@ -35,7 +35,7 @@ public final class PotNetwork {
         @Override public Type<Control> type(){return TYPE;}
     }
     public static void control(State s,int seq,PreparationPhysics.Pose p,boolean held){PacketDistributor.sendToServer(new Control(s.token,s.revision,seq,(float)p.x(),(float)p.y(),(float)p.z(),(float)p.roll(),(float)p.pitch(),held));}
-    public static void register(RegisterPayloadHandlersEvent e){var r=e.registrar("26");r.playToServer(Open.TYPE,Open.CODEC,(p,c)->{if(c.player() instanceof ServerPlayer s)PotController.open(s,p.pos);});r.playToServer(Action.TYPE,Action.CODEC,(p,c)->{if(c.player() instanceof ServerPlayer s)PotController.act(s,p);});r.playToServer(Control.TYPE,Control.CODEC,(p,c)->{if(c.player() instanceof ServerPlayer s)PotController.control(s,p);});r.playToClient(State.TYPE,State.CODEC,(p,c)->receiver.accept(p));}
+    public static void register(RegisterPayloadHandlersEvent e){var r=e.registrar("27");r.playToServer(Open.TYPE,Open.CODEC,(p,c)->{if(c.player() instanceof ServerPlayer s)PotController.open(s,p.pos);});r.playToServer(Action.TYPE,Action.CODEC,(p,c)->{if(c.player() instanceof ServerPlayer s)PotController.act(s,p);});r.playToServer(Control.TYPE,Control.CODEC,(p,c)->{if(c.player() instanceof ServerPlayer s)PotController.control(s,p);});r.playToClient(State.TYPE,State.CODEC,(p,c)->receiver.accept(p));}
     public static void open(BlockPos pos){PacketDistributor.sendToServer(new Open(pos));}
     public static void action(State s,int action,int slot){PacketDistributor.sendToServer(new Action(s.token,s.revision,action,slot));}
     public static void send(ServerPlayer p,State s){PacketDistributor.sendToPlayer(p,s);}

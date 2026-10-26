@@ -34,7 +34,7 @@ public final class PreparationScreen extends GardenScreen {
         int old=state.operation();boolean answered=pending!=null&&!pending.equals(s.revision());if(answered)pending=null;
         state=s;if(s.slot()>=0)selectedSlot=s.slot();
         if(old!=s.operation()){
-            grabbed=cutting=covering=seedHeld=false;keys.clear();
+            grabbed=cutting=covering=seedHeld=false;keys.clear();spawnClock=0;
             if(s.operation()==PotNetwork.CUT||s.operation()==PotNetwork.POUR||s.operation()==PotNetwork.WATER){source=selected().copy();tool=new Pose(s.operation()==PotNetwork.CUT?.60:.82,1.0,.50,0,0);cut=s.operation()==PotNetwork.CUT?0:1;}
             if(s.operation()==PotNetwork.PLANT){source=selected().copy();packetOpened=!source.is(CultivationContent.SEED_PACKET.get());seed=new Point(.95,.83,.48);falling=seedOnSoil=false;cut=0;}
             if(s.operation()==0){autoPour=old==PotNetwork.CUT;source=ItemStack.EMPTY;selectedSlot=-1;falling=seedOnSoil=false;cut=0;}
@@ -68,8 +68,8 @@ public final class PreparationScreen extends GardenScreen {
     private Vector3f project(Point p){return camera.transformPosition(new Vector3f((float)p.x(),(float)p.y(),(float)p.z()));}
     private Point unproject(double x,double y,double plane){var inverse=new Matrix4f(camera).invert();var a=inverse.transformPosition(new Vector3f((float)x,(float)y,0));var b=inverse.transformPosition(new Vector3f((float)x,(float)y,1));double t=(plane-a.y)/(b.y-a.y);return new Point(a.x+(b.x-a.x)*t,plane,a.z+(b.z-a.z)*t);}
     private boolean toolHit(double x,double y){var p=project(new Point(tool.x(),tool.y(),tool.z()));return Math.abs(x-p.x)<85&&Math.abs(y-p.y)<90;}
-    public Vector3f seamStart(){return project(cutPose().point(new Point(.25,.84,.36)));}
-    public Vector3f seamEnd(){return project(cutPose().point(new Point(.75,.84,.36)));}
+    public Vector3f seamStart(){return project(cutPose().point(new Point(.275,.84,.365)));}
+    public Vector3f seamEnd(){return project(cutPose().point(new Point(.725,.84,.365)));}
     private Pose cutPose(){return new Pose(.60,1.0,.50,0,0);}
     private void cutAt(double x,double y){var a=seamStart();var b=seamEnd();double dx=b.x-a.x,dy=b.y-a.y,l=dx*dx+dy*dy,u=((x-a.x)*dx+(y-a.y)*dy)/l,dist=Math.abs((x-a.x)*dy-(y-a.y)*dx)/Math.sqrt(l);if(dist<16&&u>=cut-.13&&u<=cut+.30)cut=Math.max(cut,(float)Math.clamp(u,0,1));}
     private void advance(double dt){
@@ -79,14 +79,14 @@ public final class PreparationScreen extends GardenScreen {
         float target=state.stage()>0?1:state.work()/1000f;visualFill+=(target-visualFill)*Math.min(1,dt*12);
         int op=state.operation();boolean water=op==PotNetwork.WATER;
         if((op==PotNetwork.POUR||water)&&grabbed&&pending==null){var stream=PreparationPhysics.stream(tool,water,true);if(stream.flowing()){spawnClock+=dt*(water?23:24);while(spawnClock>=1&&particles.size()<480){spawnClock--;for(var jet:PreparationPhysics.streams(tool,water,true))particles.add(new Particle(jet,water,ticks+particles.size()*7.3));}}}
-        for(var it=particles.iterator();it.hasNext();){var p=it.next();double before=p.age;p.age+=dt;var s=new Stream(p.start,p.velocity,true);var prev=PreparationPhysics.at(s,before);var now=PreparationPhysics.at(s,p.age);if(prev.y()>=PreparationPhysics.RIM&&now.y()<PreparationPhysics.RIM&&!PreparationPhysics.inside(now.x(),now.z(),.310))p.spilled=true;
+        for(var it=particles.iterator();it.hasNext();){var p=it.next();double before=p.age;p.age+=dt;var s=new Stream(p.start,p.velocity,true);var prev=PreparationPhysics.at(s,before);var now=PreparationPhysics.at(s,p.age);if(!p.water&&PreparationPhysics.insideBag(tool,now,.007)){it.remove();continue;}if(prev.y()>=PreparationPhysics.RIM&&now.y()<PreparationPhysics.RIM&&!PreparationPhysics.inside(now.x(),now.z(),.310))p.spilled=true;
             double surface=p.spilled?.015:PreparationPhysics.soilY(visualFill);if(p.age>2||now.y()<surface)it.remove();}
-        if(falling){double t=(System.nanoTime()-seedFallSince)/1e9;double ground=PreparationPhysics.inside(drop.x(),drop.z(),.17)?PreparationPhysics.TOP-.026:.025;seed=new Point(drop.x(),Math.max(ground,drop.y()-.5*PreparationPhysics.GRAVITY*t*t),drop.z());if(seed.y()<=ground){falling=false;landedAt=System.nanoTime();seedOnSoil=ground>.1;}}
+        if(falling){double t=(System.nanoTime()-seedFallSince)/1e9;double ground=PreparationPhysics.inside(drop.x(),drop.z(),.17)?PreparationPhysics.seedRestY():.025;seed=new Point(drop.x(),Math.max(ground,drop.y()-.5*PreparationPhysics.GRAVITY*t*t),drop.z());if(seed.y()<=ground){falling=false;landedAt=System.nanoTime();seedOnSoil=ground>.1;}}
         if(state.operation()==PotNetwork.PLANT&&!falling&&!seedHeld&&landedAt!=0&&!seedOnSoil&&System.nanoTime()-landedAt>650_000_000L){seed=new Point(.95,.83,.48);landedAt=0;}
     }
     private void bar(GuiGraphics g,int y,float n,String title){int x=(int)left+628,yy=(int)top+y;g.fill(x,yy,x+242,yy+9,0xFF0B1517);g.fill(x,yy,x+(int)(242*Math.clamp(n,0,1)),yy+9,0xFF779663);label(g,title,628,y+17,MUTED);}
     private String step(){return switch(state.operation()){case PotNetwork.CUT->"01  ROZETNIJ WOREK";case PotNetwork.POUR->"02  WSYP ZIEMIĘ";case PotNetwork.PLANT->packetOpened?"04  UPUŚĆ NASIONO":"03  OTWÓRZ WORECZEK";case PotNetwork.COVER->falling?"NASIONO OPADA":"05  ZASYP DOŁEK";case PotNetwork.WATER->"06  PODLEJ ROŚLINĘ";default->state.stage()==0?"PRZYGOTUJ WOREK ZIEMI":state.stage()==1?"PRZYGOTUJ NASIONO":state.stage()==4?"GOTOWA DO ZBIORU":"PODLEWANIE I WZROST";};}
-    private String hint(){return switch(state.operation()){case PotNetwork.CUT->"Przeciągnij ostrze LPM wzdłuż złotego szwu od kropki do końca.";case PotNetwork.POUR,PotNetwork.WATER->"Trzymaj LPM i przesuwaj myszą. A/D przechyla na boki, W/S w przód i w tył. Sam ustaw kąt, aby sypać lub podlewać.";case PotNetwork.PLANT->packetOpened?"Chwyć nasiono LPM. Celuj kursorem w dołek. Obręcz pokazuje miejsce upadku; puść, aby upuścić nasiono.":"Rozsuń zamknięcie woreczka, przeciągając LPM po oznaczonym szwie.";case PotNetwork.COVER->falling?"Nasiono opada do dołka. Poczekaj, aż się zatrzyma.":"Nasiono jest w dołku. Przytrzymaj LPM na ziemi i przysuń ją nad nasiono.";default->"Wybierz materiał z ekwipunku i rozpocznij. Zatwierdzony postęp jest zachowywany.";};}
+    private String hint(){if(state.operation()==0&&mode()==PotNetwork.POUR&&selected().getItem() instanceof GardenSupplyItem it&&it.opened(selected()))return "Ten worek jest już rozcięty. Kolejne użycie nie wymaga otwierania. Wybierz nowy zamknięty worek, aby rozciąć zgrzew.";return switch(state.operation()){case PotNetwork.CUT->"Przeciągnij ostrze LPM wzdłuż złotego szwu od kropki do końca.";case PotNetwork.POUR,PotNetwork.WATER->"Trzymaj LPM i przesuwaj myszą. A/D przechyla na boki, W/S w przód i w tył. Sam ustaw kąt, aby sypać lub podlewać.";case PotNetwork.PLANT->packetOpened?"Chwyć nasiono LPM. Celuj kursorem w dołek. Obręcz pokazuje miejsce upadku; puść, aby upuścić nasiono.":"Rozsuń zamknięcie woreczka, przeciągając LPM po oznaczonym szwie.";case PotNetwork.COVER->falling?"Nasiono opada do dołka. Poczekaj, aż się zatrzyma.":"Nasiono jest w dołku. Przytrzymaj LPM na ziemi i przysuń ją nad nasiono.";default->"Wybierz materiał z ekwipunku i rozpocznij. Zatwierdzony postęp jest zachowywany.";};}
     @Override public void render(GuiGraphics g,int mx,int my,float delta){
         long now=System.nanoTime();double dt=Math.min(.12,(now-lastFrame)/1e9);lastFrame=now;mouseX=mx/scale;mouseY=my/scale;advance(dt);
         background(g,"P R Z Y G O T O W A N I E","AURELIA / WŁASNE STANOWISKO");int x=(int)left,y=(int)top;
@@ -112,12 +112,18 @@ public final class PreparationScreen extends GardenScreen {
         int op=state.operation();ItemStack shown=source.isEmpty()?selected:source;
         if(op==PotNetwork.CUT||op==PotNetwork.POUR||op==PotNetwork.WATER||op==0&&state.stage()==0){p.pushPose();objectPose(p,op==PotNetwork.CUT?cutPose():tool);if(shown.getItem() instanceof GardenSupplyItem it){if(it.kind==GardenSupplyItem.Kind.WATER)GardenMesh.can(p,buffers,it.contents(shown),LightTexture.FULL_BRIGHT);else if(it.kind==GardenSupplyItem.Kind.SOIL)GardenMesh.bag(p,buffers,it.capacity,false,op==PotNetwork.CUT?cut:it.opened(shown)?1:0,LightTexture.FULL_BRIGHT);}p.popPose();}
         if(op==PotNetwork.PLANT&&!packetOpened){p.pushPose();objectPose(p,cutPose());GardenMesh.bag(p,buffers,5,true,cut,LightTexture.FULL_BRIGHT);p.popPose();}
-        if(op==PotNetwork.PLANT&&packetOpened){GardenMesh.landingGuide(p,buffers,.5,.5,true,LightTexture.FULL_BRIGHT);if(seedHeld){boolean valid=PreparationPhysics.inside(seed.x(),seed.z(),.17);GardenMesh.landingGuide(p,buffers,seed.x(),seed.z(),valid,LightTexture.FULL_BRIGHT);for(double y=PreparationPhysics.TOP+.04;y<seed.y()-.025;y+=.045)GardenMesh.box(p,buffers,GardenMaterials.WHITE,seed.x()-.0015,y,seed.z()-.0015,seed.x()+.0015,y+.012,seed.z()+.0015,LightTexture.FULL_BRIGHT,valid?0xFFDBC080:0xFF999B91);}}
+        if(op==PotNetwork.PLANT&&packetOpened){GardenMesh.landingGuide(p,buffers,.5,.5,true,LightTexture.FULL_BRIGHT);if(seedHeld){boolean valid=PreparationPhysics.inside(seed.x(),seed.z(),.17);for(double y=PreparationPhysics.seedBedY(.5,.5)+.02;y<seed.y()-.025;y+=.045)GardenMesh.box(p,buffers,GardenMaterials.WHITE,seed.x()-.0015,y,seed.z()-.0015,seed.x()+.0015,y+.012,seed.z()+.0015,LightTexture.FULL_BRIGHT,valid?0xFFDBC080:0xFF999B91);}}
         if((op==PotNetwork.PLANT&&packetOpened)||op==PotNetwork.COVER){p.pushPose();p.translate(seed.x(),seed.y(),seed.z());if(falling){p.mulPose(Axis.YP.rotation((float)((System.nanoTime()-seedFallSince)/1e9*.9)));p.mulPose(Axis.ZP.rotation((float)Math.sin((System.nanoTime()-seedFallSince)/1e9*3)*.16f));}GardenMesh.seed(p,buffers,LightTexture.FULL_BRIGHT);p.popPose();}
         if(covering){p.pushPose();p.translate(hand.x(),hand.y()+.025,hand.z());GardenMesh.glove(p,buffers,LightTexture.FULL_BRIGHT);p.popPose();}
-        if(cutting){var wp=unproject(mouseX,mouseY,1.28);p.pushPose();p.translate(wp.x(),wp.y(),wp.z());p.scale(.5f,.5f,.5f);GardenMesh.knife(p,buffers,LightTexture.FULL_BRIGHT);p.popPose();}
-        if(op==PotNetwork.WATER&&grabbed)for(var jet:PreparationPhysics.streams(tool,true,true))GardenMesh.waterStream(p,buffers,jet,LightTexture.FULL_BRIGHT);
-        for(var part:particles){var pos=PreparationPhysics.at(new Stream(part.start,part.velocity,true),part.age);double size=part.water?.0045:.006;GardenMesh.box(p,buffers,part.water?GardenMaterials.WATER:GardenMaterials.SOIL,pos.x()-size,pos.y()-size,pos.z()-size,pos.x()+size,pos.y()+size,pos.z()+size,LightTexture.FULL_BRIGHT,-1);}
+        if(op==PotNetwork.CUT||op==PotNetwork.PLANT&&!packetOpened){
+            p.pushPose();objectPose(p,cutPose());p.translate(.275+.45*cut+.19,.838,.365);
+            p.mulPose(Axis.YP.rotationDegrees(180));GardenMesh.knife(p,buffers,LightTexture.FULL_BRIGHT);p.popPose();
+        }
+        for(var part:particles){var stream=new Stream(part.start,part.velocity,true);
+            if(part.water){GardenMesh.waterStream(p,buffers,stream,part.age,LightTexture.FULL_BRIGHT);continue;}
+            var pos=PreparationPhysics.at(stream,part.age);double size=.006;
+            GardenMesh.box(p,buffers,GardenMaterials.SOIL,pos.x()-size,pos.y()-size,pos.z()-size,pos.x()+size,pos.y()+size,pos.z()+size,LightTexture.FULL_BRIGHT,-1);
+        }
         buffers.endBatch();p.popPose();RenderSystem.disableDepthTest();g.disableScissor();
     }
     @Override public boolean mouseClicked(double x,double y,int button){if(super.mouseClicked(x,y,button))return true;double lx=x/scale,ly=y/scale;if(lx<left+10||lx>left+600||ly<top+70||ly>top+460)return false;

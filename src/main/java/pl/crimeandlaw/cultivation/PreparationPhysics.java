@@ -6,6 +6,7 @@ import java.util.ArrayList;
 /** Shared local-space geometry: the mesh, stream emitter and server target use the same transforms. */
 public final class PreparationPhysics {
     public static final double SCALE=.75, GRAVITY=2.8, RIM=.48, BOTTOM=.065, TOP=.385;
+    private static final double[][] BAG_ROWS={{.08,.22,.15},{.16,.28,.20},{.33,.315,.225},{.65,.295,.21},{.78,.24,.155},{.835,.24,.155}};
     public record Point(double x,double y,double z){
         public Point add(Point p){return new Point(x+p.x,y+p.y,z+p.z);}public Point scale(double n){return new Point(x*n,y*n,z*n);}
     }
@@ -20,7 +21,7 @@ public final class PreparationPhysics {
     public static boolean inside(double x,double z,double radius){x=Math.abs(x-.5);z=Math.abs(z-.5);return Math.max(x,z)<=radius*.9238795&&x+z<=radius*1.306563;}
     public static boolean bounded(Pose p){return Double.isFinite(p.x)&&Double.isFinite(p.y)&&Double.isFinite(p.z)&&Double.isFinite(p.roll)&&Double.isFinite(p.pitch)&&p.x>=-.45&&p.x<=1.45&&p.z>=-.45&&p.z<=1.45&&p.y>=.60&&p.y<=1.55&&Math.abs(p.roll)<=Math.PI+1e-5&&Math.abs(p.pitch)<=Math.PI+1e-5;}
     public static Stream stream(Pose pose,boolean water,boolean held){
-        var local=water?rose(1,1):new Point(.5,.82,.5);
+        var local=water?rose(1,1):new Point(.5,.85,.5);
         var normal=rotate(water?new Point(.809,.588,0):new Point(0,1,0),pose.roll,pose.pitch);
         return new Stream(pose.point(local),normal.scale(water?.46:.20),held&&normal.y<(water?-.12:-.30));
     }
@@ -40,13 +41,33 @@ public final class PreparationPhysics {
     }
     public static Point rose(int row,int column){return new Point(.61,.26,.44).add(rotate(new Point(.4625,-.0385+row*.055,-.0085+column*.055),Math.toRadians(36),0));}
     /** The whole cut opening, inset from its attached folded lips. */
-    public static Point bagOpening(int row,int column){return new Point(.28+row*.11,.82,.38+column*.12);}
+    public static Point bagOpening(int row,int column){return new Point(.28+row*.11,.85,.38+column*.12);}
     /** Mouse moves the held tool; WASD changes its orientation, with no automatic tilt. */
     public static Pose tilt(Pose p,double right,double forward,double seconds){
         double length=Math.hypot(right,forward);if(length>1){right/=length;forward/=length;}
         double amount=1.9*Math.clamp(seconds,0,.12);
         return new Pose(p.x,p.y,p.z,Math.clamp(p.roll-right*amount,-Math.PI,Math.PI),Math.clamp(p.pitch-forward*amount,-Math.PI,Math.PI));
     }
+    /** Inside the closed body envelope, with the same taper as the bag mesh. */
+    public static boolean insideBag(Pose pose,Point world,double margin){
+        double x=world.x-pose.x,y=world.y-pose.y,z=world.z-pose.z;
+        double cp=Math.cos(pose.pitch),sp=Math.sin(pose.pitch),cr=Math.cos(pose.roll),sr=Math.sin(pose.roll);
+        double py=cp*y+sp*z,pz=-sp*y+cp*z;
+        double lx=(cr*x+sr*py)/SCALE+.5,ly=(-sr*x+cr*py)/SCALE+.45,lz=pz/SCALE+.5;
+        double m=margin/SCALE;if(ly<.08-m||ly>.835+m)return false;
+        var rows=BAG_ROWS;
+        for(int i=0;i<rows.length-1;i++)if(ly<=rows[i+1][0]+m){
+            double t=Math.clamp((ly-rows[i][0])/(rows[i+1][0]-rows[i][0]),0,1);
+            return Math.abs(lx-.5)<=rows[i][1]+(rows[i+1][1]-rows[i][1])*t+m&&Math.abs(lz-.5)<=rows[i][2]+(rows[i+1][2]-rows[i][2])*t+m;
+        }return false;
+    }
+    /** Actual inner slope of the octagonal seed depression. */
+    public static double seedBedY(double x,double z){
+        double dx=Math.abs(x-.5),dz=Math.abs(z-.5);
+        double n=Math.max(Math.max(dx,dz),(dx+dz)/Math.sqrt(2));
+        return TOP-.04+.007*Math.clamp(n/(.068*Math.cos(Math.PI/8)),0,1);
+    }
+    public static double seedRestY(){return seedBedY(.5,.5)+.018;}
     public static double hitFraction(Pose pose,boolean water,boolean held,double fill){var jets=streams(pose,water,held);return jets.stream().filter(s->reachesSoil(s,fill)).count()/(double)jets.size();}
     /** Camera-local horizontal translation; independent of the model's pouring rotation. */
     public static Pose move(Pose p,double right,double forward,double yaw,double seconds){
