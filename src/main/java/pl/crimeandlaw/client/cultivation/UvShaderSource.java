@@ -37,6 +37,7 @@ public final class UvShaderSource {
         uniform vec4 CalUvLight0,CalUvLight1,CalUvLight2,CalUvLight3,CalUvLight4,CalUvLight5,CalUvLight6,CalUvLight7;
         float cal_uv_field(vec3 point,vec4 lamp){
             vec3 q=point-lamp.xyz;
+            if(q.y>=%5$s)return 0.0;
             if(any(lessThan(q,vec3(0.0)))||any(greaterThan(q,vec3(%1$s.0))))return 0.0;
             q=clamp(q,vec3(0.501),vec3(%2$s.499));float yy=q.y-0.5,y0=floor(yy),f=fract(yy);
             vec2 a=vec2((y0*%1$s.0+q.x)/%3$s.0,(lamp.w*%1$s.0+q.z)/%4$s.0);
@@ -61,9 +62,9 @@ public final class UvShaderSource {
                 if(CalUvCount>6)light=max(light,cal_uv_field(p,CalUvLight6));
                 if(CalUvCount>7)light=max(light,cal_uv_field(p,CalUvLight7));
             }
-            vec3 uv=vec3(0.58,0.035,1.0)*light;
+            vec3 uv=vec3(0.50,0.015,1.0)*light;
             uv=mix(uv,vec3(1.0)-pow(vec3(1.0)-uv,vec3(4.0)),clamp(CalUvGamma,0.0,1.0));
             return vec4(max(ordinary.rgb,uv),ordinary.a);
         }
-        """.formatted(UvVolume.SIZE,UvVolume.SIZE-1,UvVolume.SIZE*UvVolume.SIZE,UvVolume.SIZE*UvVolume.MAX_LIGHTS);
+        """.formatted(UvVolume.SIZE,UvVolume.SIZE-1,UvVolume.SIZE*UvVolume.SIZE,UvVolume.SIZE*UvVolume.MAX_LIGHTS,Double.toString(UvVolume.SOURCE_Y));
 }
