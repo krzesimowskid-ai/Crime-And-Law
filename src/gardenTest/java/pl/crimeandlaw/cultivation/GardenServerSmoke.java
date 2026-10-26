@@ -32,6 +32,7 @@ public final class GardenServerSmoke {
             l.setChunkForced(0,0,true);l.getChunk(0,0);l.getChunk(-1,0);pl.crimeandlaw.territory.CaptureSavedData.get(server).rules=pl.crimeandlaw.territory.CaptureSavedData.get(server).rules.realTime(false);l.setDayTime(18000);server.getGameRules().getRule(GameRules.RULE_DAYLIGHT).set(false,server);server.getGameRules().getRule(GameRules.RULE_RANDOMTICKING).set(0,server);
             for(int x=-4;x<=8;x++)for(int z=-3;z<=6;z++){l.setBlock(new BlockPos(x,79,z),Blocks.STONE.defaultBlockState(),3);for(int y=80;y<=84;y++)l.setBlock(new BlockPos(x,y,z),Blocks.AIR.defaultBlockState(),3);}l.setBlock(new BlockPos(-2,80,1),Blocks.WATER.defaultBlockState(),3);
             for(int y=80;y<=84;y++)for(int x=-3;x<=6;x++)for(int z=-2;z<=2;z++)if(x==-3||x==6||z==-2||y==84)l.setBlock(new BlockPos(x,y,z),Blocks.OAK_PLANKS.defaultBlockState(),3);
+            for(int x=-3;x<=6;x++)for(int z=-2;z<=3;z++)l.setBlock(new BlockPos(x,84,z),Blocks.OAK_PLANKS.defaultBlockState(),3);
             for(var player:List.of(p,rival)){player.setGameMode(GameType.SURVIVAL);player.setInvulnerable(true);player.setNoGravity(true);player.getInventory().clearContent();}p.connection.teleport(.5,80,3.1,180,25);rival.connection.teleport(3.5,80,3.1,180,25);
             var saved=GangSavedData.get(server);saved.directory.finances.credit(p.getUUID(),GangFinances.Account.CASH,2000);saved.setDirty();pl.crimeandlaw.network.GangNetwork.sendMoney(p,true);
             merchant=CultivationContent.MERCHANT.get().create(l);merchant.moveTo(2.8,80,2.4,180,0);l.addFreshEntity(merchant);
@@ -39,7 +40,7 @@ public final class GardenServerSmoke {
             Files.writeString(OUT.resolve("server.ready"),"ready");ready=true;return;
         }
         if(Files.exists(OUT.resolve("uv-off.request"))&&!Files.exists(OUT.resolve("uv-off.applied"))){check(Planter.at(l,A).removeLamp(),"Fixture lamp removal");Files.writeString(OUT.resolve("uv-off.applied"),"removed");}
-        if(Files.exists(OUT.resolve("uv-on.request"))&&!Files.exists(OUT.resolve("uv-on.applied"))){check(Planter.at(l,A).installLamp(),"Fixture lamp restoration");Files.writeString(OUT.resolve("uv-on.applied"),"restored");}
+        if(Files.exists(OUT.resolve("uv-on.request"))&&!Files.exists(OUT.resolve("uv-on.applied"))){check(Planter.at(l,A).installLamp(),"Fixture lamp restoration");check(l.getBlockState(A.above()).getLightEmission(l,A.above())==0,"UV lamp emits no ordinary block light");Files.writeString(OUT.resolve("uv-on.applied"),"restored");}
         if(Files.exists(OUT.resolve("rival-attempt.sent"))&&!Files.exists(OUT.resolve("reservation.PASS"))){check(session(PotController.class,p)!=null&&session(PotController.class,rival)==null,"Only owner holds real TCP preparation reservation");Files.writeString(OUT.resolve("reservation.PASS"),"Second TCP player denied same pot");}
         if(server.getTickCount()%20==0&&session(PotController.class,p)!=null){var debug=session(PotController.class,p);Files.writeString(OUT.resolve("debug-server.txt"),"op="+field(debug,"operation")+" work="+field(debug,"work")+" pose="+field(debug,"pose")+" held="+field(debug,"held")+" sequence="+field(debug,"sequence"));}
         if(!grown&&Files.exists(OUT.resolve("grow.ready"))){

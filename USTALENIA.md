@@ -955,3 +955,13 @@ To zapis kierunku rozwoju; JAR 0.1.42 nie został w tej rozmowie zmieniony.
 - Liście miały wspólny kierunek animacji. Teraz mają różne kierunki, obroty
   wokół własnego środka, kołysanie i grawitację. Animacje nie tworzą nagród.
 - Protokół 25; bilans plonów, czasy wzrostu i ceny pozostają jak w 0.1.44.
+
+
+## 2026-10-26 — UV jako fioletowe źródło światła (0.1.46)
+
+- Użytkownik wyjaśnił, że lampa ma oświetlać na fioletowo tak jak barwna pochodnia. Biała emisja plus fioletowy filtr nie spełnia tego wymagania.
+- Usunięto zwykłą emisję poziomu 10 ze stelaża i kompozytor kolorujący gotowy obraz.
+- Pole UV podaje kolor bezpośrednio do oświetlenia materiałów; tekstury są cieniowane przed mgłą i kompozycją Fabulous. HUD pozostaje poza tym oświetleniem.
+- Pole rozchodzi się w sześciu kierunkach ze spadkiem poziomu o jeden na blok i może ominąć przeszkodę przez otwarte przejście.
+- Mechaniki zwykłej jasności serwerowej nie dostają emisji UV; logika rośliny nadal wykrywa zamontowaną lampę.
+- Wcześniejsza obserwacja utraty zapisu stanowiska pozostaje otwarta; ta korekta dotyczy światła.

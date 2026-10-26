@@ -12,7 +12,8 @@
     "client.ChatScreenAccess",
     "client.CommandSuggestionsMixin",
     "client.ChatComponentMixin",
-    "client.UvHandLightingMixin"
+    "client.UvHandLightingMixin",
+    "client.UvShaderMixin"
   ],
   "injectors": {
     "defaultRequire": 1

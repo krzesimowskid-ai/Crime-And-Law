@@ -1,9 +1,8 @@
 package pl.crimeandlaw.cultivation;
 
-/** Small, immutable local irradiance volume. No chunk loading or Minecraft types. */
+/** A separate colored block-light field. Six-neighbor propagation, one level lost per block. */
 public final class UvVolume {
-    public static final int SIZE=13,MAX_LIGHTS=8;
-    public static final double RADIUS=6.1;
+    public static final int LEVEL=10,CENTER=LEVEL,SIZE=LEVEL*2+1,MAX_LIGHTS=8;
     private UvVolume(){}
     public static int index(int x,int y,int z){return (y*SIZE+z)*SIZE+x;}
     public static float sample(float[] v,double x,double y,double z){
@@ -14,12 +13,12 @@ public final class UvVolume {
     }
     public static float[] bake(boolean[] solid){
         if(solid.length!=SIZE*SIZE*SIZE)throw new IllegalArgumentException("Invalid UV volume");
-        var result=new float[solid.length];
-        for(int y=0;y<SIZE;y++)for(int z=0;z<SIZE;z++)for(int x=0;x<SIZE;x++){
-            int i=index(x,y,z);if(solid[i])continue;double dx=x-6,dy=y+.5-6.56,dz=z-6,d=Math.sqrt(dx*dx+dy*dy+dz*dz);if(d>=RADIUS)continue;
-            boolean blocked=false;int steps=Math.max(1,(int)Math.ceil(d/.22));
-            for(int n=1;n<steps;n++){double t=n/(double)steps;int xx=(int)Math.floor(6.5+dx*t),yy=(int)Math.floor(6.56+dy*t),zz=(int)Math.floor(6.5+dz*t);if(solid[index(xx,yy,zz)]){blocked=true;break;}}
-            if(!blocked){double edge=Math.clamp((d-3.1)/(RADIUS-3.1),0,1);result[i]=(float)((1-edge*edge*(3-2*edge))/(1+.025*d*d));}
-        }return result;
+        var result=new float[solid.length];int source=index(CENTER,CENTER,CENTER);if(solid[source])return result;
+        var levels=new byte[solid.length];var queue=new int[solid.length];int head=0,tail=0;levels[source]=LEVEL;queue[tail++]=source;
+        while(head<tail){int at=queue[head++],next=levels[at]-1;if(next<=0)continue;int x=at%SIZE,z=at/SIZE%SIZE,y=at/(SIZE*SIZE);
+            for(int side=0;side<6;side++){int xx=x+(side==0?1:side==1?-1:0),yy=y+(side==2?1:side==3?-1:0),zz=z+(side==4?1:side==5?-1:0);
+                if(xx<0||yy<0||zz<0||xx>=SIZE||yy>=SIZE||zz>=SIZE)continue;int n=index(xx,yy,zz);if(solid[n]||levels[n]!=0)continue;levels[n]=(byte)next;queue[tail++]=n;}}
+        for(int i=0;i<result.length;i++){float level=levels[i]/(float)LEVEL;result[i]=level/(4-3*level);}
+        return result;
     }
 }

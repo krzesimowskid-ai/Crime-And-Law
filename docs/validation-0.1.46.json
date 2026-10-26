@@ -1,0 +1,33 @@
+{
+  "version": "0.1.46",
+  "minecraft": "1.21.1",
+  "neoforge": "21.1.248",
+  "java": 21,
+  "protocol": 25,
+  "artifact": "crimeandlaw-0.1.46.jar",
+  "bytes": 3956650,
+  "sha256": "c8ce993fc40cb11ab0f6792b0e8b827d1168980a2e1cff43860dea86f31ca85c",
+  "unit_tests": {
+    "tests": 234,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "suites": 39,
+  "jar_integrity": true,
+  "production_classes_verified": 252,
+  "resources_verified": 34,
+  "fixture_classes_absent": true,
+  "old_uv_postprocess_resources_absent": true,
+  "tcp_run": "uv-material-3",
+  "tcp_clients": 2,
+  "uv_fancy": true,
+  "uv_fabulous": true,
+  "uv_remove_restore_reload": true,
+  "uv_ordinary_emission": 0,
+  "server_exit": 0,
+  "restart": "PASS",
+  "previous_persistence_observation": "OPEN",
+  "external_shader_packs_tested": false,
+  "fps_benchmark": false
+}
