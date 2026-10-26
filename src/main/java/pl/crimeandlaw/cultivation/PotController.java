@@ -119,7 +119,7 @@ public final class PotController {
             else{s.message="Czynność nie jest już potrzebna.";send(p,s,true);return;}
             var plan=InventoryExchange.prepare(p,slot,expected,replacement,reward);
             if(plan==null||!plan.commit()){s.message="Zrób miejsce w ekwipunku. Materiały zachowano.";send(p,s,true);return;}
-            if(op==PotNetwork.CUT){s.message="Worek rozcięty. Złap go LPM. WASD przesuwa, Q/E koryguje przechył.";}
+            if(op==PotNetwork.CUT){s.message="Worek rozcięty. Złap go LPM. Mysz przesuwa, WASD obraca.";}
             else if(op==PotNetwork.POUR){plant.fillSoil();s.message="Doniczka pełna. Przygotuj nasiono.";}
             else if(op==PotNetwork.COVER){plant.plant(seedling);s.message="Nasiono przysypane. Podlej konewką.";}
             else{plant.addWater(water);s.message="Doniczka podlana.";}
@@ -134,7 +134,7 @@ public final class PotController {
         else if(a.action()==PotNetwork.PLANT){ok=plant.soil()&&!plant.planted()&&(stack.is(CultivationContent.SEEDS.get())||stack.is(CultivationContent.SEEDLING.get())||stack.is(CultivationContent.SEED_PACKET.get()));
             if(ok&&stack.is(CultivationContent.SEED_PACKET.get())){var rest=stack.copy();rest.shrink(1);ok=InventoryExchange.prepare(p,a.slot(),stack,rest,new ItemStack(CultivationContent.SEEDS.get(),4))!=null;}
         }
-        if(ok){s.reset();s.operation=a.action();s.slot=a.slot();s.expected=stack.copy();s.began=p.serverLevel().getGameTime();s.inputAt=0;s.message=s.operation==PotNetwork.CUT?"Przeciągnij ostrze wzdłuż oznaczonego szwu.":s.operation==PotNetwork.PLANT?"Podnieś nasiono LPM i puść nad dołkiem.":"Trzymaj przedmiot LPM. WASD przesuwa, Q/E koryguje przechył.";}
+        if(ok){s.reset();s.operation=a.action();s.slot=a.slot();s.expected=stack.copy();s.began=p.serverLevel().getGameTime();s.inputAt=0;s.message=s.operation==PotNetwork.CUT?"Przeciągnij ostrze wzdłuż oznaczonego szwu.":s.operation==PotNetwork.PLANT?"Podnieś nasiono LPM i puść nad dołkiem.":"Trzymaj przedmiot LPM. Mysz przesuwa, WASD obraca.";}
         else s.message="Brak odpowiedniego materiału, miejsca lub stanowisko jest już gotowe.";
         send(p,s,true);
     }

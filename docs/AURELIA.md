@@ -1,7 +1,7 @@
 # Aurelia — doniczki, wyposażenie i zbiór
 
-Wersja testowa 0.1.47. Minecraft 1.21.1, NeoForge 21.1.248, Java 21.
-Protokół **25**: ten sam JAR na serwerze i u graczy.
+Wersja testowa 0.1.48. Minecraft 1.21.1, NeoForge 21.1.248, Java 21.
+Protokół **26**: ten sam JAR na serwerze i u graczy.
 Aurelia jest fikcyjną rośliną; liczby są bilansem gry.
 
 ## Skąd wziąć wyposażenie
@@ -47,15 +47,16 @@ wartości wykonawcze, które można później zbilansować.
 3. Spójrz na doniczkę i naciśnij **Z** lub PPM. Wybierz materiał strzałkami
    albo kółkiem myszy nad listą.
 4. Kliknij „Rozetnij worek”. **Przytrzymaj LPM przy kropce na złotym szwie
-   i przeciągnij po całym oznaczeniu**. Widać ostrze i odchylający się brzeg.
+   i przeciągnij po całym oznaczeniu**. Widać ostrze i otwierający się zgrzew.
    Otwieranie nie zużywa ziemi. Ze stosu otwiera jedną sztukę; pozostałe
    pozostają zamknięte. Rozcięty większy worek zachowuje otwarcie i licznik.
-5. Po rozcięciu **złap worek LPM** i przesuń go nad doniczkę myszą
-   albo **WASD**. **A** przesuwa w lewo, **D** w prawo, **W** w głąb widoku,
-   **S** do siebie. Kierunki obracają się razem z kamerą. Trzymany worek sam
-   przechyla się do sypania; **Q/E** pozwala skorygować przechył. Strumień jest liczony z rzeczywistego otworu
-   modelu; nietrafienie nie zapełnia doniczki. Po puszczeniu LPM worek
-   pozostaje w miejscu, a nasypywanie staje. Można chwycić go ponownie.
+5. Po rozcięciu **złap worek LPM** i przesuń go nad doniczkę **myszą**.
+   Trzymając LPM, **A/D przechyla worek na boki, W/S w przód i w tył**.
+   Obrót jest ręczny; sam chwyt nie zmienia kąta. Ziemia wypada z piętnastu
+   miejsc na całej powierzchni otworu, razem z jego obrotem i położeniem.
+   Serwer zalicza tylko część trafiającą do komory, a nie cały strumień
+   po trafieniu jego środka. Po puszczeniu LPM worek pozostaje w miejscu,
+   zachowuje kąt i przestaje sypać. Można chwycić go ponownie.
 6. Trafiające cząstki stopniowo wypełniają zwężającą się komorę. Powierzchnia
    ma drobny, łagodny wzór ziemi; usunięto wystające brązowe kostki.
    Po pełnym napełnieniu serwer pobiera **jedno pełne użycie worka**;
@@ -71,7 +72,7 @@ wartości wykonawcze, które można później zbilansować.
    Bezpośrednie użycie woreczka zostawia cztery luźne nasiona.
    Nadal można poza oknem rozpakować całe opakowanie PPM na pięć sztuk.
 9. Wybierz „Weź konewkę”, złap LPM i ustaw strumień jak przy worku.
-   WASD przesuwa, Q/E koryguje automatyczne pochylenie. **Dziewięć cienkich
+   Mysz przesuwa, WASD obraca ręcznie, bez automatycznego przechyłu. **Dziewięć cienkich
    strużek** wychodzi z poszczególnych otworów sitka i porusza się z nim.
    Serwer zalicza tylko trafiającą część strumieni. Po puszczeniu konewka nie upada. Udane
    podlanie pobiera tylko tyle wody, ile przyjęła doniczka.
@@ -174,4 +175,4 @@ Jednorazowe rewizje żądań i wyceny sklepu nie pozwalają ponawiać skutków
 starym pakietem. Po trzech sekundach bez potwierdzenia klient odzyskuje
 stan bez ponawiania wydatku ani nagrody.
 
-Wyniki i granice testów: [VALIDATION_0.1.47.md](VALIDATION_0.1.47.md).
+Wyniki i granice testów: [VALIDATION_0.1.48.md](VALIDATION_0.1.48.md).

@@ -1,0 +1,38 @@
+{
+  "version": "0.1.48",
+  "minecraft": "1.21.1",
+  "neoforge": "21.1.248",
+  "java": 21,
+  "protocol": 26,
+  "unit": {
+    "tests": 241,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "suites": 39,
+  "tcp_run": "manual-1",
+  "checks": {
+    "owner": "Actual shop and replay, night UV, 3D seam cutting, LPM grab, manual WASD rotation without automatic tilt, whole-mouth soil stream, floating pause, aimed filling, packet opening, falling missed/recovered seed, soil covering, moving water emitter, exact supplies, 8 free-order snips pass",
+    "preparation-recovery": "Unprocessed request recovers after three seconds through cancellation/state refresh, no materials spent",
+    "reservation": "Second TCP player denied same pot",
+    "restart": "Actual disk restart: frame/pot/UV, exhausted soil, ordinary six-leaf roll/partial mask/UUID, leaf/seed/water/bag/tool counts and cash preserved",
+    "rival": "Second TCP player denied same preparation session",
+    "security": "Closed/stacked bag checks, no-motion completion, seed-phase skip, source swap, repeat completion, three bag charges, replaced BE, veto, wall/reach, packet capacity, creative overflow, cash/bank separation, shop replay/capacity/distance, upper/lower/creative frame destruction, legacy drops pass",
+    "server": "TCP purchases, placement, UV assembly, source refill, 3D pour, packet, planting, watering, eight free-order cuts, conservation and adversarial checks pass",
+    "shop-recovery": "Quote refreshed after three seconds without replaying purchase or changing funds",
+    "uv": "Downward light, ceiling unchanged, GL linear filtering, two lamps and moving camera in Fancy/Fabulous, removal and reload pass",
+    "wasd": "Actual A/D roll and W/S pitch, fixed position, no automatic bag/can tilt; mouse moves tool"
+  },
+  "failures": {},
+  "known_issue": "Intermittent station disk persistence failure reproduced in 0.1.45 and 0.1.47 remains open; restart passed this run. No persistence fix claimed.",
+  "artifact": {
+    "file": "crimeandlaw-0.1.48.jar",
+    "bytes": 3958161,
+    "sha256": "c1d5b5190f7e821454f4957daa7525de9306063c6efa9cea9ed6ad6f1849fc94",
+    "production_classes": 252,
+    "resources": 34,
+    "fixture_classes": 0,
+    "crc": "PASS"
+  }
+}

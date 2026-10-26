@@ -974,3 +974,13 @@ To zapis kierunku rozwoju; JAR 0.1.42 nie został w tej rozmowie zmieniony.
 - Poprawiono reset filtrowania do NEAREST wykonywany przez NativeImage.upload; filtr LINEAR jest przywracany po każdym przesłaniu danych. Stała kolejność wybranych lamp i ponowne użycie niezmiennego pola ograniczają zbędne aktualizacje.
 - Wykonano pomiary przy ruchu kamery, z dwiema lampami, po przeładowaniu zasobów i w Fabulous; kontrolowano także sufit nad oprawą.
 - Kontrola zapisu ponownie nie zachowała stanowiska po restarcie; problem pozostaje otwarty, JAR jest testowy.
+
+
+## 2026-10-26 — ręczny obrót i otwór worka (0.1.48)
+
+- Korekta użytkownika: WASD ma obracać i przechylać worek/konewkę, mysz przesuwa trzymany LPM przedmiot; żadnego automatycznego odwracania.
+- A/D zmienia przechył boczny, W/S wzdłużny. Obie osie do ±180°, również W/S wystarcza do odwrócenia worka.
+- Piętnaście miejsc emisji ziemi obejmuje otwór worka. Wspólna geometria klienta i serwera: częściowe trafienie daje częściowy postęp.
+- Krawędzie worka pozostają połączone; usunięto wystający pasek. Etykiety przylegają do załamań bryły, ciągła mapa UV i spokojniejsza własna faktura.
+- Protokół 26 na wszystkich czterech kanałach, żeby nie mieszać starszej geometrii wsypywania i zakresów obrotu.
+- Znana obserwacja zapisu z poprzednich wydań pozostaje otwarta; raport 0.1.48 rozróżnia nowe testy od tego problemu.

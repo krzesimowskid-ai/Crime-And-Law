@@ -1,7 +1,7 @@
 # Crime And Law
 
 Autorski mod gangsterski: panel gangów, członkostwo i własny wygląd menu.
-Wersja **0.1.47 — do testów na kopii świata**.
+Wersja **0.1.48 — do testów na kopii świata**.
 Otwarta obserwacja zapisu: [raport 0.1.45](docs/VALIDATION_0.1.45.md).
 
 Pierwsza propozycja własnej ekonomii w dolarach i rozwoju terenów:
@@ -18,10 +18,11 @@ Przejmowanie terenów, zegar świata oraz oznaczenia mapy już działają:
 Aurelia ma pełen jednorazowy cykl: doniczka, worki ziemi na 1/2/3
 napełnienia, luźne nasiona i woreczki po 5, sadzonka oraz konewka.
 **Z** otwiera pikselową minigrę 3D: rozcinanie szwu, chwyt LPM i przesuwanie
-WASD, opadające owalne nasiono oraz ręczne zasypywanie dołka. Worek i konewka
-pozostają w miejscu po puszczeniu. Strumienie startują z ich otworów.
+myszą i ręczny obrót WASD, opadające owalne nasiono oraz ręczne zasypywanie dołka. Worek i konewka
+pozostają w miejscu po puszczeniu i nie przechylają się automatycznie.
+Ziemia sypie się z całego rozciętego otworu, a serwer zalicza trafiającą część.
 Doniczka ma nowy ciemny korpus, worki własne czytelne etykiety ziemi,
-a zamocowane UV daje własne fioletowe światło na teksturach ścian, sufitu
+a zamocowane UV daje własne fioletowe światło na teksturach pod lampą
 i trzymanych przedmiotów, bez zwykłej białej emisji i bez filtra obrazu.
 Konewka ma dziewięć strużek, a odcięte liście opadają w różne strony.
 Dwublokowy stelaż przyjmuje doniczkę na dole i lampę UV u góry.
@@ -32,14 +33,14 @@ nową ziemię i posadzić nowe nasiono; sprzęt pozostaje.
 Zwykły NPC Ogrodnik sprzedaje materiały i wyposażenie za gotówkę.
 Nie ma darmowej receptury ani zwrotu nasion z niszczonej rośliny.
 Instrukcja, roboczy balans i polecenie ustawienia sklepu:
-[Aurelia](docs/AURELIA.md). Wyniki: [weryfikacja 0.1.47](docs/VALIDATION_0.1.47.md).
+[Aurelia](docs/AURELIA.md). Wyniki: [weryfikacja 0.1.48](docs/VALIDATION_0.1.48.md).
 
 ## Uruchomienie
 
 - Minecraft **1.21.1**, Java **21**, NeoForge **21.1.248**.
-- Włóż `crimeandlaw-0.1.47.jar` do `mods`, zastępując poprzedni JAR tego moda.
+- Włóż `crimeandlaw-0.1.48.jar` do `mods`, zastępując poprzedni JAR tego moda.
 - W rozgrywce sieciowej mod musi być **u graczy i na serwerze**.
-  **0.1.47 korzysta z protokołu 25** — używaj aktualnej wersji na obu stronach.
+  **0.1.48 korzysta z protokołu 26** — używaj aktualnej wersji na obu stronach.
   Starsze wersje od 0.1.26 do 0.1.28 używają protokołu 16.
 - W świecie jednoosobowym część serwerowa działa razem ze światem.
 - **G** otwiera panel; skrót można zmienić w sterowaniu. Esc lub X zamyka okno.
