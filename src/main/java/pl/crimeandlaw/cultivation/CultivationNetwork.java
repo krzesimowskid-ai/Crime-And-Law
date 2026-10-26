@@ -32,7 +32,7 @@ public final class CultivationNetwork {
     }
     private CultivationNetwork(){}
     public static void register(RegisterPayloadHandlersEvent event){
-        var r=event.registrar("25");
+        var r=event.registrar("26");
         r.playToServer(Open.TYPE,Open.CODEC,(p,c)->{if(c.player() instanceof ServerPlayer player)HarvestController.open(player,p.pos);});
         r.playToServer(Cut.TYPE,Cut.CODEC,(p,c)->{if(c.player() instanceof ServerPlayer player)HarvestController.cut(player,p);});
         r.playToClient(State.TYPE,State.CODEC,(p,c)->receiver.accept(p));

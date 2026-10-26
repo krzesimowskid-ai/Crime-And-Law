@@ -21,7 +21,7 @@ public final class ShopNetwork {
         public static final StreamCodec<RegistryFriendlyByteBuf,State> CODEC=StreamCodec.of((b,p)->{b.writeUUID(p.session);b.writeUUID(p.quote);b.writeVarInt(p.merchant);b.writeLong(p.cash);b.writeBoolean(p.active);b.writeUtf(p.message,200);},b->new State(b.readUUID(),b.readUUID(),b.readVarInt(),b.readLong(),b.readBoolean(),b.readUtf(200)));
         @Override public Type<State> type(){return TYPE;}
     }
-    public static void register(RegisterPayloadHandlersEvent e){var r=e.registrar("25");r.playToServer(Request.TYPE,Request.CODEC,(p,c)->{if(c.player() instanceof ServerPlayer s)ShopController.request(s,p);});r.playToClient(State.TYPE,State.CODEC,(p,c)->receiver.accept(p));}
+    public static void register(RegisterPayloadHandlersEvent e){var r=e.registrar("26");r.playToServer(Request.TYPE,Request.CODEC,(p,c)->{if(c.player() instanceof ServerPlayer s)ShopController.request(s,p);});r.playToClient(State.TYPE,State.CODEC,(p,c)->receiver.accept(p));}
     public static void request(State s,int action,int offer){PacketDistributor.sendToServer(new Request(s.session,s.quote,action,offer));}
     public static void send(ServerPlayer p,State s){PacketDistributor.sendToPlayer(p,s);}
 }

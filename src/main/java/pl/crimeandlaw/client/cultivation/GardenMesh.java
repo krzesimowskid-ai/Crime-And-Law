@@ -55,20 +55,44 @@ public final class GardenMesh {
     public static void bag(PoseStack p,MultiBufferSource b,int capacity,boolean packet,float cut,int light){
         var mat=packet?GardenMaterials.PACK:capacity==1?GardenMaterials.BAG1:capacity==2?GardenMaterials.BAG2:GardenMaterials.BAG3;
         double[][] bands={{.28,.08,.35,.72,.65},{.22,.16,.30,.78,.70},{.185,.33,.275,.815,.725},{.205,.65,.29,.795,.71},{.26,.78,.345,.74,.655}};
-        for(int j=0;j<bands.length-1;j++){var a=bands[j];var c=bands[j+1];var v=b.getBuffer(RenderType.entityCutoutNoCull(mat));
-            quad(p,v,new Vec3(a[0],a[1],a[2]),new Vec3(c[0],c[1],c[2]),new Vec3(c[3],c[1],c[2]),new Vec3(a[3],a[1],a[2]),light,-1);
-            quad(p,v,new Vec3(a[3],a[1],a[4]),new Vec3(c[3],c[1],c[4]),new Vec3(c[0],c[1],c[4]),new Vec3(a[0],a[1],a[4]),light,-1);
-            quad(p,v,new Vec3(a[0],a[1],a[4]),new Vec3(c[0],c[1],c[4]),new Vec3(c[0],c[1],c[2]),new Vec3(a[0],a[1],a[2]),light,0xFFD0D8CB);
-            quad(p,v,new Vec3(a[3],a[1],a[2]),new Vec3(c[3],c[1],c[2]),new Vec3(c[3],c[1],c[4]),new Vec3(a[3],a[1],a[4]),light,0xFFD0D8CB);
+        var v=b.getBuffer(RenderType.entityCutoutNoCull(mat));
+        for(int j=0;j<bands.length-1;j++){var a=bands[j];var c=bands[j+1];
+            // Continuous UV coordinates across the shaped body, instead of restarting the fabric on every band.
+            bagFace(p,v,new Vec3(a[0],a[1],a[2]),new Vec3(c[0],c[1],c[2]),new Vec3(c[3],c[1],c[2]),new Vec3(a[3],a[1],a[2]),a[1],c[1],light,-1);
+            bagFace(p,v,new Vec3(a[3],a[1],a[4]),new Vec3(c[3],c[1],c[4]),new Vec3(c[0],c[1],c[4]),new Vec3(a[0],a[1],a[4]),a[1],c[1],light,-1);
+            bagFace(p,v,new Vec3(a[0],a[1],a[4]),new Vec3(c[0],c[1],c[4]),new Vec3(c[0],c[1],c[2]),new Vec3(a[0],a[1],a[2]),a[1],c[1],light,0xFFD0D8CB);
+            bagFace(p,v,new Vec3(a[3],a[1],a[2]),new Vec3(c[3],c[1],c[2]),new Vec3(c[3],c[1],c[4]),new Vec3(a[3],a[1],a[4]),a[1],c[1],light,0xFFD0D8CB);
         }
-        box(p,b,mat,.27,.075,.35,.73,.11,.65,light,0xFFBDD0BC);
-        box(p,b,mat,.25,.78,.33,.75,.83,.36,light,-1);box(p,b,mat,.25,.78,.64,.75,.83,.67,light,-1);
-        if(cut<.99f){box(p,b,mat,.25+cut*.50,.805,.36,.75,.835,.64,light,0xFFDDE9CD);box(p,b,GardenMaterials.WHITE,.25+cut*.5,.836,.35,.75,.842,.37,light,0xFFE4C77D);}
-        else {box(p,b,GardenMaterials.SOIL,.28,.79,.37,.72,.795,.63,light,-1);p.pushPose();p.translate(.25,.80,.35);p.mulPose(Axis.ZP.rotationDegrees(-65));box(p,b,mat,0,0,0,.50,.018,.025,light,-1);p.popPose();}
-        if(!packet){var label=capacity==1?GardenMaterials.LABEL1:capacity==2?GardenMaterials.LABEL2:GardenMaterials.LABEL3;var v=b.getBuffer(RenderType.entityCutoutNoCull(label));
-            PixelSprite.quad(p,v,new Vec3(.22,.69,.727),new Vec3(.22,.20,.727),new Vec3(.78,.20,.727),new Vec3(.78,.69,.727),0,0,1,1,light,-1);
-            PixelSprite.quad(p,v,new Vec3(.78,.69,.273),new Vec3(.78,.20,.273),new Vec3(.22,.20,.273),new Vec3(.22,.69,.273),0,0,1,1,light,-1);
-        }else {box(p,b,GardenMaterials.WHITE,.30,.26,.265,.70,.57,.270,light,0xFFDFE7C7);PixelSprite.SEEDS.draw(p,b.getBuffer(RenderType.entityCutoutNoCull(PixelSprite.SEEDS.texture())),(u,v,d)->new Vec3(.64-u*.28,.30+(1-v)*.22,.262-d),.002f,-1,light,false);box(p,b,GardenMaterials.WHITE,.30,.26,.731,.70,.57,.735,light,0xFFDFE7C7);PixelSprite.SEEDS.draw(p,b.getBuffer(RenderType.entityCutoutNoCull(PixelSprite.SEEDS.texture())),(u,v,d)->new Vec3(.36+u*.28,.30+(1-v)*.22,.739+d),.002f,-1,light,false);}
+        quad(p,v,new Vec3(.28,.08,.35),new Vec3(.72,.08,.35),new Vec3(.72,.08,.65),new Vec3(.28,.08,.65),light,0xFFBDD0BC);
+        // Attached mouth and folded lips. No rotating ribbon protrudes from the side of an opened bag.
+        box(p,b,mat,.26,.78,.345,.74,.835,.365,light,-1);
+        box(p,b,mat,.26,.78,.635,.74,.835,.655,light,-1);
+        box(p,b,mat,.26,.78,.365,.275,.835,.635,light,0xFFD0D8CB);
+        box(p,b,mat,.725,.78,.365,.74,.835,.635,light,0xFFD0D8CB);
+        double opened=Math.clamp(cut,0,1),edge=.275+opened*.45;
+        if(opened<1)box(p,b,mat,edge,.818,.365,.725,.835,.635,light,-1);
+        if(opened>0)box(p,b,GardenMaterials.SOIL,.275,.805,.365,edge,.811,.635,light,-1);
+        // Labels follow the actual sloping fabric, including the shoulder and lower taper.
+        var label=packet?GardenMaterials.PACK_LABEL:capacity==1?GardenMaterials.LABEL1:capacity==2?GardenMaterials.LABEL2:GardenMaterials.LABEL3;
+        for(int j=0;j<bands.length-1;j++){
+            var a=bands[j];var c=bands[j+1];double low=Math.max(.20,a[1]),high=Math.min(.69,c[1]);
+            if(high<=low)continue;
+            var out=b.getBuffer(RenderType.entityCutoutNoCull(label));
+            for(boolean back:new boolean[]{false,true}){
+                var lo0=bagLabel(a,c,low,back,false);var lo1=bagLabel(a,c,low,back,true);
+                var hi0=bagLabel(a,c,high,back,false);var hi1=bagLabel(a,c,high,back,true);
+                PixelSprite.quad(p,out,lo0,hi0,hi1,lo1,0,(float)((.69-low)/.49),1,(float)((.69-high)/.49),light,UvLighting.multiply(-1,tint));
+            }
+        }
+    }
+    private static void bagFace(PoseStack p,VertexConsumer v,Vec3 a,Vec3 b,Vec3 c,Vec3 d,double low,double high,int light,int color){
+        PixelSprite.quad(p,v,a,b,c,d,0,(float)(1-low),1,(float)(1-high),light,UvLighting.multiply(color,tint));
+    }
+    private static Vec3 bagLabel(double[] a,double[] b,double y,boolean back,boolean right){
+        double t=(y-a[1])/(b[1]-a[1]),left=a[0]+(b[0]-a[0])*t,r=a[3]+(b[3]-a[3])*t;
+        double u=right?.91:.09;if(back)u=1-u;
+        int face=back?4:2;double z=a[face]+(b[face]-a[face])*t+(back?.0008:-.0008);
+        return new Vec3(left+(r-left)*u,y,z);
     }
     public static void seed(PoseStack p,MultiBufferSource b,int light){
         var out=b.getBuffer(RenderType.entityCutoutNoCull(GardenMaterials.SEED));double[] x={-.045,-.029,.008,.032,.044},ry={.001,.014,.018,.010,.001},rz={.001,.020,.024,.013,.001};

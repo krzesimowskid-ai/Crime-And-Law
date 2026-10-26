@@ -6,14 +6,29 @@ import net.minecraft.resources.ResourceLocation;
 
 /** Original 16px palette materials for geometric models. Never samples vanilla blocks. */
 public final class GardenMaterials {
-    public static final ResourceLocation CLAY=id("clay"),PLASTIC=id("plastic"),BAG1=id("bag1"),BAG2=id("bag2"),BAG3=id("bag3"),LABEL1=id("label1"),LABEL2=id("label2"),LABEL3=id("label3"),STEEL=id("steel"),SOIL=id("soil"),SEED=id("seed"),GLOVE=id("glove"),CLOTH=id("cloth"),PACK=id("pack"),WHITE=id("white"),WATER=id("water"),UV=id("uv");
+    public static final ResourceLocation CLAY=id("clay"),PLASTIC=id("plastic"),BAG1=id("bag1"),BAG2=id("bag2"),BAG3=id("bag3"),LABEL1=id("label1"),LABEL2=id("label2"),LABEL3=id("label3"),PACK_LABEL=id("pack_label"),STEEL=id("steel"),SOIL=id("soil"),SEED=id("seed"),GLOVE=id("glove"),CLOTH=id("cloth"),PACK=id("pack"),WHITE=id("white"),WATER=id("water"),UV=id("uv");
     private static ResourceLocation id(String s){return ResourceLocation.fromNamespaceAndPath("crimeandlaw","dynamic/garden/"+s);}
     public static void reload(){
         make(PLASTIC,new int[]{0x1B2024,0x232A2E,0x2C3439,0x363F44},3);
-        make(BAG1,new int[]{0x234F42,0x2E6853,0x37745E,0x497F69},3);make(BAG2,new int[]{0x234551,0x2C5D6C,0x366F7E,0x4A8190},3);make(BAG3,new int[]{0x57373A,0x734B4C,0x825653,0x936A5E},3);label(LABEL1,1);label(LABEL2,2);label(LABEL3,3);
+        sack(BAG1,new int[]{0x315E4C,0x376552,0x3C6A57,0x426F5C});sack(BAG2,new int[]{0x345A66,0x3A626E,0x3F6874,0x456E7A});sack(BAG3,new int[]{0x73534B,0x7A5A51,0x805F56,0x86655B});label(LABEL1,1);label(LABEL2,2);label(LABEL3,3);seedLabel();
         make(CLAY,new int[]{0x92502F,0xAB623B,0xBF774C,0xD59465},0);make(STEEL,new int[]{0x52636B,0x7B8D93,0xA7B4B5,0xD8DDCD},1);
         grain(SOIL,32,new int[]{0x3A2E24,0x3D3026,0x413329,0x46372B,0x4A3A2D});grain(SEED,16,new int[]{0xAA8853,0xAE8C58,0xB69460,0xBC9B67});grain(GLOVE,16,new int[]{0xADABA0,0xB2B0A5,0xB7B5A9});make(CLOTH,new int[]{0x857247,0xAA945B,0xCCB878,0xE7D695},3);
         make(PACK,new int[]{0x284C3C,0x3F7050,0x63895A,0xBACA84},3);make(WHITE,new int[]{0xFFFFFF},0);make(WATER,new int[]{0x347F9A,0x4DACC4,0x84D7DC},1);make(UV,new int[]{0x9D6FE8,0xCEAFFA,0xEFDBFF},1);
+    }
+    private static void sack(ResourceLocation id,int[] colors){
+        var im=new NativeImage(32,32,false);
+        for(int y=0;y<32;y++)for(int x=0;x<32;x++){
+            int k=2;if((x*19+y*31)%37==0)k=3;else if((x*13+y*17)%41==0)k=1;
+            if(x<2||x>29)k=1;if((y==2||y==29)&&x%3==0)k=0;
+            im.setPixelRGBA(x,y,abgr(colors[k]));
+        }register(id,im);
+    }
+    private static void seedLabel(){
+        var im=new NativeImage(32,48,false);
+        for(int y=0;y<48;y++)for(int x=0;x<32;x++)im.setPixelRGBA(x,y,abgr(y<5||y>42?0x36664C:0xE6E4C8));
+        glyphs(im,"AGRO",8,9,0x35674E);
+        for(int i=0;i<3;i++)for(int y=-5;y<=5;y++)for(int x=-3;x<=3;x++)if(x*x/9.+y*y/25.<=1)im.setPixelRGBA(8+i*8+x,27+(i%2)*4+y,abgr(x<0?0x9B7B45:0xC3A56B));
+        register(PACK_LABEL,im);
     }
     private static void grain(ResourceLocation id,int size,int[] colors){var image=new NativeImage(size,size,false);for(int y=0;y<size;y++)for(int x=0;x<size;x++){int h=(x*374761393+y*668265263)^0x5BD1E995;h=(h^(h>>>13))*1274126177;image.setPixelRGBA(x,y,abgr(colors[Math.floorMod(h^(h>>>16),colors.length)]));}register(id,image);}
     private static void label(ResourceLocation id,int capacity){
