@@ -1,0 +1,44 @@
+{
+  "version": "0.1.49",
+  "protocol": 27,
+  "unit": {
+    "tests": 244,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "suites": 39,
+  "game_run": "preparation-1",
+  "checks": {
+    "owner": "Actual shop and replay, night UV, 3D seam cutting, LPM grab, manual WASD rotation without automatic tilt, whole-mouth soil stream, floating pause, aimed filling, packet opening, falling missed/recovered seed, soil covering, moving water emitter, exact supplies, 8 free-order snips pass",
+    "preparation-recovery": "Unprocessed request recovers after three seconds through cancellation/state refresh, no materials spent",
+    "reservation": "Second TCP player denied same pot",
+    "rival": "Second TCP player denied same preparation session",
+    "security": "Closed/stacked bag checks, no-motion completion, seed-phase skip, source swap, repeat completion, three bag charges, replaced BE, veto, wall/reach, packet capacity, creative overflow, cash/bank separation, shop replay/capacity/distance, upper/lower/creative frame destruction, legacy drops pass",
+    "server": "TCP purchases, placement, UV assembly, source refill, 3D pour, packet, planting, watering, eight free-order cuts, conservation and adversarial checks pass",
+    "shop-recovery": "Quote refreshed after three seconds without replaying purchase or changing funds",
+    "uv": "Downward light, ceiling unchanged, GL linear filtering, two lamps and moving camera in Fancy/Fabulous, removal and reload pass",
+    "wasd": "Actual A/D roll and W/S pitch, fixed position, no automatic bag/can tilt; mouse moves tool"
+  },
+  "failures": {
+    "server.FAIL": "java.lang.AssertionError: Reusable equipment and exhausted soil persist"
+  },
+  "first_exit": {
+    "server_exit": 0,
+    "clients": {
+      "rival": null,
+      "owner": null
+    }
+  },
+  "overall": "TEST BUILD: preparation and security checks pass, station disk restart fails",
+  "reference": "Local supplied 49.881367-second recording; selected bag already opened, 1/3 fills remain.",
+  "artifact": {
+    "file": "crimeandlaw-0.1.49.jar",
+    "bytes": 3959324,
+    "sha256": "e141ed1a870e79d119e508955f019eb82aa7caa9e443b8321f27de429677a9d0",
+    "production_classes": 252,
+    "resources": 34,
+    "fixture_classes": 0,
+    "crc": "PASS"
+  }
+}

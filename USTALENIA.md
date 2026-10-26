@@ -984,3 +984,13 @@ To zapis kierunku rozwoju; JAR 0.1.42 nie został w tej rozmowie zmieniony.
 - Krawędzie worka pozostają połączone; usunięto wystający pasek. Etykiety przylegają do załamań bryły, ciągła mapa UV i spokojniejsza własna faktura.
 - Protokół 26 na wszystkich czterech kanałach, żeby nie mieszać starszej geometrii wsypywania i zakresów obrotu.
 - Znana obserwacja zapisu z poprzednich wydań pozostaje otwarta; raport 0.1.48 rozróżnia nowe testy od tego problemu.
+
+
+## 2026-10-26 — poprawki minigry z nagrania (0.1.49)
+
+- Nagranie 16-49-38: wybrany worek już otwarty, pozostało 1/3 użyć. Zachowujemy wcześniejsze ustalenie, że większego worka nie rozcina się ponownie; dodana jawna informacja w oknie.
+- Przy nowym worku widoczny nóż prowadzony po rzeczywistym zgrzewie, zsynchronizowany z postępem rozcinania. Otwieranie nie wydaje ziemi.
+- Źródła ziemi przed krawędzią otworu. Kontrola obróconej bryły worka usuwa wizualne drobiny, które trafiłyby wewnątrz ścian podczas obracania.
+- Jeden cel nasiona na powierzchni dołka, bez drugiego nakładającego się pierścienia. Wysokość spoczynku nasiona i czas opadania wspólne z serwerem.
+- Zamiast pełnego statycznego łuku wody: krótkie ruchome odcinki z czasem życia i grawitacją, narastające od sitka.
+- Protokół 27: wspólna zmiana miejsca emisji i lądowania klient/serwer.

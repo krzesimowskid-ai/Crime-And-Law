@@ -1,7 +1,7 @@
 # Aurelia — doniczki, wyposażenie i zbiór
 
-Wersja testowa 0.1.48. Minecraft 1.21.1, NeoForge 21.1.248, Java 21.
-Protokół **26**: ten sam JAR na serwerze i u graczy.
+Wersja testowa 0.1.49. Minecraft 1.21.1, NeoForge 21.1.248, Java 21.
+Protokół **27**: ten sam JAR na serwerze i u graczy.
 Aurelia jest fikcyjną rośliną; liczby są bilansem gry.
 
 ## Skąd wziąć wyposażenie
@@ -47,13 +47,15 @@ wartości wykonawcze, które można później zbilansować.
 3. Spójrz na doniczkę i naciśnij **Z** lub PPM. Wybierz materiał strzałkami
    albo kółkiem myszy nad listą.
 4. Kliknij „Rozetnij worek”. **Przytrzymaj LPM przy kropce na złotym szwie
-   i przeciągnij po całym oznaczeniu**. Widać ostrze i otwierający się zgrzew.
+   i przeciągnij po całym oznaczeniu**. Ostrze jest widoczne przy szwie i przesuwa się razem z postępem cięcia.
    Otwieranie nie zużywa ziemi. Ze stosu otwiera jedną sztukę; pozostałe
-   pozostają zamknięte. Rozcięty większy worek zachowuje otwarcie i licznik.
+   pozostają zamknięte. Rozcięty większy worek zachowuje otwarcie i licznik. Okno wyjaśnia,
+   że już otwartego worka nie rozcina się ponownie przy drugim/trzecim użyciu.
 5. Po rozcięciu **złap worek LPM** i przesuń go nad doniczkę **myszą**.
    Trzymając LPM, **A/D przechyla worek na boki, W/S w przód i w tył**.
    Obrót jest ręczny; sam chwyt nie zmienia kąta. Ziemia wypada z piętnastu
-   miejsc na całej powierzchni otworu, razem z jego obrotem i położeniem.
+   miejsc przed krawędzią otworu, razem z jego obrotem i położeniem.
+   Widoczne drobiny nie pozostają wewnątrz obracanego korpusu.
    Serwer zalicza tylko część trafiającą do komory, a nie cały strumień
    po trafieniu jego środka. Po puszczeniu LPM worek pozostaje w miejscu,
    zachowuje kąt i przestaje sypać. Można chwycić go ponownie.
@@ -63,7 +65,7 @@ wartości wykonawcze, które można później zbilansować.
    duży nadal przechodzi 3 → 2 → 1 → zużyty.
 7. Kliknij „Przygotuj sadzenie”. Przy zamkniętym woreczku najpierw otwórz
    szew w minigrze. **Chwyć nasiono LPM i celuj kursorem w dołek**.
-   Obręcz i pionowy wskaźnik pokazują miejsce upadku; blisko dołka działa
+   Jedna obręcz leży na nachylonej powierzchni dołka, a pionowy wskaźnik pokazuje miejsce upadku; blisko dołka działa
    pomoc w ustawieniu. Puść LPM — małe, owalne nasiono opadnie do środka. Nietrafione można podnieść ponownie;
    nie zużywa się przedmiotu za samo upuszczenie poza doniczką.
 8. Po opadnięciu **przytrzymaj LPM na ziemi i kilkoma ruchami przysuń ją
@@ -73,7 +75,9 @@ wartości wykonawcze, które można później zbilansować.
    Nadal można poza oknem rozpakować całe opakowanie PPM na pięć sztuk.
 9. Wybierz „Weź konewkę”, złap LPM i ustaw strumień jak przy worku.
    Mysz przesuwa, WASD obraca ręcznie, bez automatycznego przechyłu. **Dziewięć cienkich
-   strużek** wychodzi z poszczególnych otworów sitka i porusza się z nim.
+   strużek** stopniowo wychodzi z poszczególnych otworów sitka.
+   Wylatująca woda porusza się od miejsca emisji; nie pojawia się od razu
+   jako nieruchomy łuk sięgający ziemi.
    Serwer zalicza tylko trafiającą część strumieni. Po puszczeniu konewka nie upada. Udane
    podlanie pobiera tylko tyle wody, ile przyjęła doniczka.
 
@@ -175,4 +179,4 @@ Jednorazowe rewizje żądań i wyceny sklepu nie pozwalają ponawiać skutków
 starym pakietem. Po trzech sekundach bez potwierdzenia klient odzyskuje
 stan bez ponawiania wydatku ani nagrody.
 
-Wyniki i granice testów: [VALIDATION_0.1.48.md](VALIDATION_0.1.48.md).
+Wyniki i granice testów: [VALIDATION_0.1.49.md](VALIDATION_0.1.49.md).
