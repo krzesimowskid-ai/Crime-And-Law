@@ -2,6 +2,10 @@
 uniform sampler2D Scene;
 uniform sampler2D SceneDepth;
 uniform sampler2D Volume;
+uniform sampler2D ItemDepth;
+uniform sampler2D ParticleDepth;
+uniform sampler2D WeatherDepth;
+uniform int Fabulous;
 uniform mat4 InverseProjection;
 uniform mat4 InverseView;
 uniform int LightCount;
@@ -20,6 +24,7 @@ float volume(vec3 point,vec4 light){
 }
 void main(){
     vec4 scene=texture(Scene,texCoord);float depth=texture(SceneDepth,texCoord).r;
+    if(Fabulous==1)depth=min(depth,min(texture(ItemDepth,texCoord).r,min(texture(ParticleDepth,texCoord).r,texture(WeatherDepth,texCoord).r)));
     float light=HandLight;
     if(HandPass==0){
         vec4 view=InverseProjection*vec4(texCoord*2.0-1.0,depth*2.0-1.0,1.0);view/=view.w;

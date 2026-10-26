@@ -1,7 +1,7 @@
 # Aurelia — doniczki, wyposażenie i zbiór
 
-Wersja 0.1.44. Minecraft 1.21.1, NeoForge 21.1.248, Java 21.
-Protokół **24**: ten sam JAR na serwerze i u graczy.
+Wersja testowa 0.1.45. Minecraft 1.21.1, NeoForge 21.1.248, Java 21.
+Protokół **25**: ten sam JAR na serwerze i u graczy.
 Aurelia jest fikcyjną rośliną; liczby są bilansem gry.
 
 ## Skąd wziąć wyposażenie
@@ -50,26 +50,30 @@ wartości wykonawcze, które można później zbilansować.
    i przeciągnij po całym oznaczeniu**. Widać ostrze i odchylający się brzeg.
    Otwieranie nie zużywa ziemi. Ze stosu otwiera jedną sztukę; pozostałe
    pozostają zamknięte. Rozcięty większy worek zachowuje otwarcie i licznik.
-5. Po rozcięciu **złap worek LPM** i przesuń go nad doniczkę. **A/D**
-   obraca w lewo/prawo, **W/S** przechyla przód/tył. Dopiero odpowiednie
-   pochylenie wysypuje ziemię. Strumień jest liczony z rzeczywistego otworu
+5. Po rozcięciu **złap worek LPM** i przesuń go nad doniczkę myszą
+   albo **WASD**. **A** przesuwa w lewo, **D** w prawo, **W** w głąb widoku,
+   **S** do siebie. Kierunki obracają się razem z kamerą. Trzymany worek sam
+   przechyla się do sypania; **Q/E** pozwala skorygować przechył. Strumień jest liczony z rzeczywistego otworu
    modelu; nietrafienie nie zapełnia doniczki. Po puszczeniu LPM worek
    pozostaje w miejscu, a nasypywanie staje. Można chwycić go ponownie.
 6. Trafiające cząstki stopniowo wypełniają zwężającą się komorę. Powierzchnia
-   i grudki mieszczą się wewnątrz ścianek także na początku napełniania.
+   ma drobny, łagodny wzór ziemi; usunięto wystające brązowe kostki.
    Po pełnym napełnieniu serwer pobiera **jedno pełne użycie worka**;
    duży nadal przechodzi 3 → 2 → 1 → zużyty.
 7. Kliknij „Przygotuj sadzenie”. Przy zamkniętym woreczku najpierw otwórz
-   szew w minigrze. **Chwyć nasiono LPM, przesuń nad dołek i puść**.
-   Nasiono opada pod wpływem grawitacji. Nietrafione można podnieść ponownie;
+   szew w minigrze. **Chwyć nasiono LPM i celuj kursorem w dołek**.
+   Obręcz i pionowy wskaźnik pokazują miejsce upadku; blisko dołka działa
+   pomoc w ustawieniu. Puść LPM — małe, owalne nasiono opadnie do środka. Nietrafione można podnieść ponownie;
    nie zużywa się przedmiotu za samo upuszczenie poza doniczką.
 8. Po opadnięciu **przytrzymaj LPM na ziemi i kilkoma ruchami przysuń ją
    nad nasiono**. Dołek się zamyka; dopiero zatwierdzone zasypanie zużywa
-   jedną sztukę. Bezpośrednie użycie woreczka zostawia cztery luźne nasiona.
+   jedną sztukę. Kursor ma teraz własny model szarej rękawicy z palcami.
+   Bezpośrednie użycie woreczka zostawia cztery luźne nasiona.
    Nadal można poza oknem rozpakować całe opakowanie PPM na pięć sztuk.
 9. Wybierz „Weź konewkę”, złap LPM i ustaw strumień jak przy worku.
-   A/D przechyla, W/S kieruje przód/tył. Kropelki wychodzą z wylewki
-   i poruszają się razem z nią. Po puszczeniu konewka nie upada. Udane
+   WASD przesuwa, Q/E koryguje automatyczne pochylenie. **Dziewięć cienkich
+   strużek** wychodzi z poszczególnych otworów sitka i porusza się z nim.
+   Serwer zalicza tylko trafiającą część strumieni. Po puszczeniu konewka nie upada. Udane
    podlanie pobiera tylko tyle wody, ile przyjęła doniczka.
 
 PPM na tle obraca widok. Esc lub „Zamknij” zachowuje zatwierdzone etapy.
@@ -97,11 +101,14 @@ po to, aby zebrać już dojrzałą roślinę.
 | Zwykłe światło | 3–6 liści, równe szanse |
 | UV przez co najmniej 80% rzeczywistego wzrostu | 4–8 liści, równe szanse |
 
-UV umożliwia wzrost w ciemnym wnętrzu. Widoczny fiolet pochodzi z własnego
-lokalnego oświetlenia modeli i poświaty na dostępnych górnych powierzchniach
-otoczenia. Nie wymaga paczki shaderów; logiczny poziom światła Minecrafta
-pozostaje oddzielny od koloru. To lokalny efekt stanowiska, a nie zmiana
-całego silnika Minecrafta na oświetlenie RGB.
+UV umożliwia wzrost w ciemnym wnętrzu. Fiolet obejmuje teraz powierzchnie
+świata w zasięgu lampy: podłogę, ściany, sufit, modele i trzymany przedmiot.
+Kolor zależy od miejsca powierzchni w świecie, a pełne ściany blokują jego
+zasięg. HUD zachowuje własne kolory. Nie potrzeba zewnętrznej paczki shaderów.
+Efekt ma zasięg około sześciu bloków; renderer uwzględnia do ośmiu najbliższych
+lamp. Przesłanianie jest liczone na siatce pełnych bloków, więc drobne
+szczeliny i częściowe kształty nie dają dokładnych cieni. Biały kanał
+logicznego światła Minecrafta pozostaje oddzielny od tego renderowania.
 
 UV nie daje dodatkowego przyspieszenia
 ani premii dla sąsiednich doniczek. W tej wersji nie ma zużycia lampy ani
@@ -115,7 +122,9 @@ Weź specjalne nożyce do głównej ręki, spójrz na dojrzałą roślinę i nac
 Z. Możesz też przejść do zbioru przyciskiem z przygotowania. Wybieraj
 **dowolne widoczne liście**: kliknij liść lub znacznik przy nasadzie,
 przytrzymaj LPM i puść w zielonym polu. Każde poprawne cięcie daje jeden
-liść i jeden punkt zużycia nożyc. Zwykłe nożyce nie uruchamiają minigry.
+liść i jeden punkt zużycia nożyc. Odcięte liście mają różne kierunki lotu,
+grawitację, kołysanie i obrót wokół własnego środka. Animacja nie daje
+dodatkowych przedmiotów. Zwykłe nożyce nie uruchamiają minigry.
 
 Przeciąganie tła/PPM obraca roślinę, kółko zmienia zbliżenie. Esc zachowuje
 pozostałe liście. Przy pełnym ekwipunku nagroda wypada dokładnie raz na ziemię.
@@ -155,4 +164,4 @@ Jednorazowe rewizje żądań i wyceny sklepu nie pozwalają ponawiać skutków
 starym pakietem. Po trzech sekundach bez potwierdzenia klient odzyskuje
 stan bez ponawiania wydatku ani nagrody.
 
-Wyniki i granice testów: [VALIDATION_0.1.44.md](VALIDATION_0.1.44.md).
+Wyniki i granice testów: [VALIDATION_0.1.45.md](VALIDATION_0.1.45.md).

@@ -934,3 +934,24 @@ To zapis kierunku rozwoju; JAR 0.1.42 nie został w tej rozmowie zmieniony.
   następuje raz, po pełnym etapie; stare pakiety nie ponawiają operacji.
   Rozcięcie jednego worka ze stosu otwiera tylko jedną sztukę.
 - Protokół 24; bilans plonów, czasy, ceny i zakres funkcji sklepu zachowano.
+
+
+## UV i sterowanie po uwagach — 26 października 2026, 0.1.45
+
+- UV obejmuje widoczne powierzchnie w zasięgu lampy: ściany, sufit, podłogę,
+  modele i trzymany przedmiot. Pełne bloki przesłaniają światło. HUD zachowuje
+  kolory; osobna paczka shaderów nie jest potrzebna. Fancy i Fabulous używają
+  właściwej dla nich głębi świata. Limit renderowania: osiem najbliższych lamp,
+  około sześciu bloków zasięgu, siatka przesłaniania pełnych bloków.
+- A przesuwa przedmiot w lewo, D w prawo, W w głąb, S do siebie, zgodnie
+  z obrotem widoku. LPM chwyta, trzymany worek/konewka sam się przechyla.
+  Q/E pozwala skorygować przechył. Puszczenie nadal zatrzymuje narzędzie.
+- Ziemia ma drobny, łagodny wzór; wystające brązowe kostki usunięto. Nasiono
+  jest owalnym modelem 3D z własnym materiałem i szwem, a rękawica ma palce
+  i neutralny kolor. Celowanie kursorem w dołek pokazuje tor i obręcz,
+  pomaga ustawić nasiono nad dołkiem i zachowuje grawitację po puszczeniu.
+- Konewka daje dziewięć strużek z otworów sitka. Tylko trafiająca część
+  strumieni zwiększa serwerowy postęp; jeden gest nadal zużywa jedną porcję.
+- Liście miały wspólny kierunek animacji. Teraz mają różne kierunki, obroty
+  wokół własnego środka, kołysanie i grawitację. Animacje nie tworzą nagród.
+- Protokół 25; bilans plonów, czasy wzrostu i ceny pozostają jak w 0.1.44.

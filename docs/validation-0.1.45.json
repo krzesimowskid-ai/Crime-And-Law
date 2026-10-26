@@ -1,0 +1,116 @@
+{
+  "version": "0.1.45",
+  "status": "test build; unresolved intermittent persistence observation",
+  "date": "2026-10-26",
+  "minecraft": "1.21.1",
+  "neoforge": "21.1.248",
+  "java": 21,
+  "protocol": 25,
+  "jar": {
+    "filename": "crimeandlaw-0.1.45.jar",
+    "bytes": 3954439,
+    "sha256": "f158004297d530150db4078e9c6a8733ebd80e8553fe28db57302c84992d6501",
+    "crc": "pass",
+    "duplicate_entries": 0,
+    "fixture_classes": 0,
+    "production_classes_byte_identical": 249,
+    "source_resources_byte_identical": 37,
+    "renewable_seed_recipe": false
+  },
+  "unit": {
+    "tests": 226,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "suites": 38
+  },
+  "tcp": {
+    "persistence-diagnostic": {
+      "passes": {
+        "preparation-recovery": "Unprocessed request recovers after three seconds through cancellation/state refresh, no materials spent",
+        "restart": "Actual disk restart: frame/pot/UV, exhausted soil, ordinary six-leaf roll/partial mask/UUID, leaf/seed/water/bag/tool counts and cash preserved",
+        "shop-recovery": "Quote refreshed after three seconds without replaying purchase or changing funds",
+        "owner": "Actual shop and replay, night UV, 3D seam cutting, LPM grab, auto tilt and camera-relative WASD motion, floating pause, aimed filling, packet opening, falling missed/recovered seed, soil covering, moving water emitter, exact supplies, 8 free-order snips pass",
+        "uv": "Room walls/ceiling/floor and first-person hand rendered; lamp removal clears color; resource reload and Fabulous/Fancy complete",
+        "rival": "Second TCP player denied same preparation session",
+        "server": "TCP purchases, placement, UV assembly, source refill, 3D pour, packet, planting, watering, eight free-order cuts, conservation and adversarial checks pass",
+        "security": "Closed/stacked bag checks, no-motion completion, seed-phase skip, source swap, repeat completion, three bag charges, replaced BE, veto, wall/reach, packet capacity, creative overflow, cash/bank separation, shop replay/capacity/distance, upper/lower/creative frame destruction, legacy drops pass",
+        "reservation": "Second TCP player denied same pot",
+        "wasd": "Actual A/D left/right and W/S depth motion follow camera, with independent automatic tilt"
+      },
+      "server_exit": 0
+    },
+    "persistence-repeat": {
+      "passes": {
+        "preparation-recovery": "Unprocessed request recovers after three seconds through cancellation/state refresh, no materials spent",
+        "restart": "Actual disk restart: frame/pot/UV, exhausted soil, ordinary six-leaf roll/partial mask/UUID, leaf/seed/water/bag/tool counts and cash preserved",
+        "shop-recovery": "Quote refreshed after three seconds without replaying purchase or changing funds",
+        "owner": "Actual shop and replay, night UV, 3D seam cutting, LPM grab, auto tilt and camera-relative WASD motion, floating pause, aimed filling, packet opening, falling missed/recovered seed, soil covering, moving water emitter, exact supplies, 8 free-order snips pass",
+        "uv": "Room walls/ceiling/floor and first-person hand rendered; lamp removal clears color; resource reload and Fabulous/Fancy complete",
+        "rival": "Second TCP player denied same preparation session",
+        "server": "TCP purchases, placement, UV assembly, source refill, 3D pour, packet, planting, watering, eight free-order cuts, conservation and adversarial checks pass",
+        "security": "Closed/stacked bag checks, no-motion completion, seed-phase skip, source swap, repeat completion, three bag charges, replaced BE, veto, wall/reach, packet capacity, creative overflow, cash/bank separation, shop replay/capacity/distance, upper/lower/creative frame destruction, legacy drops pass",
+        "reservation": "Second TCP player denied same pot",
+        "wasd": "Actual A/D left/right and W/S depth motion follow camera, with independent automatic tilt"
+      },
+      "server_exit": 0
+    }
+  },
+  "visual": {
+    "gallery": "pass",
+    "screenshots_latest_tcp": 42,
+    "resolutions_gui": [
+      [
+        1920,
+        1080,
+        2
+      ],
+      [
+        1920,
+        1080,
+        4
+      ],
+      [
+        855,
+        481,
+        2
+      ],
+      [
+        640,
+        480,
+        2
+      ]
+    ],
+    "uv_modes": [
+      "Fancy",
+      "Fabulous"
+    ],
+    "uv_world_pixel_check": true,
+    "uv_removed_clears_color": true,
+    "uv_resource_reload": "pass",
+    "uv_hand": "visually inspected",
+    "uv_max_lights": 8,
+    "uv_radius_blocks": 6.1,
+    "uv_occlusion": "full collision blocks; 13^3 volume per lamp",
+    "water_jets": 9,
+    "leaf_motion": "gravity, varied heading and local rotation"
+  },
+  "known_issues": [
+    {
+      "area": "world persistence",
+      "severity": "unresolved; use a test-world copy",
+      "failed_run": "final-tcp",
+      "observed": "Pre-restart world snapshot contained initial chunk 0,0 without station block entities (LastUpdate 412), and restart did not restore them.",
+      "cause": "Not established. No production persistence workaround added.",
+      "follow_up": "Two consecutive instrumented fresh-world runs exited normally (0), matched RAM and latest holder snapshots with three block entities, read the same current tag through the storage worker, and passed disk restart. This does not establish the cause or prove a fix.",
+      "history": "A similar unresolved observation was documented in 0.1.44."
+    }
+  ],
+  "limits": [
+    "Growth clock fast-forwarded in TCP scenario; full growth/exposure covered by unit tests.",
+    "No large-farm FPS benchmark.",
+    "UV shadows approximate full collision blocks; partial shapes do not cast precise shadows.",
+    "No external shader-pack compatibility benchmark.",
+    "Normal shutdown/restart tested; no forced power loss between Minecraft file writes."
+  ]
+}

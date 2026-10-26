@@ -1,4 +1,4 @@
-import os,sys,socket,subprocess,time,hashlib,uuid,argparse,shutil
+import os,sys,socket,subprocess,time,hashlib,uuid,argparse,shutil,ctypes,json
 from pathlib import Path
 repo=Path(__file__).resolve().parent.parent;root=repo.parent;tools=Path(os.environ.get('CRIMEANDLAW_BUILD_TOOLS',str(root/'build-tools')))
 arg=argparse.ArgumentParser();arg.add_argument('--visual',action='store_true');arg.add_argument('--output',default='tcp-1');args=arg.parse_args();out=repo/'build/garden-smoke'/args.output
@@ -8,6 +8,7 @@ env=os.environ.copy()
 for key in ['JAVA_TOOL_OPTIONS','JDK_JAVA_OPTIONS','GRADLE_OPTS']:env.pop(key,None)
 env['MOD_CLASSES']=':'.join('crimeandlaw%%'+str(p) for p in [repo/'build/classes/java/main',repo/'build/resources/main'])
 env.update(LD_LIBRARY_PATH=str(tools/'x11/root/usr/lib/x86_64-linux-gnu'),DISPLAY='127.0.0.1:78',LIBGL_ALWAYS_SOFTWARE='1',ALSOFT_DRIVERS='null')
+runtime=out/'runtime';runtime.mkdir(mode=0o700,exist_ok=True);env['XDG_RUNTIME_DIR']=str(runtime)
 procs=[];logs=[]
 def launch(role,restart=False):
  server=role=='server';game=out/('game-'+role);game.mkdir(exist_ok=True)
@@ -29,6 +30,13 @@ try:
   try:
    with socket.create_connection(('127.0.0.1',6078),timeout=.2):break
   except OSError:time.sleep(.1)
+ x11=ctypes.CDLL('libX11.so.6');x11.XOpenDisplay.argtypes=[ctypes.c_char_p];x11.XOpenDisplay.restype=ctypes.c_void_p;x11.XCloseDisplay.argtypes=[ctypes.c_void_p]
+ for _ in range(60):
+  if xv.poll() is not None:raise RuntimeError('Xvfb initialization failed; inspect xvfb.log')
+  display=x11.XOpenDisplay(env['DISPLAY'].encode())
+  if display:x11.XCloseDisplay(display);break
+  time.sleep(.1)
+ else:raise RuntimeError('X display initialization timeout')
  if args.visual:
   p=launch('visual');p.wait(timeout=180)
   if not (out/'visual.PASS').exists():raise RuntimeError('Visual validation failed')
@@ -41,12 +49,16 @@ try:
     with socket.create_connection(('127.0.0.1',25598),timeout=.3):break
    except OSError:time.sleep(.2)
    if time.monotonic()>deadline:raise RuntimeError('Server listen timeout')
-  launch('rival');launch('owner');deadline=time.monotonic()+500
+  clients={role:launch(role) for role in ['rival','owner']};deadline=time.monotonic()+500
   while p.poll() is None:
+   for role,process in clients.items():
+    if process.poll() is not None and not (out/(role+'.PASS')).exists():raise RuntimeError(role+' client exited before verification; inspect its log')
    failed=list(out.glob('*.FAIL'))
    if failed:raise RuntimeError('\n'.join(f.name+': '+f.read_text() for f in failed))
    if time.monotonic()>deadline:raise RuntimeError('Network validation timeout')
    time.sleep(.3)
+  (out/'first-server-exit.json').write_text(json.dumps({'server_exit':p.returncode,'clients':{role:process.poll() for role,process in clients.items()}}))
+  if p.returncode!=0:raise RuntimeError('First server exited abnormally: '+str(p.returncode))
   if not all((out/(n+'.PASS')).exists() for n in ['owner','rival','server','security']):raise RuntimeError('Missing network PASS')
   shutil.copytree(out/'game-server/world',out/'before-restart-world')
   p=launch('server',True);p.wait(timeout=100)

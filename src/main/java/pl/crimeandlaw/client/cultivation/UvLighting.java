@@ -63,14 +63,19 @@ public final class UvLighting {
     }
     /** Called immediately after first-person rendering, before Minecraft clears its depth for HUD. */
     public static void afterHands(){var mc=Minecraft.getInstance();if(shader==null||world==null||mc.level!=world||lastLightCount==0||handLight<=0||!mc.options.getCameraType().isFirstPerson()||mc.options.hideGui)return;effect(mc,null,true);}
+    private static int depth(RenderTarget target){return target==null?scene.getDepthTextureId():target.getDepthTextureId();}
     private static void effect(Minecraft mc,RenderLevelStageEvent e,boolean hand){
         var main=mc.getMainRenderTarget();if(!main.useDepth)return;
         if(scene==null)scene=new TextureTarget(main.width,main.height,true,Minecraft.ON_OSX);else if(scene.width!=main.width||scene.height!=main.height)scene.resize(main.width,main.height,Minecraft.ON_OSX);if(main.isStencilEnabled()&&!scene.isStencilEnabled())scene.enableStencil();
-        GlStateManager._glBindFramebuffer(36008,main.frameBufferId);GlStateManager._glBindFramebuffer(36009,scene.frameBufferId);GlStateManager._glBlitFrameBuffer(0,0,main.width,main.height,0,0,scene.width,scene.height,16384|256,9728);main.bindWrite(true);
+        GlStateManager._glBindFramebuffer(36008,main.frameBufferId);GlStateManager._glBindFramebuffer(36009,scene.frameBufferId);GlStateManager._glBlitFrameBuffer(0,0,main.width,main.height,0,0,scene.width,scene.height,16384|256,9728);
+        // Fabulous replaces main depth during its final composite. Its layer targets retain world depth.
+        var translucent=mc.levelRenderer.getTranslucentTarget();boolean fabulous=!hand&&translucent!=null;
+        if(fabulous)scene.copyDepthFrom(translucent);main.bindWrite(true);
         boolean depth=GL11.glIsEnabled(GL11.GL_DEPTH_TEST),blend=GL11.glIsEnabled(GL11.GL_BLEND),cull=GL11.glIsEnabled(GL11.GL_CULL_FACE);var previous=RenderSystem.getShader();
         RenderSystem.disableDepthTest();RenderSystem.depthMask(false);RenderSystem.disableBlend();RenderSystem.disableCull();
         try{
-            shader.safeGetUniform("HandPass").set(hand?1:0);shader.safeGetUniform("HandLight").set(handLight);
+            shader.safeGetUniform("HandPass").set(hand?1:0);shader.safeGetUniform("HandLight").set(handLight);shader.safeGetUniform("Fabulous").set(fabulous?1:0);
+            shader.setSampler("ItemDepth",fabulous?depth(mc.levelRenderer.getItemEntityTarget()):scene.getDepthTextureId());shader.setSampler("ParticleDepth",fabulous?depth(mc.levelRenderer.getParticlesTarget()):scene.getDepthTextureId());shader.setSampler("WeatherDepth",fabulous?depth(mc.levelRenderer.getWeatherTarget()):scene.getDepthTextureId());
             shader.setSampler("Scene",scene.getColorTextureId());shader.setSampler("SceneDepth",scene.getDepthTextureId());shader.setSampler("Volume",atlas.getId());
             if(!hand){shader.safeGetUniform("InverseProjection").set(new Matrix4f(e.getProjectionMatrix()).invert());shader.safeGetUniform("InverseView").set(new Matrix4f(e.getModelViewMatrix()).invert());shader.safeGetUniform("LightCount").set(lamps.size());
                 var camera=e.getCamera().getPosition();for(int i=0;i<UvVolume.MAX_LIGHTS;i++){var o=i<lamps.size()?origin(lamps.get(i)):BlockPos.ZERO;shader.safeGetUniform("Light"+i).set((float)(o.getX()-camera.x),(float)(o.getY()-camera.y),(float)(o.getZ()-camera.z),(float)i);}}

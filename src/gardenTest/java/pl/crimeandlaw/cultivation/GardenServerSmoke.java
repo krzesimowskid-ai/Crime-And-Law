@@ -49,7 +49,7 @@ public final class GardenServerSmoke {
         }
         if(!Files.exists(OUT.resolve("owner.PASS"))||!Files.exists(OUT.resolve("rival.PASS")))return;
         check(p.getInventory().countItem(CultivationContent.LEAF.get())==8&&p.getMainHandItem().getDamageValue()==8,"Eight real GUI cuts give eight items and eight tool wear");var a=Planter.at(l,A);check(a!=null&&!a.plant.soil()&&!a.plant.planted()&&a.hasPot()&&a.hasLamp(),"Harvest consumes crop and soil, retains equipment");
-        security(server,p,rival);check(Planter.at(l,A)!=null&&Planter.at(l,A).hasLamp(),"Station intact immediately before save");server.saveEverything(true,true,true);Files.writeString(OUT.resolve("server.PASS"),"TCP purchases, placement, UV assembly, source refill, 3D pour, packet, planting, watering, eight free-order cuts, conservation and adversarial checks pass\n");done=true;server.halt(false);
+        security(server,p,rival);check(Planter.at(l,A)!=null&&Planter.at(l,A).hasLamp(),"Station intact immediately before save");snapshot(server,"before");server.saveEverything(true,true,true);snapshot(server,"after");Files.writeString(OUT.resolve("server.PASS"),"TCP purchases, placement, UV assembly, source refill, 3D pour, packet, planting, watering, eight free-order cuts, conservation and adversarial checks pass\n");done=true;server.halt(false);
     }catch(Throwable t){fail(server,t);}}
     private static void security(MinecraftServer server,ServerPlayer p,ServerPlayer r)throws Exception{
         var l=server.overworld();p.connection.teleport(2.5,80,3.1,180,25);l.setBlock(B,CultivationContent.POT.get().defaultBlockState(),3);l.setBlock(C,CultivationContent.POT.get().defaultBlockState(),3);
@@ -80,6 +80,17 @@ public final class GardenServerSmoke {
         // Persist an ordinary crop's fixed six-leaf roll with one already removed.
         var b=Planter.at(l,B);b.plant.plant(false);b.plant.addWater(100);var data=b.plant.data();b.plant.restore(new PlanterState.Data(true,true,17999,0,0,100,0,0,data.identity()));b.plant.step(true,false,n->3);b.cut(4);b.changed();Files.writeString(OUT.resolve("persist.identity"),b.identity().toString());GangSavedData.get(server).setDirty();
         Files.writeString(OUT.resolve("security.PASS"),"Closed/stacked bag checks, no-motion completion, seed-phase skip, source swap, repeat completion, three bag charges, replaced BE, veto, wall/reach, packet capacity, creative overflow, cash/bank separation, shop replay/capacity/distance, upper/lower/creative frame destruction, legacy drops pass\n");
+    }
+    @SubscribeEvent public static void saving(net.neoforged.neoforge.event.level.ChunkDataEvent.Save e){
+        if(!Boolean.getBoolean("crimeandlaw.gardenSmoke")||Boolean.getBoolean("crimeandlaw.gardenRestart")||e.getChunk().getPos().x!=0||e.getChunk().getPos().z!=0)return;
+        try{Files.writeString(OUT.resolve("save-events.txt"),"time="+e.getData().getLong("LastUpdate")+" BEs="+e.getData().getList("block_entities",Tag.TAG_COMPOUND).size()+" chunk="+e.getChunk().getClass().getSimpleName()+"\n",StandardOpenOption.CREATE,StandardOpenOption.APPEND);}catch(Exception ex){throw new RuntimeException(ex);}
+    }
+    private static void snapshot(MinecraftServer server,String phase)throws Exception{
+        var l=server.overworld();var chunk=l.getChunk(0,0);var cmap=l.getChunkSource().chunkMap;var holder=((it.unimi.dsi.fastutil.longs.Long2ObjectMap<net.minecraft.server.level.ChunkHolder>)field(cmap,"visibleChunkMap")).get(0L);var latest=holder==null?null:holder.getLatestChunk();
+        Files.writeString(OUT.resolve("chunk-"+phase+".txt"),"time="+l.getGameTime()+" RAM="+System.identityHashCode(chunk)+" dirty="+chunk.isUnsaved()+" latest="+(latest==null?"null":latest.getClass().getSimpleName()+"/"+System.identityHashCode(latest)+" dirty="+latest.isUnsaved())+" accessible="+(holder!=null&&holder.wasAccessibleSinceLastSave())+"\n");
+        NbtIo.writeCompressed(net.minecraft.world.level.chunk.storage.ChunkSerializer.write(l,chunk),OUT.resolve("memory-"+phase+".nbt"));
+        if(latest!=null)NbtIo.writeCompressed(net.minecraft.world.level.chunk.storage.ChunkSerializer.write(l,latest),OUT.resolve("holder-"+phase+".nbt"));
+        if(phase.equals("after")){var disk=cmap.read(new ChunkPos(0,0)).get(15,java.util.concurrent.TimeUnit.SECONDS);if(disk.isPresent())NbtIo.writeCompressed(disk.get(),OUT.resolve("io-after-save.nbt"));}
     }
     private static void frame(net.minecraft.server.level.ServerLevel l,BlockPos p){l.setBlock(p,CultivationContent.FRAME.get().defaultBlockState(),3);l.setBlock(p.above(),CultivationContent.FRAME.get().defaultBlockState().setValue(GrowFrameBlock.HALF,DoubleBlockHalf.UPPER),3);var pot=Planter.at(l,p);pot.installPot();pot.installLamp();pot.plant.fillSoil();pot.plant.plant(false);pot.changed();}
     private static int drops(net.minecraft.server.level.ServerLevel l,BlockPos p,Item item){return l.getEntitiesOfClass(ItemEntity.class,new net.minecraft.world.phys.AABB(p).inflate(1.5),e->e.getItem().is(item)).stream().mapToInt(e->e.getItem().getCount()).sum();}

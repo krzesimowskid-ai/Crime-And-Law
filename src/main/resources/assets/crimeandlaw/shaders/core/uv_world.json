@@ -10,6 +10,15 @@
     },
     {
       "name": "Volume"
+    },
+    {
+      "name": "ItemDepth"
+    },
+    {
+      "name": "ParticleDepth"
+    },
+    {
+      "name": "WeatherDepth"
     }
   ],
   "attributes": [
@@ -169,6 +178,14 @@
     {
       "name": "HandLight",
       "type": "float",
+      "count": 1,
+      "values": [
+        0
+      ]
+    },
+    {
+      "name": "Fabulous",
+      "type": "int",
       "count": 1,
       "values": [
         0
