@@ -1,0 +1,74 @@
+{
+  "version": "0.1.47",
+  "minecraft": "1.21.1",
+  "neoforge": "21.1.248",
+  "java": 21,
+  "protocol": 25,
+  "status": "TEST BUILD: lighting PASS; disk restart FAIL",
+  "artifact": "crimeandlaw-0.1.47.jar",
+  "bytes": 3957341,
+  "sha256": "8109c7169d4ad130ac3c42d1eade55a387a12608a3c159d2d12c1f3c30438c68",
+  "suites": 39,
+  "tests": {
+    "tests": 235,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "production_classes_verified": 252,
+  "resources_verified": 34,
+  "crc_ok": true,
+  "fixture_classes_absent": true,
+  "render_checks": {
+    "fancy": {
+      "samples": 119,
+      "maximum": [
+        69.22314049586777,
+        46.65289256198347,
+        115.45454545454545
+      ],
+      "minimum": [
+        68.91735537190083,
+        46.36363636363637,
+        115.08264462809917
+      ],
+      "filter": 9729,
+      "range": [
+        0.3057851239669418,
+        0.28925619834710403,
+        0.37190082644627864
+      ]
+    },
+    "fabulous": {
+      "samples": 119,
+      "maximum": [
+        69.22314049586777,
+        46.65289256198347,
+        115.45454545454545
+      ],
+      "minimum": [
+        68.91735537190083,
+        46.36363636363637,
+        115.08264462809917
+      ],
+      "filter": 9729,
+      "range": [
+        0.3057851239669418,
+        0.28925619834710403,
+        0.37190082644627864
+      ]
+    },
+    "ceiling_max_difference": 0,
+    "restart": "FAIL",
+    "failure": {
+      "server.FAIL": "java.lang.AssertionError: Reusable equipment and exhausted soil persist"
+    },
+    "first_server_exit": {
+      "server_exit": 0,
+      "clients": {
+        "rival": null,
+        "owner": null
+      }
+    }
+  }
+}

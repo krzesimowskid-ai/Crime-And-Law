@@ -15,7 +15,8 @@ def launch(role,restart=False):
  if server:
   (game/'eula.txt').write_text('eula=true\n');(game/'server.properties').write_text('online-mode=false\nserver-port=25598\nserver-ip=127.0.0.1\nlevel-type=minecraft:flat\nspawn-protection=0\nview-distance=5\nsimulation-distance=2\ndifficulty=peaceful\nmax-tick-time=0\n')
  name='server' if server else 'client';cp=[str(repo/'build/moddev/artifacts/neoforge-21.1.248.jar')]+(repo/f'build/moddev/{name}LegacyClasspath.txt').read_text().splitlines()+[str(repo/'build/classes/java/main'),str(repo/'build/resources/main')]
- command=[str(tools/'jdk-21.0.2/bin/java'),'-Xmx1400m','-Dcrimeandlaw.gardenOutput='+str(out)]
+ native=out/('natives-'+role);native.mkdir(exist_ok=True)
+ command=[str(tools/'jdk-21.0.2/bin/java'),'-Xmx1400m','-Dorg.lwjgl.system.SharedLibraryExtractPath='+str(native),'-Dcrimeandlaw.gardenOutput='+str(out)]
  if server:command+=['-Dcrimeandlaw.gardenSmoke=true','-Dcrimeandlaw.gardenRestart='+str(restart).lower()]
  else:command+=['-Dcrimeandlaw.gardenRole='+role]
  command+=['-cp',':'.join(cp),'@'+str(repo/f'build/moddev/{name}RunVmArgs.txt'),'@'+str(repo/f'build/moddev/{name}RunProgramArgs.txt')]

@@ -1,6 +1,6 @@
 # Aurelia — doniczki, wyposażenie i zbiór
 
-Wersja testowa 0.1.46. Minecraft 1.21.1, NeoForge 21.1.248, Java 21.
+Wersja testowa 0.1.47. Minecraft 1.21.1, NeoForge 21.1.248, Java 21.
 Protokół **25**: ten sam JAR na serwerze i u graczy.
 Aurelia jest fikcyjną rośliną; liczby są bilansem gry.
 
@@ -101,26 +101,24 @@ po to, aby zebrać już dojrzałą roślinę.
 | Zwykłe światło | 3–6 liści, równe szanse |
 | UV przez co najmniej 80% rzeczywistego wzrostu | 4–8 liści, równe szanse |
 
-UV umożliwia wzrost w ciemnym wnętrzu. Lampa ma własne fioletowe
-światło, które oświetla tekstury podłogi, ścian, sufitu, modeli oraz
-trzymanego przedmiotu. Nie emituje już zwykłego białego światła, a renderer
-nie stosuje filtra barwiącego gotowy obraz. Fiolet trafia do oświetlenia
-materiału przed pomnożeniem przez jego teksturę i przed mgłą. HUD oraz
-nieoświetlane elementy interfejsu zachowują własne kolory.
+UV umożliwia wzrost w ciemnym wnętrzu. Oprawa daje własne fioletowe
+światło skierowane w dół, spod świetlówek na roślinę i podłogę. Miękka
+wiązka słabnie ku brzegom i z odległością; nad oprawą nie ma emisji.
+Pełne, nieprzezroczyste bloki zasłaniają wiązkę. Jest to bezpośrednie
+światło, bez odbijania od ścian i bez obchodzenia przeszkód.
 
-Własne pole światła ma poziom źródła 10 i traci jeden poziom na blok,
-rozchodząc się w sześciu kierunkach. Może dotrzeć przez drzwi i ominąć
-przeszkodę; zamknięte, nieprzezroczyste ściany odcinają przejście.
-Renderer obsługuje osiem najbliższych lamp, bez generowania chunków.
-Szkło przepuszcza światło; częściowe kształty i nietypowe własności bloków
-nie są pełną kopią silnika oświetlenia Minecrafta. Nie potrzeba zewnętrznej
-paczki shaderów. Testy dotyczą zwykłego renderera NeoForge; zamienniki
-renderera i zewnętrzne paczki shaderów wymagają osobnego sprawdzenia.
+Kolor oświetla tekstury materiałów przed mgłą; nie jest filtrem gotowego
+obrazu. HUD zachowuje własne kolory. Usunięto reset wygładzania przy
+aktualizacji tekstury światła oraz niepotrzebne odświeżanie niezmiennego
+pola. Kolejność już wybranych lamp jest stała przy przechodzeniu między
+nimi. Renderer uwzględnia osiem najbliższych lamp, bez generowania chunków.
+Zasięg bezpośredniej wiązki wynosi do siedmiu bloków; jej faktyczny ślad
+zależy od wysokości powierzchni pod lampą. Cienie częściowych kształtów są
+przybliżone. Nie potrzeba zewnętrznej paczki shaderów.
 
-Fiolet jest oddzielnym polem barwnego oświetlenia: nie zwiększa zwykłego
-kanału jasności blokowej po stronie serwera. Wzrost Aurelii korzysta
-bezpośrednio z zamontowanej lampy. Inne mechaniki wymagające poziomu
-waniliowego światła nie otrzymują od niej białego źródła.
+UV nie zwiększa zwykłej jasności blokowej po stronie serwera; Aurelia
+wykrywa zamontowaną lampę bezpośrednio. Inne mechaniki wymagające
+waniliowego poziomu światła nie otrzymują od niej białego źródła.
 
 UV nie daje dodatkowego przyspieszenia
 ani premii dla sąsiednich doniczek. W tej wersji nie ma zużycia lampy ani
@@ -176,4 +174,4 @@ Jednorazowe rewizje żądań i wyceny sklepu nie pozwalają ponawiać skutków
 starym pakietem. Po trzech sekundach bez potwierdzenia klient odzyskuje
 stan bez ponawiania wydatku ani nagrody.
 
-Wyniki i granice testów: [VALIDATION_0.1.46.md](VALIDATION_0.1.46.md).
+Wyniki i granice testów: [VALIDATION_0.1.47.md](VALIDATION_0.1.47.md).

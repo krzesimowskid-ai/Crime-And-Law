@@ -965,3 +965,12 @@ To zapis kierunku rozwoju; JAR 0.1.42 nie został w tej rozmowie zmieniony.
 - Pole rozchodzi się w sześciu kierunkach ze spadkiem poziomu o jeden na blok i może ominąć przeszkodę przez otwarte przejście.
 - Mechaniki zwykłej jasności serwerowej nie dostają emisji UV; logika rośliny nadal wykrywa zamontowaną lampę.
 - Wcześniejsza obserwacja utraty zapisu stanowiska pozostaje otwarta; ta korekta dotyczy światła.
+
+
+## 2026-10-26 — kierunek i stabilność UV (0.1.47)
+
+- Po nagraniu użytkownik doprecyzował: stały fiolet spod oprawy, skierowany w dół na roślinę i podłogę; bez emisji we wszystkie strony oraz migania przy zmianie widoku.
+- Źródło odpowiada spodowi modelu lampy na wysokości 1,545 bloku nad podstawą stelaża. Miękka bezpośrednia wiązka jest tłumiona z odległością i przez nieprzezroczyste bloki.
+- Poprawiono reset filtrowania do NEAREST wykonywany przez NativeImage.upload; filtr LINEAR jest przywracany po każdym przesłaniu danych. Stała kolejność wybranych lamp i ponowne użycie niezmiennego pola ograniczają zbędne aktualizacje.
+- Wykonano pomiary przy ruchu kamery, z dwiema lampami, po przeładowaniu zasobów i w Fabulous; kontrolowano także sufit nad oprawą.
+- Kontrola zapisu ponownie nie zachowała stanowiska po restarcie; problem pozostaje otwarty, JAR jest testowy.
