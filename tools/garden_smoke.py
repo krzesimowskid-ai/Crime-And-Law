@@ -1,7 +1,7 @@
 import os,sys,socket,subprocess,time,hashlib,uuid,argparse,shutil,ctypes,json
 from pathlib import Path
 repo=Path(__file__).resolve().parent.parent;root=repo.parent;tools=Path(os.environ.get('CRIMEANDLAW_BUILD_TOOLS',str(root/'build-tools')))
-arg=argparse.ArgumentParser();arg.add_argument('--visual',action='store_true');arg.add_argument('--output',default='tcp-1');args=arg.parse_args();out=repo/'build/garden-smoke'/args.output
+arg=argparse.ArgumentParser();arg.add_argument('--visual',action='store_true');arg.add_argument('--quick-far',action='store_true');arg.add_argument('--output',default='tcp-1');args=arg.parse_args();out=repo/'build/garden-smoke'/args.output
 if out.exists() and any(out.iterdir()):raise SystemExit('Choose a fresh --output directory; previous results must not be reused.')
 out.mkdir(parents=True,exist_ok=True)
 env=os.environ.copy()
@@ -18,7 +18,7 @@ def launch(role,restart=False):
  native=out/('natives-'+role);native.mkdir(exist_ok=True)
  command=[str(tools/'jdk-21.0.2/bin/java'),'-Xmx1400m','-Dorg.lwjgl.system.SharedLibraryExtractPath='+str(native),'-Dcrimeandlaw.gardenOutput='+str(out)]
  if server:command+=['-Dcrimeandlaw.gardenSmoke=true','-Dcrimeandlaw.gardenRestart='+str(restart).lower()]
- else:command+=['-Dcrimeandlaw.gardenRole='+role]
+ else:command+=['-Dcrimeandlaw.gardenRole='+role]+(['-Dcrimeandlaw.quickFar=true'] if args.quick_far else [])
  command+=['-cp',':'.join(cp),'@'+str(repo/f'build/moddev/{name}RunVmArgs.txt'),'@'+str(repo/f'build/moddev/{name}RunProgramArgs.txt')]
  if server:command+=['--nogui']
  else:
@@ -61,6 +61,9 @@ try:
   (out/'first-server-exit.json').write_text(json.dumps({'server_exit':p.returncode,'clients':{role:process.poll() for role,process in clients.items()}}))
   if p.returncode!=0:raise RuntimeError('First server exited abnormally: '+str(p.returncode))
   if not all((out/(n+'.PASS')).exists() for n in ['owner','rival','server','security']):raise RuntimeError('Missing network PASS')
+  for role in clients:
+   if 'OpenGL debug message:' in (out/(role+'.log')).read_text():raise RuntimeError(role+' OpenGL diagnostic; inspect its log')
+  (out/'client-gl.PASS').write_text('Both client logs contain no OpenGL debug errors after UV changes, removal, resource reload and GUI rendering\n')
   shutil.copytree(out/'game-server/world',out/'before-restart-world')
   p=launch('server',True);p.wait(timeout=100)
   if not (out/'restart.PASS').exists():raise RuntimeError('Disk restart failed')

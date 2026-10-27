@@ -1,6 +1,6 @@
 # Aurelia — doniczki, wyposażenie i zbiór
 
-Wersja testowa 0.1.50. Minecraft 1.21.1, NeoForge 21.1.248, Java 21.
+Wersja testowa 0.1.51. Minecraft 1.21.1, NeoForge 21.1.248, Java 21.
 Protokół **27**: ten sam JAR na serwerze i u graczy.
 Aurelia jest fikcyjną rośliną; liczby są bilansem gry.
 
@@ -122,8 +122,12 @@ Zapobiega to przenoszeniu punktu oświetlenia górnego liścia ponad lampę.
 Kolor oświetla tekstury materiałów przed mgłą; nie jest filtrem gotowego
 obrazu. HUD zachowuje własne kolory. Usunięto reset wygładzania przy
 aktualizacji tekstury światła oraz niepotrzebne odświeżanie niezmiennego
-pola. Kolejność już wybranych lamp jest stała przy przechodzeniu między
-nimi. Renderer uwzględnia osiem najbliższych lamp, bez generowania chunków.
+pola. Wspólna mapa światła obejmuje wszystkie lampy w chunkach załadowanych
+przez klienta, bez limitu ośmiu źródeł i bez odcinania przy oddalaniu kamery.
+Freecam korzysta z tej samej mapy. Nie generuje ani nie wymusza ładowania
+chunków: nadal obowiązują widoczność terenu, odległość renderowania i mgła.
+Modele stelaży i lamp mają zasięg renderowania zgodny z ustawieniem terenu.
+Postawienie/usunięcie nieprzezroczystego bloku aktualizuje osłonięcie wiązki.
 Zasięg bezpośredniej wiązki wynosi do siedmiu bloków; jej faktyczny ślad
 zależy od wysokości powierzchni pod lampą. Cienie częściowych kształtów są
 przybliżone. Nie potrzeba zewnętrznej paczki shaderów.
@@ -137,6 +141,15 @@ ani premii dla sąsiednich doniczek. W tej wersji nie ma zużycia lampy ani
 sieci elektrycznej. Włożenie lampy tuż przed zbiorem nie zmienia plonu.
 Losowanie następuje raz przy dojrzewaniu; liczba liści, maska pozostałych,
 ekspozycja i tożsamość rośliny zapisują się ze światem.
+
+Z istniejącej tożsamości wyprowadzany jest również trwały układ rośliny.
+Kąt, wysokość, długość i szerokość poszczególnych liści różnią się między
+roślinami. Liście są niemal proste, z niewielkim naturalnym wygięciem;
+pionowe odstępy utrzymują ich bryły osobno także przy pełnych ośmiu liściach.
+Świat, przygotowanie i zbiór pokazują ten sam układ, a usunięcie liścia
+nie zmienia pozostałych. Ustawienia starych roślin są wyprowadzane z ich
+dotychczasowego UUID, bez ponownego losowania nagród. Wymagany protokół 28
+na obu stronach połączenia.
 
 ## Zbiór i kolejny cykl
 
@@ -189,4 +202,4 @@ Jednorazowe rewizje żądań i wyceny sklepu nie pozwalają ponawiać skutków
 starym pakietem. Po trzech sekundach bez potwierdzenia klient odzyskuje
 stan bez ponawiania wydatku ani nagrody.
 
-Wyniki i granice testów: [VALIDATION_0.1.50.md](VALIDATION_0.1.50.md).
+Wyniki i granice testów: [VALIDATION_0.1.51.md](VALIDATION_0.1.51.md).

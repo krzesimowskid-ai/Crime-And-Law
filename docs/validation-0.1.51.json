@@ -1,0 +1,155 @@
+{
+  "version": "0.1.51",
+  "protocol": 28,
+  "unit": {
+    "tests": 264,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "suites": 43,
+  "game_run": "persistent-3",
+  "checks": {
+    "client-gl": "Both client logs contain no OpenGL debug errors after UV changes, removal, resource reload and GUI rendering",
+    "leaf-fall": "Real snip: rigid falling leaf continues past panel/old floor, removed only wholly below Minecraft viewport",
+    "owner": "Actual shop and replay, night UV, 3D seam cutting, LPM grab, manual WASD rotation without automatic tilt, whole-mouth soil stream, floating pause, aimed filling, packet opening, falling missed/recovered seed, soil covering, moving water emitter, exact supplies, 8 free-order snips pass",
+    "pot-collision": "Actual rim and wall contacts; every moving soil/water particle checked against solid pot throughout GUI operations",
+    "preparation-recovery": "Unprocessed request recovers after three seconds through cancellation/state refresh, no materials spent",
+    "reservation": "Second TCP player denied same pot",
+    "restart": "Actual disk restart: frame/pot/UV, exhausted soil, ordinary six-leaf roll/partial mask/UUID, leaf/seed/water/bag/tool counts and cash preserved",
+    "rival": "Second TCP player denied same preparation session",
+    "security": "Closed/stacked bag checks, no-motion completion, seed-phase skip, source swap, repeat completion, three bag charges, replaced BE, veto, wall/reach, packet capacity, creative overflow, cash/bank separation, shop replay/capacity/distance, upper/lower/creative frame destruction, legacy drops pass",
+    "server": "TCP purchases, placement, UV assembly, source refill, 3D pour, packet, planting, watering, eight free-order cuts, conservation and adversarial checks pass",
+    "shop-recovery": "Quote refreshed after three seconds without replaying purchase or changing funds",
+    "uv-distance": "Loaded field visible through 20-block and 3x3-chunk boundaries at 4/18/22/40/64 blocks with detached camera and thirteen sources",
+    "uv-update": "Opacity placement/removal invalidates source cache and updates world field while camera stays 64 blocks away",
+    "uv": "Downward light, ceiling unchanged, GL linear filtering, two lamps and moving camera in Fancy/Fabulous, removal and reload pass",
+    "wasd": "Actual A/D roll and W/S pitch, fixed position, no automatic bag/can tilt; mouse moves tool"
+  },
+  "failures": {},
+  "first_exit": {
+    "server_exit": 0,
+    "clients": {
+      "rival": null,
+      "owner": null
+    }
+  },
+  "freecam": [
+    {
+      "lamps": 13,
+      "distance": 4,
+      "rgb": [
+        36.52066115702479,
+        27.785123966942148,
+        61.917355371900825
+      ]
+    },
+    {
+      "lamps": 13,
+      "distance": 18,
+      "rgb": [
+        36.00826446280992,
+        27.611570247933884,
+        60.87603305785124
+      ]
+    },
+    {
+      "lamps": 13,
+      "distance": 22,
+      "rgb": [
+        35.81818181818182,
+        27.520661157024794,
+        60.50413223140496
+      ]
+    },
+    {
+      "lamps": 13,
+      "distance": 40,
+      "rgb": [
+        35.0,
+        27.446280991735538,
+        58.97520661157025
+      ]
+    },
+    {
+      "lamps": 13,
+      "distance": 64,
+      "rgb": [
+        33.99173553719008,
+        27.231404958677686,
+        57.12396694214876
+      ]
+    }
+  ],
+  "prior_runs": [
+    {
+      "run": "persistent-1",
+      "passed_checks": [
+        "shop-recovery",
+        "uv"
+      ],
+      "failures": {
+        "owner": "java.lang.AssertionError: Violet light remains on loaded target at camera distance 4 RGB=[9.0, 10.0, 18.0] step=63"
+      }
+    },
+    {
+      "run": "far-debug-1",
+      "passed_checks": [
+        "shop-recovery"
+      ],
+      "failures": {
+        "owner": "java.lang.AssertionError: Violet light remains on loaded target at camera distance 4 RGB=[9.0, 10.0, 18.0] step=63"
+      }
+    },
+    {
+      "run": "far-debug-2",
+      "passed_checks": [
+        "leaf-fall",
+        "owner",
+        "pot-collision",
+        "preparation-recovery",
+        "reservation",
+        "restart",
+        "rival",
+        "security",
+        "server",
+        "shop-recovery",
+        "uv-distance",
+        "wasd"
+      ],
+      "failures": {}
+    },
+    {
+      "run": "persistent-2",
+      "passed_checks": [
+        "leaf-fall",
+        "owner",
+        "pot-collision",
+        "preparation-recovery",
+        "reservation",
+        "rival",
+        "security",
+        "server",
+        "shop-recovery",
+        "uv",
+        "uv-distance",
+        "uv-update",
+        "wasd"
+      ],
+      "failures": {
+        "server": "java.lang.AssertionError: Reusable equipment and exhausted soil persist"
+      }
+    }
+  ],
+  "known_issue": "Intermittent station disk persistence remains unresolved; persistent-2 failed with first server exit 0, persistent-3 passed. No save implementation changes or save fix claimed.",
+  "reference": "Supplied 36.654934-second singleplayer/freecam recording, viewed locally.",
+  "artifact": {
+    "file": "crimeandlaw-0.1.51.jar",
+    "bytes": 3979457,
+    "sha256": "7779dabe7795a8d3ab49a17a8b05e53274c3f5f640a19bddff8b2560e2f36213",
+    "production_classes": 263,
+    "resources": 34,
+    "fixture_classes": 0,
+    "crc": "PASS"
+  }
+}

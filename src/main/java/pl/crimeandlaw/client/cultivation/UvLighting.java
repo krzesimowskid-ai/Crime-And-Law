@@ -74,8 +74,11 @@ public final class UvLighting {
     public static void beginHands(){handPass=worldPass;}public static void endHands(){handPass=false;}public static void finishWorld(){worldPass=handPass=false;}
     public static void bind(ShaderInstance shader){
         if(shader.getUniform("CalUvCount")==null)return;boolean enabled=worldPass&&atlas!=null&&index!=null&&field!=null&&field.count>0&&world==Minecraft.getInstance().level;
+        // Shaders retain sampler IDs. Clear disabled bindings before an atlas can be
+        // replaced/released, including GUI rendering immediately after world rendering.
+        shader.setSampler("CalUvVolume",enabled?atlas.getId():0);shader.setSampler("CalUvIndex",enabled?index.getId():0);
         shader.safeGetUniform("CalUvCount").set(enabled?1:0);if(!enabled)return;var eye=Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
-        shader.setSampler("CalUvVolume",atlas.getId());shader.setSampler("CalUvIndex",index.getId());shader.safeGetUniform("CalUvInverseView").set(inverseView);shader.safeGetUniform("CalUvHand").set(handPass?1:0);shader.safeGetUniform("CalUvHandLight").set(handLight);shader.safeGetUniform("CalUvGamma").set(Minecraft.getInstance().options.gamma().get().floatValue());
+        shader.safeGetUniform("CalUvInverseView").set(inverseView);shader.safeGetUniform("CalUvHand").set(handPass?1:0);shader.safeGetUniform("CalUvHandLight").set(handLight);shader.safeGetUniform("CalUvGamma").set(Minecraft.getInstance().options.gamma().get().floatValue());
         shader.safeGetUniform("CalUvOrigin").set((float)(field.originX-eye.x),(float)(field.originY-eye.y),(float)(field.originZ-eye.z));shader.safeGetUniform("CalUvExtent").set((float)field.extentX,(float)field.extentY,(float)field.extentZ);shader.safeGetUniform("CalUvColumns").set(field.columns);shader.safeGetUniform("CalUvIndexWidth").set(field.indexWidth);shader.safeGetUniform("CalUvCapacity").set(field.capacity);shader.safeGetUniform("CalUvProbes").set(field.probes);
     }
 }

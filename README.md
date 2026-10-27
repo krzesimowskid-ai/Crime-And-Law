@@ -1,7 +1,7 @@
 # Crime And Law
 
 Autorski mod gangsterski: panel gangów, członkostwo i własny wygląd menu.
-Wersja **0.1.50 — do testów na kopii świata**.
+Wersja **0.1.51 — do testów na kopii świata**.
 Otwarta obserwacja zapisu: [raport 0.1.45](docs/VALIDATION_0.1.45.md).
 
 Pierwsza propozycja własnej ekonomii w dolarach i rozwoju terenów:
@@ -24,6 +24,12 @@ Ziemia sypie się z całego rozciętego otworu, a serwer zalicza trafiającą cz
 Doniczka ma nowy ciemny korpus, worki własne czytelne etykiety ziemi,
 a zamocowane UV daje własne fioletowe światło na teksturach pod lampą
 i trzymanych przedmiotów, bez zwykłej białej emisji i bez filtra obrazu.
+Pole obejmuje wszystkie załadowane lampy: odległa kamera nie wygasza
+oświetlenia, dopóki teren jest załadowany i widoczny. Modele stelaży
+korzystają z odległości renderowania terenu.
+Każda roślina ma własny trwały układ prawie prostych liści, o różnych kątach,
+wysokościach i rozmiarach. Odstępy zapobiegają przecinaniu brył liści;
+przycinanie nie przestawia pozostałych.
 Rozcięcie nowego worka ma widoczne ostrze; otwarty worek wielokrotnego
 użytku zachowuje otwarcie. Ziemia nie przechodzi przez obracany korpus,
 a znacznik nasiona leży na powierzchni dołka. Ziemia i woda zatrzymują się
@@ -38,14 +44,14 @@ nową ziemię i posadzić nowe nasiono; sprzęt pozostaje.
 Zwykły NPC Ogrodnik sprzedaje materiały i wyposażenie za gotówkę.
 Nie ma darmowej receptury ani zwrotu nasion z niszczonej rośliny.
 Instrukcja, roboczy balans i polecenie ustawienia sklepu:
-[Aurelia](docs/AURELIA.md). Wyniki: [weryfikacja 0.1.50](docs/VALIDATION_0.1.50.md).
+[Aurelia](docs/AURELIA.md). Wyniki: [weryfikacja 0.1.51](docs/VALIDATION_0.1.51.md).
 
 ## Uruchomienie
 
 - Minecraft **1.21.1**, Java **21**, NeoForge **21.1.248**.
-- Włóż `crimeandlaw-0.1.50.jar` do `mods`, zastępując poprzedni JAR tego moda.
+- Włóż `crimeandlaw-0.1.51.jar` do `mods`, zastępując poprzedni JAR tego moda.
 - W rozgrywce sieciowej mod musi być **u graczy i na serwerze**.
-  **0.1.50 korzysta z protokołu 27** — używaj aktualnej wersji na obu stronach.
+  **0.1.51 korzysta z protokołu 28** — używaj aktualnej wersji na obu stronach.
   Starsze wersje od 0.1.26 do 0.1.28 używają protokołu 16.
 - W świecie jednoosobowym część serwerowa działa razem ze światem.
 - **G** otwiera panel; skrót można zmienić w sterowaniu. Esc lub X zamyka okno.

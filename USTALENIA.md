@@ -1003,3 +1003,14 @@ To zapis kierunku rozwoju; JAR 0.1.42 nie został w tej rozmowie zmieniony.
 - Płytsza krzywizna liści, ten sam kształt przed i po odcięciu, sztywny obrót całego odciętego liścia.
 - Usunięto zatrzymywanie odciętego liścia na sztucznej podłodze i limit 2,3 s. Lot trwa poniżej panelu, a obiekt jest usuwany dopiero po wypadnięciu całej sylwetki poniżej widoku Minecrafta.
 - Protokół pozostaje 27, format pakietów i logika nagród bez zmian. Nadal wymagana aktualna wersja u graczy i na serwerze.
+
+
+## 2026-10-27 — odległe UV i osobny układ roślin (0.1.51)
+
+- Zgłoszenie: UV znikało po oddaleniu freecam, mimo widocznego zwykłego światła; wszystkie rośliny miały jednakowy układ. Liście mają być prawie proste i nie przenikać wzajemnie.
+- Wspólna, rzadka mapa światła wszystkich lamp w chunkach klienta zastępuje wybór ośmiu źródeł wokół kamery. Nie ma odcięcia według odległości kamery. Zachowany fiolet, kierunek w dół, cienie pełnych bloków i punkt próbkowania małych modeli.
+- Modele stelaży/lamp mają zasięg renderowania ustawiony według terenu. Nadal obowiązuje załadowanie i renderowanie chunków oraz mgła.
+- Zmiany nieprzezroczystych bloków aktualizują osłonięcie światła. Zwolnione tekstury mapy nie pozostają przypięte do shaderów przy rysowaniu GUI.
+- Trwały wariant każdej rośliny wynika z dotychczasowego UUID. Różne kąty, wysokości, długości i szerokości; rozdzielone pionowe obwiednie liści; płytka krzywizna. Układ wspólny dla świata i minigier, bez przestawiania podczas cięcia.
+- Pakiety przygotowania i zbioru przenoszą identyfikator kształtu; protokół 28. Format zapisu, plon, koszt materiałów i reguły nagród nie są zmienione.
+- Znany nieregularny problem zapisu stanowiska pozostaje otwarty. Wyniki z gry i dokładne granice: docs/VALIDATION_0.1.51.md.

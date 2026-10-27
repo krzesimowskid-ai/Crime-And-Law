@@ -14,13 +14,14 @@ public final class PlantShape {
     private PlantShape(){}
     public static long seed(UUID identity){return identity.getMostSignificantBits()^Long.rotateLeft(identity.getLeastSignificantBits(),23);}
     public static List<Leaf> create(long seed){
-        var random=new Random(seed);double phase=random.nextDouble()*Math.PI*2,bottom=.22+random.nextDouble()*.02,span=.56+random.nextDouble()*.04;
+        long mixed=(seed^(seed>>>30))*0xBF58476D1CE4E5B9L;mixed=(mixed^(mixed>>>27))*0x94D049BB133111EBL;mixed^=mixed>>>31;
+        var random=new Random(mixed);double phase=random.nextDouble()*Math.PI*2,bottom=.22+random.nextDouble()*.02,span=.56+random.nextDouble()*.04;
         double[] heights=new double[8],gaps=new double[7];double sum=0;for(int i=0;i<7;i++){gaps[i]=.9+random.nextDouble()*.2;sum+=gaps[i];}
         heights[0]=bottom;for(int i=1;i<8;i++)heights[i]=heights[i-1]+span*gaps[i-1]/sum;
         var leaves=new ArrayList<Leaf>(8);
         for(int id=0;id<8;id++){
             int node=NODES[id];double taper=1-node*.12/7;
-            leaves.add(new Leaf(node,heights[node],phase+node*2.399963229728653+(random.nextDouble()-.5)*.48,(.34+random.nextDouble()*.12)*taper,(.23+random.nextDouble()*.09)*taper,-.006+random.nextDouble()*.014,.003+random.nextDouble()*.006));
+            leaves.add(new Leaf(node,heights[node],phase+node*2.399963229728653+(random.nextDouble()-.5)*1.1,(.34+random.nextDouble()*.12)*taper,(.23+random.nextDouble()*.09)*taper,-.006+random.nextDouble()*.014,.003+random.nextDouble()*.006));
         }return List.copyOf(leaves);
     }
 }

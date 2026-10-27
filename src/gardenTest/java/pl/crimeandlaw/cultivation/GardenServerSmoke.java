@@ -49,6 +49,8 @@ public final class GardenServerSmoke {
                 var q=new BlockPos(x,80,z);l.setBlock(q,CultivationContent.FRAME.get().defaultBlockState(),3);l.setBlock(q.above(),CultivationContent.FRAME.get().defaultBlockState().setValue(GrowFrameBlock.HALF,DoubleBlockHalf.UPPER),3);Planter.at(l,q).installLamp();
             }Files.writeString(OUT.resolve("uv-far.applied"),"probe and twelve extra loaded lamps");
         }
+        if(Files.exists(OUT.resolve("uv-wall.request"))&&!Files.exists(OUT.resolve("uv-wall.applied"))){l.setBlock(new BlockPos(1,80,1),Blocks.STONE.defaultBlockState(),3);Files.writeString(OUT.resolve("uv-wall.applied"),"placed");}
+        if(Files.exists(OUT.resolve("uv-wall-remove.request"))&&!Files.exists(OUT.resolve("uv-wall-remove.applied"))){l.removeBlock(new BlockPos(1,80,1),false);Files.writeString(OUT.resolve("uv-wall-remove.applied"),"removed");}
         if(Files.exists(OUT.resolve("uv-far-remove.request"))&&!Files.exists(OUT.resolve("uv-far-remove.applied"))){
             l.removeBlock(new BlockPos(1,80,0),false);for(int x:new int[]{-24,-8,8,24})for(int z:new int[]{-24,-8,8}){var q=new BlockPos(x,80,z);l.removeBlock(q.above(),false);l.removeBlock(q,false);}Files.writeString(OUT.resolve("uv-far-remove.applied"),"removed");
         }

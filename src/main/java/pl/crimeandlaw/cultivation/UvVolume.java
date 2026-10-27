@@ -1,7 +1,7 @@
 package pl.crimeandlaw.cultivation;
 /** Direct, downward area light from the underside of the UV fitting. */
 public final class UvVolume {
- public static final int CENTER=10,SIZE=CENTER*2+1,MAX_LIGHTS=8;
+ public static final int CENTER=10,SIZE=CENTER*2+1;
  public static final double SOURCE_X=CENTER+.5,SOURCE_Y=CENTER+.545,SOURCE_Z=CENTER+.5,RANGE=7;
  private static final double[][] EMITTERS={{0,0},{-.18,-.18},{.18,-.18},{-.18,.18},{.18,.18}};
  private UvVolume(){}
