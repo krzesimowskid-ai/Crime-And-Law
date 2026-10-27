@@ -25,7 +25,7 @@ public final class PreparationScreen extends GardenScreen {
     private final Set<Integer> keys=new HashSet<>();private boolean grabbed,cutting,packetOpened,seedHeld,falling,seedOnSoil,covering,rotating,autoPour;
     private Point seed=new Point(.95,.83,.48),drop,hand=new Point(.5,PreparationPhysics.TOP,.5),grabOffset=new Point(0,0,0);
     private double mouseX,mouseY,spawnClock;
-    private static final class Particle {Point start,velocity;double age;boolean water,spilled;Particle(Stream s,boolean w,double jitter){start=s.source().add(new Point(Math.sin(jitter)*(w?.0007:.004),0,Math.cos(jitter)*(w?.0007:.004)));velocity=s.velocity();water=w;}}
+    private static final class Particle {Point start,velocity;double age,contactAge;boolean water,stopped;Particle(Stream s,boolean w,double jitter){start=s.source().add(new Point(Math.sin(jitter)*(w?.0007:.004),0,Math.cos(jitter)*(w?.0007:.004)));velocity=s.velocity();water=w;}}
     private final List<Particle> particles=new ArrayList<>();
     public PreparationScreen(PotNetwork.State s){super("Przygotowanie doniczki");state=s;visualFill=s.stage()>0?1:0;}
     public UUID token(){return state.token();}public PotNetwork.State state(){return state;}
@@ -79,8 +79,14 @@ public final class PreparationScreen extends GardenScreen {
         float target=state.stage()>0?1:state.work()/1000f;visualFill+=(target-visualFill)*Math.min(1,dt*12);
         int op=state.operation();boolean water=op==PotNetwork.WATER;
         if((op==PotNetwork.POUR||water)&&grabbed&&pending==null){var stream=PreparationPhysics.stream(tool,water,true);if(stream.flowing()){spawnClock+=dt*(water?23:24);while(spawnClock>=1&&particles.size()<480){spawnClock--;for(var jet:PreparationPhysics.streams(tool,water,true))particles.add(new Particle(jet,water,ticks+particles.size()*7.3));}}}
-        for(var it=particles.iterator();it.hasNext();){var p=it.next();double before=p.age;p.age+=dt;var s=new Stream(p.start,p.velocity,true);var prev=PreparationPhysics.at(s,before);var now=PreparationPhysics.at(s,p.age);if(!p.water&&PreparationPhysics.insideBag(tool,now,.007)){it.remove();continue;}if(prev.y()>=PreparationPhysics.RIM&&now.y()<PreparationPhysics.RIM&&!PreparationPhysics.inside(now.x(),now.z(),.310))p.spilled=true;
-            double surface=p.spilled?.015:PreparationPhysics.soilY(visualFill);if(p.age>2||now.y()<surface)it.remove();}
+        for(var it=particles.iterator();it.hasNext();){
+            var p=it.next();if(p.stopped){if(!p.water&&PreparationPhysics.insideBag(tool,PreparationPhysics.at(new Stream(p.start,p.velocity,true),p.age),.007)){it.remove();continue;}p.contactAge+=dt;if(p.contactAge>(p.water?.02:.07))it.remove();continue;}
+            double nextAge=p.age+dt;var stream=new Stream(p.start,p.velocity,true);
+            var contact=PotCollision.trace(stream,p.age,nextAge,visualFill,p.water?.0018:.006);
+            p.age=contact==null?nextAge:contact.time();p.stopped=contact!=null;
+            var now=PreparationPhysics.at(stream,p.age);
+            if(!p.water&&PreparationPhysics.insideBag(tool,now,.007)||p.age>3)it.remove();
+        }
         if(falling){double t=(System.nanoTime()-seedFallSince)/1e9;double ground=PreparationPhysics.inside(drop.x(),drop.z(),.17)?PreparationPhysics.seedRestY():.025;seed=new Point(drop.x(),Math.max(ground,drop.y()-.5*PreparationPhysics.GRAVITY*t*t),drop.z());if(seed.y()<=ground){falling=false;landedAt=System.nanoTime();seedOnSoil=ground>.1;}}
         if(state.operation()==PotNetwork.PLANT&&!falling&&!seedHeld&&landedAt!=0&&!seedOnSoil&&System.nanoTime()-landedAt>650_000_000L){seed=new Point(.95,.83,.48);landedAt=0;}
     }

@@ -11,8 +11,8 @@ public final class AureliaMesh {
     public record Leaf(int id,Vec3 base,float angle,float length,float width){
         public Vec3 point(float t,float side){
             double d=length*t,c=Math.cos(angle),s=Math.sin(angle);
-            double lift=t<.42?t*.16:t<.72?.0672-(t-.42)*.10:.0372-(t-.72)*.28;
-            return base.add(c*d-s*side*width/2,lift-.019*Math.abs(side),s*d+c*side*width/2);
+            double lift=t<.42?t*(.016/.42):t<.72?.016-(t-.42)*(.007/.30):.009-(t-.72)*(.017/.28);
+            return base.add(c*d-s*side*width/2,lift-.005*Math.abs(side),s*d+c*side*width/2);
         }
         public Vec3 marker(){return point(.25f,0);}
     }
@@ -25,7 +25,7 @@ public final class AureliaMesh {
     public static void draw(PoseStack pose,MultiBufferSource buffers,int age,int mask,int target,float time,int light){draw(pose,buffers,age,mask,target,time,light,8);}
     public static void draw(PoseStack pose,MultiBufferSource buffers,int age,int mask,int target,float time,int light,int total){draw(pose,buffers,age,mask,target,time,light,total,-1);}
     public static void draw(PoseStack pose,MultiBufferSource buffers,int age,int mask,int target,float time,int light,int total,int tint){
-        float growth=.24f+age*.19f;
+        float growth=age==4?1:.24f+age*.19f;
         pose.pushPose();pose.translate(.5,0,.5);pose.scale(growth,growth,growth);pose.translate(-.5,0,-.5);
         var stem=buffers.getBuffer(RenderType.entityCutoutNoCull(PixelSprite.STEM));
         stem(pose,stem,new Vec3(.5,.025,.5),new Vec3(.5,.87,.5),.021f,light,tint);

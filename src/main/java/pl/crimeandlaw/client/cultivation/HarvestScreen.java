@@ -118,11 +118,15 @@ public final class HarvestScreen extends Screen {
         g.pose().pushPose();g.pose().mulPose(camera);
         try{
             AureliaMesh.draw(g.pose(),buffers,4,state.leaves(),state.active()?(holding||awaiting?heldLeaf:hoveredLeaf):-1,time(),LightTexture.FULL_BRIGHT,state.total());
+            buffers.endBatch();g.pose().popPose();g.disableScissor();
+            // Falling leaves continue below the panel towards the bottom of the Minecraft viewport.
+            g.enableScissor((int)((left+12)*scale),(int)((top+70)*scale),(int)((left+595)*scale),height);
+            g.pose().pushPose();g.pose().mulPose(camera);
             var it=falling.iterator();while(it.hasNext()){
-                var f=it.next();double elapsed=(System.nanoTime()-f.started)/1_000_000_000.;if(elapsed>2.3){it.remove();continue;}
-                var leaf=AureliaMesh.leaf(f.leaf,f.total);var pivot=leaf.point(.48f,0);var m=f.motion;double land=(m.lift()+Math.sqrt(m.lift()*m.lift()+2.32*Math.max(0,pivot.y-.055)))/1.16,t=Math.min(elapsed,land);
-                g.pose().pushPose();g.pose().translate(m.x(t),m.y(t),m.z(t));g.pose().translate(pivot.x,pivot.y,pivot.z);
-                g.pose().mulPose(com.mojang.math.Axis.XP.rotation((float)(m.spinX()*t+Math.sin(t*6+m.phase())*.20*t)));g.pose().mulPose(com.mojang.math.Axis.YP.rotation((float)(m.spinZ()*.45*t)));g.pose().mulPose(com.mojang.math.Axis.ZP.rotation((float)(m.spinZ()*t)));g.pose().translate(-pivot.x,-pivot.y,-pivot.z);
+                var f=it.next();double elapsed=(System.nanoTime()-f.started)/1_000_000_000.;
+                var leaf=AureliaMesh.leaf(f.leaf,f.total);var motion=LeafFall.transform(leaf,f.motion,elapsed);
+                if(LeafFall.below(camera,motion,leaf,height/scale)){it.remove();continue;}
+                g.pose().pushPose();g.pose().mulPose(motion);
                 AureliaMesh.drawLeaf(g.pose(),buffers.getBuffer(RenderType.entityCutoutNoCull(AureliaMesh.LEAF)),leaf,LightTexture.FULL_BRIGHT,0xFFFFFFFF,time(),false);g.pose().popPose();
             }
             buffers.endBatch();

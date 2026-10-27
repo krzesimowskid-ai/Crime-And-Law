@@ -12,7 +12,8 @@ public final class UvShaderSource {
         if(!supports(source)||source.contains("uniform int CalUvCount;"))return source;
         String position=source.contains("uniform vec3 ChunkOffset;")?"Position + ChunkOffset":"Position";
         String normal=source.contains("in vec3 Normal;")?"Normal":"vec3(0.0)";
-        String args=", "+position+", "+normal+")";
+        String offset=source.contains("uniform vec3 ChunkOffset;")?"0.45":"0.012";
+        String args=", "+position+", "+normal+", "+offset+")";
         source=source.replace(SAMPLE,"cal_uv_light("+SAMPLE+args).replace(FETCH,"cal_uv_light("+FETCH+args);
         int main=source.indexOf("void main()");return source.substring(0,main)+GLSL+source.substring(main);
     }
@@ -44,14 +45,14 @@ public final class UvShaderSource {
             vec2 b=vec2((min(y0+1.0,%2$s.0)*%1$s.0+q.x)/%3$s.0,a.y);
             return mix(texture(CalUvVolume,a).r,texture(CalUvVolume,b).r,f);
         }
-        vec4 cal_uv_light(vec4 ordinary,vec3 modelPosition,vec3 modelNormal){
+        vec4 cal_uv_light(vec4 ordinary,vec3 modelPosition,vec3 modelNormal,float normalOffset){
             if(CalUvCount==0)return ordinary;
             float light=CalUvHandLight;
             if(CalUvHand==0){
                 mat4 world=CalUvInverseView*ModelViewMat;
                 vec3 p=(world*vec4(modelPosition,1.0)).xyz;
                 vec3 n=mat3(world)*modelNormal;float lengthN=length(n);
-                if(lengthN>0.001)p+=n/lengthN*0.45;
+                if(lengthN>0.001)p+=n/lengthN*normalOffset;
                 light=0.0;
                 if(CalUvCount>0)light=max(light,cal_uv_field(p,CalUvLight0));
                 if(CalUvCount>1)light=max(light,cal_uv_field(p,CalUvLight1));

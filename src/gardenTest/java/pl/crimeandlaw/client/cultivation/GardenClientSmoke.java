@@ -26,6 +26,7 @@ public final class GardenClientSmoke {
     private static final int[] OFFERS={6,5,1,9,7,8,10},ORDER={7,2,5,0,6,1,4,3};
     private static final int[][] CASES={{1920,1080,2},{1920,1080,4},{855,481,2},{640,480,2}};
     private static java.util.concurrent.CompletableFuture<Void> reload;private static int gesture;private static boolean waterMoved;private static pl.crimeandlaw.cultivation.PreparationPhysics.Pose parked;
+    private static int rimContacts,wallContacts;private static Object trackedFall;private static boolean fallMiddle,fallLower;
     private static int step=-1,frames,bought,cuts,round,waitFrames;private static boolean done,buying;private static long start,pressed;private static long expectedCash;private static boolean shopRecovered;
     @SubscribeEvent public static void frame(RenderFrameEvent.Post e){if(ROLE.isEmpty()||done)return;var mc=Minecraft.getInstance();try{
         if(start==0){start=System.nanoTime();Files.createDirectories(OUT);}check(System.nanoTime()-start<440_000_000_000L,"Client timeout "+ROLE+" step="+step);
@@ -33,12 +34,16 @@ public final class GardenClientSmoke {
         if(ROLE.equals("visual")){visual(mc);return;}if(++frames%3!=0)return;if(frames%30==0&&mc.screen instanceof PreparationScreen z)Files.writeString(OUT.resolve("debug-client.txt"),"step="+step+" op="+z.state().operation()+" work="+z.state().work()+" pose="+z.toolPose()+" grabbed="+field(z,"grabbed")+" pending="+field(z,"pending"));
         if(step<0){if(!(mc.screen instanceof TitleScreen)||mc.getOverlay()!=null)return;mc.options.tutorialStep=net.minecraft.client.tutorial.TutorialSteps.NONE;mc.getToasts().clear();mc.options.guiScale().set(2);mc.options.framerateLimit().set(45);mc.resizeDisplay();ConnectScreen.startConnecting(mc.screen,mc,ServerAddress.parseString("127.0.0.1:25598"),new ServerData("Garden QA","127.0.0.1:25598",ServerData.Type.OTHER),false,null);step=0;return;}
         if(mc.player==null||mc.level==null)return;
-        if(mc.screen instanceof PreparationScreen prep&&prep.state().operation()==PotNetwork.POUR){
+        if(mc.screen instanceof PreparationScreen prep&&(prep.state().operation()==PotNetwork.POUR||prep.state().operation()==PotNetwork.WATER)){
+            double fill=((Number)field(prep,"visualFill")).doubleValue();
             for(var part:(java.util.List<?>)field(prep,"particles")){
-                if((boolean)field(part,"water"))continue;
+                boolean water=(boolean)field(part,"water"),stopped=(boolean)field(part,"stopped");
                 var stream=new PreparationPhysics.Stream((PreparationPhysics.Point)field(part,"start"),(PreparationPhysics.Point)field(part,"velocity"),true);
                 var point=PreparationPhysics.at(stream,((Number)field(part,"age")).doubleValue());
-                check(!PreparationPhysics.insideBag(prep.toolPose(),point,.007),"Rendered soil particle never penetrates rotating bag");
+                if(!water)check(!PreparationPhysics.insideBag(prep.toolPose(),point,.007),"Rendered soil particle never penetrates rotating bag");
+                var surface=PotCollision.surface(point,fill,water?.0018:.006);
+                if(!stopped)check(surface==null,"Moving particle cannot cross pot material");
+                if(surface==PotCollision.Surface.RIM)rimContacts++;if(surface==PotCollision.Surface.WALL)wallContacts++;
             }
         }
         if(ROLE.equals("rival")){
@@ -66,7 +71,9 @@ public final class GardenClientSmoke {
             case 9->{if(!Files.exists(OUT.resolve("rival.PASS")))return;var s=(PreparationScreen)mc.screen;capture(mc,"empty-black-pot");click(s,740,291);gesture=0;pressed=System.nanoTime();step=25;}
             case 25->{var s=(PreparationScreen)mc.screen;if(s.state().operation()!=PotNetwork.CUT)return;if(System.nanoTime()-pressed<450_000_000L){check(((Number)field(s,"cut")).floatValue()==0,"Fresh sealed bag cannot open without cutting gesture");capture(mc,"sealed-bag-before-cut");return;}if(gesture==6)capture(mc,"half-cut-bag");if(seam(s)){capture(mc,"bag-cut");step=26;}}
             case 26->{var s=(PreparationScreen)mc.screen;if(s.state().operation()!=PotNetwork.POUR)return;grabTool(s);parked=s.toolPose();pressed=System.nanoTime();step=54;}
-            case 10->{var s=(PreparationScreen)mc.screen;if(s.toolPose().roll()<3.10)return;s.keyReleased(GLFW.GLFW_KEY_A,0,0);capture(mc,"tilted-bag-stream");step=11;}
+            case 10->{var s=(PreparationScreen)mc.screen;if(s.toolPose().roll()<3.10)return;s.keyReleased(GLFW.GLFW_KEY_A,0,0);dragTool(s,.5+.34*Math.cos(Math.PI/8),1,.5);pressed=System.nanoTime();step=57;}
+            case 57->{var s=(PreparationScreen)mc.screen;if(System.nanoTime()-pressed<800_000_000L)return;check(rimContacts>0,"Soil visibly collides with upper rim");capture(mc,"soil-stops-at-rim");dragTool(s,.5+.27*Math.cos(Math.PI/8),1,.5);pressed=System.nanoTime();step=58;}
+            case 58->{var s=(PreparationScreen)mc.screen;if(System.nanoTime()-pressed<600_000_000L)return;check(wallContacts>0,"Soil visibly collides with tapered inner wall");capture(mc,"soil-stops-at-wall");dragTool(s,.5,1,.5);Files.writeString(OUT.resolve("pot-collision.PASS"),"Actual rim and wall contacts; every moving soil/water particle checked against solid pot throughout GUI operations");capture(mc,"tilted-bag-stream");step=11;}
             case 11->{var s=(PreparationScreen)mc.screen;if(s.state().work()<300)return;s.mouseReleased(0,0,0);parked=s.toolPose();pressed=System.nanoTime();step=12;}
             case 12->{if(System.nanoTime()-pressed<1_100_000_000L)return;var s=(PreparationScreen)mc.screen;check(parked.equals(s.toolPose()),"Released soil bag floats in place");check(s.state().stage()==0&&s.state().work()<500,"Released bag pauses filling without spending material");capture(mc,"bag-floating-paused");grabTool(s);step=30;}
             case 30->{var s=(PreparationScreen)mc.screen;if(s.state().stage()!=1)return;capture(mc,"soil-contained-full");click(s,740,291);gesture=0;step=13;}
@@ -88,14 +95,24 @@ public final class GardenClientSmoke {
                 if(s.toolPose().roll()>-Math.PI/2)return;s.keyReleased(GLFW.GLFW_KEY_D,0,0);step=35;}
             case 35->{var s=(PreparationScreen)mc.screen;if(s.state().operation()==PotNetwork.WATER&&s.state().work()>200&&!waterMoved){var before=PreparationPhysics.stream(s.toolPose(),true,true).source();dragTool(s,.45,1,.5);var after=PreparationPhysics.stream(s.toolPose(),true,true).source();check(waterStartCaptured,"Water starts progressively at rose");check(Math.abs(after.x()-before.x()+.05)<.002,"Actual mouse movement carries water emitter with spout");waterMoved=true;capture(mc,"water-follows-can");}if(s.state().stage()==3){capture(mc,"watered");step=16;}}
             case 16->{var s=(PreparationScreen)mc.screen;if(s.state().stage()!=3)return;capture(mc,"planted-watered");Files.writeString(OUT.resolve("grow.ready"),"planted and watered");select(mc,CultivationContent.SHEARS.get());pressed=System.nanoTime();step=17;}
-            case 17->{var s=(PreparationScreen)mc.screen;if(s.state().stage()!=4||System.nanoTime()-pressed<1_000_000_000L)return;capture(mc,"mature-eight-leaves");click(s,740,291);step=18;}
+            case 17->{var s=(PreparationScreen)mc.screen;if(s.state().stage()!=4||System.nanoTime()-pressed<1_000_000_000L)return;capture(mc,"mature-eight-leaves");s.onClose();mc.options.hideGui=true;uvPose(mc,.5,80.15,2.1,new Vec3(.5,80.95,.5));pressed=System.nanoTime();step=61;}
+            case 61->{if(System.nanoTime()-pressed<1_200_000_000L||!mc.levelRenderer.hasRenderedAllSections())return;capture(mc,"mature-crop-upper-leaves-uv");mc.options.hideGui=false;PotNetwork.open(A);step=18;}
             case 18->{if(!(mc.screen instanceof HarvestScreen s))return;var state=(CultivationNetwork.State)field(s,"state");check(state.total()==8,"UV crop displays eight actual leaves");capture(mc,"harvest-eight");step=19;}
             case 19->{var s=(HarvestScreen)mc.screen;var p=marker(s,ORDER[cuts]);float scale=((Number)field(s,"scale")).floatValue();s.mouseClicked(p.x*scale,p.y*scale,0);pressed=System.nanoTime();step=20;}
             case 20->{if(System.nanoTime()-pressed<1_000_000_000L)return;var s=(HarvestScreen)mc.screen;var p=marker(s,ORDER[cuts]);float scale=((Number)field(s,"scale")).floatValue();s.mouseReleased(p.x*scale,p.y*scale,0);step=21;}
             case 21->{int n=mc.player.getInventory().countItem(CultivationContent.LEAF.get());if(n==cuts)return;check(n==cuts+1,"One reward per real snip");var s=(HarvestScreen)mc.screen;var state=(CultivationNetwork.State)field(s,"state");CultivationNetwork.cut(state.token(),ORDER[cuts],1);cuts++;check(mc.player.getMainHandItem().getDamageValue()==cuts,"One wear per snip");capture(mc,"cut-"+cuts);pressed=System.nanoTime();step=44;}
             case 54,55->{if(System.nanoTime()-pressed<450_000_000L)return;var s=(PreparationScreen)mc.screen;check(parked.equals(s.toolPose()),"Holding a tool without keys never tilts automatically");if(step==54){s.keyPressed(GLFW.GLFW_KEY_A,0,0);pressed=System.nanoTime();step=40;}else{s.keyPressed(GLFW.GLFW_KEY_D,0,0);step=34;}}
             case 40,41,42,43->{if(System.nanoTime()-pressed<220_000_000L)return;var s=(PreparationScreen)mc.screen;int[] keys={GLFW.GLFW_KEY_A,GLFW.GLFW_KEY_D,GLFW.GLFW_KEY_W,GLFW.GLFW_KEY_S};s.keyReleased(keys[step-40],0,0);var now=s.toolPose();check(now.x()==parked.x()&&now.y()==parked.y()&&now.z()==parked.z(),"WASD rotates rather than translating tool");check(switch(step){case 40->now.roll()>parked.roll()+.15;case 41->now.roll()<parked.roll()-.15;case 42->now.pitch()<parked.pitch()-.15;default->now.pitch()>parked.pitch()+.15;},"WASD changes expected rotation: "+keys[step-40]);if(step==43){dragTool(s,.5,1,.5);s.keyPressed(GLFW.GLFW_KEY_A,0,0);Files.writeString(OUT.resolve("wasd.PASS"),"Actual A/D roll and W/S pitch, fixed position, no automatic bag/can tilt; mouse moves tool");step=10;}else{parked=s.toolPose();s.keyPressed(keys[step-39],0,0);pressed=System.nanoTime();step++;}}
-            case 44->{if(System.nanoTime()-pressed<330_000_000L)return;capture(mc,"falling-leaf-"+cuts);step=cuts==8?22:19;}
+            case 44->{if(System.nanoTime()-pressed<330_000_000L)return;capture(mc,"falling-leaf-"+cuts);if(cuts==1){trackedFall=((java.util.List<?>)field(mc.screen,"falling")).getFirst();step=60;}else step=cuts==8?22:19;}
+            case 60->{var s=(HarvestScreen)mc.screen;double elapsed=(System.nanoTime()-(long)field(trackedFall,"started"))/1e9;
+                var leaf=AureliaMesh.leaf((int)field(trackedFall,"leaf"),(int)field(trackedFall,"total"));var motion=LeafFall.transform(leaf,(LeafMotion.Motion)field(trackedFall,"motion"),elapsed);
+                float bottom=s.height/((Number)field(s,"scale")).floatValue();boolean below=LeafFall.below((org.joml.Matrix4f)field(s,"camera"),motion,leaf,bottom);
+                var list=(java.util.List<?>)field(s,"falling");
+                if(list.isEmpty()){check(below,"Leaf removed only after entire silhouette leaves Minecraft viewport");Files.writeString(OUT.resolve("leaf-fall.PASS"),"Real snip: rigid falling leaf continues past panel/old floor, removed only wholly below Minecraft viewport");step=19;return;}
+                check(!below,"Visible falling leaf has not been removed early");
+                if(elapsed>.9&&!fallMiddle){capture(mc,"fall-past-old-floor");fallMiddle=true;}
+                if(elapsed>1.3&&!fallLower){capture(mc,"fall-towards-viewport-bottom");fallLower=true;}
+            }
             case 49->{if(UvLighting.activeLights()!=2||!mc.levelRenderer.hasRenderedAllSections())return;if(uvMotion(mc,"fancy")){Files.writeString(OUT.resolve("uv-second-remove.request"),"remove");step=50;}}
             case 50->{if(UvLighting.activeLights()!=1)return;uvFrame=0;step=51;}
             case 51->{mc.options.hideGui=true;uvPose(mc,.5,80,3.1,new Vec3(.5,84,0));if(++uvFrame<12)return;uvCeiling=uvPixel(mc);capture(mc,"uv-ceiling-on");Files.writeString(OUT.resolve("uv-off.request"),"off");uvFrame=0;step=52;}
