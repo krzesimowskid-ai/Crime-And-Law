@@ -23,9 +23,11 @@ import pl.crimeandlaw.gang.*;
 public final class GardenServerSmoke {
     private static final Path OUT=Path.of(System.getProperty("crimeandlaw.gardenOutput","build/garden-smoke"));
     private static final BlockPos A=new BlockPos(0,80,0),B=new BlockPos(2,80,0),C=new BlockPos(4,80,0);
+    private static final boolean HARVEST_ONLY=Boolean.getBoolean("crimeandlaw.harvestOnly");
+    private static final UUID PLANT_ONE=UUID.fromString("af8e32b1-6c44-4301-8abe-85f06e3e75d4"),PLANT_TWO=UUID.fromString("2c72a4b0-2127-4a73-af9e-7be873aa85b8");
     private static long started;private static boolean ready,done,grown;private static GardenMerchant merchant;
     private static UUID id(String name){return UUID.nameUUIDFromBytes(("OfflinePlayer:"+name).getBytes(java.nio.charset.StandardCharsets.UTF_8));}
-    @SubscribeEvent public static void start(ServerStartedEvent e){if(!Boolean.getBoolean("crimeandlaw.gardenSmoke"))return;started=System.nanoTime();try{Files.createDirectories(OUT);if(Boolean.getBoolean("crimeandlaw.gardenRestart")){restart(e.getServer());done=true;e.getServer().halt(false);}}catch(Throwable t){fail(e.getServer(),t);}}
+    @SubscribeEvent public static void start(ServerStartedEvent e){if(!Boolean.getBoolean("crimeandlaw.gardenSmoke"))return;started=System.nanoTime();try{Files.createDirectories(OUT);if(Boolean.getBoolean("crimeandlaw.gardenRestart")){if(HARVEST_ONLY)restartLeaves(e.getServer());else restart(e.getServer());done=true;e.getServer().halt(false);}}catch(Throwable t){fail(e.getServer(),t);}}
     @SubscribeEvent public static void tick(ServerTickEvent.Post e){if(!Boolean.getBoolean("crimeandlaw.gardenSmoke")||done)return;var server=e.getServer();try{
         check(System.nanoTime()-started<480_000_000_000L,"Server timeout");var p=server.getPlayerList().getPlayer(id("GardenOwner"));var rival=server.getPlayerList().getPlayer(id("GardenRival"));if(p==null||rival==null)return;var l=server.overworld();
         if(!ready){
@@ -34,10 +36,20 @@ public final class GardenServerSmoke {
             for(int y=80;y<=84;y++)for(int x=-3;x<=6;x++)for(int z=-2;z<=2;z++)if(x==-3||x==6||z==-2||y==84)l.setBlock(new BlockPos(x,y,z),Blocks.OAK_PLANKS.defaultBlockState(),3);
             for(int x=-3;x<=6;x++)for(int z=-2;z<=3;z++)l.setBlock(new BlockPos(x,84,z),Blocks.OAK_PLANKS.defaultBlockState(),3);
             for(var player:List.of(p,rival)){player.setGameMode(GameType.SURVIVAL);player.setInvulnerable(true);player.setNoGravity(true);player.getInventory().clearContent();}p.connection.teleport(.5,80,3.1,180,25);rival.connection.teleport(3.5,80,3.1,180,25);
+            if(HARVEST_ONLY){
+                for(var pos:List.of(A,B)){l.setBlock(pos,CultivationContent.FRAME.get().defaultBlockState(),3);l.setBlock(pos.above(),CultivationContent.FRAME.get().defaultBlockState().setValue(GrowFrameBlock.HALF,DoubleBlockHalf.UPPER),3);var crop=Planter.at(l,pos);crop.installPot();if(pos.equals(A))crop.installLamp();crop.plant.restore(new PlanterState.Data(true,true,CultivationRules.GROWTH_TICKS,0,pos.equals(A)?CultivationRules.GROWTH_TICKS:0,100,pos.equals(A)?8:3,pos.equals(A)?255:7,pos.equals(A)?PLANT_ONE:PLANT_TWO));crop.changed();}
+                p.getInventory().setItem(0,new ItemStack(CultivationContent.SHEARS.get()));p.getInventory().selected=0;p.inventoryMenu.broadcastChanges();Files.writeString(OUT.resolve("server.ready"),"Mature fixtures: actual GUI harvesting remains unchanged");ready=true;return;
+            }
             var saved=GangSavedData.get(server);saved.directory.finances.credit(p.getUUID(),GangFinances.Account.CASH,2000);saved.setDirty();pl.crimeandlaw.network.GangNetwork.sendMoney(p,true);
             merchant=CultivationContent.MERCHANT.get().create(l);merchant.moveTo(2.8,80,2.4,180,0);l.addFreshEntity(merchant);
             check(l.getRecipeManager().byKey(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("crimeandlaw","aurelia_seeds")).isEmpty(),"Renewable seed recipe removed");check(!(CultivationContent.SEEDS.get() instanceof ItemNameBlockItem),"Loose seeds cannot bypass pots on farmland");
             Files.writeString(OUT.resolve("server.ready"),"ready");ready=true;return;
+        }
+        if(HARVEST_ONLY){
+            if(!Files.exists(OUT.resolve("owner.PASS"))||!Files.exists(OUT.resolve("rival.PASS")))return;
+            check(Long.parseLong(Files.readString(OUT.resolve("rival-shape.txt")))==PlantShape.seed(PLANT_ONE),"Both TCP clients observe the same persisted plant shape");
+            check(p.getInventory().countItem(CultivationContent.LEAF.get())==8&&p.getMainHandItem().getDamageValue()==8,"Eight actual selected GUI cuts give eight leaves and eight wear");var crop=Planter.at(l,A);check(crop!=null&&!crop.plant.soil()&&!crop.plant.planted()&&crop.hasPot()&&crop.hasLamp(),"Cutting preserves equipment and consumes the finished crop");
+            server.saveEverything(true,true,true);Files.writeString(OUT.resolve("server.PASS"),"Two-client shape synchronization, eight real selected cuts with replay attempts, exact rewards and wear, finished crop and retained equipment");done=true;server.halt(false);return;
         }
         if(Files.exists(OUT.resolve("uv-second.request"))&&!Files.exists(OUT.resolve("uv-second.applied"))){l.setBlock(B,CultivationContent.FRAME.get().defaultBlockState(),3);l.setBlock(B.above(),CultivationContent.FRAME.get().defaultBlockState().setValue(GrowFrameBlock.HALF,DoubleBlockHalf.UPPER),3);Planter.at(l,B).installLamp();l.setBlock(new BlockPos(0,79,2),Blocks.WHITE_CONCRETE.defaultBlockState(),3);Files.writeString(OUT.resolve("uv-second.applied"),"ready");}
         if(Files.exists(OUT.resolve("uv-second-remove.request"))&&!Files.exists(OUT.resolve("uv-second-remove.applied"))){l.removeBlock(B.above(),false);l.removeBlock(B,false);Files.writeString(OUT.resolve("uv-second-remove.applied"),"removed");}
@@ -65,6 +77,7 @@ public final class GardenServerSmoke {
         check(p.getInventory().countItem(CultivationContent.LEAF.get())==8&&p.getMainHandItem().getDamageValue()==8,"Eight real GUI cuts give eight items and eight tool wear");var a=Planter.at(l,A);check(a!=null&&!a.plant.soil()&&!a.plant.planted()&&a.hasPot()&&a.hasLamp(),"Harvest consumes crop and soil, retains equipment");
         security(server,p,rival);check(Planter.at(l,A)!=null&&Planter.at(l,A).hasLamp(),"Station intact immediately before save");snapshot(server,"before");server.saveEverything(true,true,true);snapshot(server,"after");Files.writeString(OUT.resolve("server.PASS"),"TCP purchases, placement, UV assembly, source refill, 3D pour, packet, planting, watering, eight free-order cuts, conservation and adversarial checks pass\n");done=true;server.halt(false);
     }catch(Throwable t){fail(server,t);}}
+    private static void restartLeaves(MinecraftServer server)throws Exception{var l=server.overworld();l.getChunk(0,0);var a=Planter.at(l,A);var b=Planter.at(l,B);check(a!=null&&a.hasPot()&&a.hasLamp()&&!a.plant.soil(),"Reusable equipment and exhausted soil persist");check(b!=null&&b.identity().equals(PLANT_TWO)&&b.totalLeaves()==3&&b.leaves()==7,"Unharvested plant UUID and leaf mask persist");Files.writeString(OUT.resolve("restart.PASS"),"Actual disk reload: harvested station equipment and exhausted soil, second plant UUID, count and mask preserved");}
     private static void security(MinecraftServer server,ServerPlayer p,ServerPlayer r)throws Exception{
         var l=server.overworld();p.connection.teleport(2.5,80,3.1,180,25);l.setBlock(B,CultivationContent.POT.get().defaultBlockState(),3);l.setBlock(C,CultivationContent.POT.get().defaultBlockState(),3);
         // Bind the exact source contents and reject a swap after begin.

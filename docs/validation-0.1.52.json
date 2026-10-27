@@ -1,0 +1,110 @@
+{
+  "version": "0.1.52",
+  "protocol": 28,
+  "unit": {
+    "tests": 266,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "suites": 43,
+  "geometry_samples": 2000,
+  "game_run": "leaves-targeted",
+  "game_scope": "Two clients and dedicated server; mature fixture plants, actual free-order GUI cuts, replay attempts, rewards/wear, first-frame fall tracking, four-layout gallery, second plant UUID/mask on disk reload. Plant preparation/shop were not exercised in this targeted run.",
+  "checks": {
+    "client-gl": "Both client logs contain no OpenGL debug errors after UV changes, removal, resource reload and GUI rendering",
+    "leaf-fall": "Real snip: rigid falling leaf continues past panel/old floor, removed only wholly below Minecraft viewport",
+    "owner": "World and harvest share the persisted shape, eight freely selected actual GUI snips, correct rewards and wear, first-frame falling model and four-shape gallery pass",
+    "restart": "Actual disk reload: harvested station equipment and exhausted soil, second plant UUID, count and mask preserved",
+    "rival": "Second TCP client observes the same mature plant identity",
+    "server": "Two-client shape synchronization, eight real selected cuts with replay attempts, exact rewards and wear, finished crop and retained equipment"
+  },
+  "client_logs": {
+    "owner.log": "no OpenGL debug errors",
+    "game-owner/logs/latest.log": "no OpenGL debug errors",
+    "rival.log": "no OpenGL debug errors",
+    "game-rival/logs/latest.log": "no OpenGL debug errors"
+  },
+  "failures": {},
+  "first_exit": {
+    "server_exit": 0,
+    "clients": {
+      "rival": null,
+      "owner": null
+    }
+  },
+  "prior_runs": [
+    {
+      "run": "inclinations-1",
+      "passed_checks": [],
+      "failures": {}
+    },
+    {
+      "run": "inclinations-2",
+      "passed_checks": [
+        "preparation-recovery",
+        "reservation",
+        "rival",
+        "shop-recovery",
+        "uv-distance",
+        "uv-update"
+      ],
+      "failures": {}
+    },
+    {
+      "run": "inclinations-3",
+      "passed_checks": [
+        "pot-collision",
+        "preparation-recovery",
+        "reservation",
+        "rival",
+        "shop-recovery",
+        "uv-distance",
+        "uv-update",
+        "wasd"
+      ],
+      "failures": {
+        "owner": "java.util.NoSuchElementException step=44"
+      }
+    },
+    {
+      "run": "inclinations-4",
+      "passed_checks": [
+        "reservation",
+        "rival",
+        "shop-recovery",
+        "uv-distance",
+        "uv-update"
+      ],
+      "failures": {
+        "owner": "java.lang.ClassCastException: class net.minecraft.client.gui.screens.DisconnectedScreen cannot be cast to class pl.crimeandlaw.client.cultivation.PreparationScreen (net.minecraft.client.gui.screens.DisconnectedScreen is in module minecraft@1.21.1 of loader 'TRANSFORMER' @29c2c826; pl.crimeandlaw.client.cultivation.PreparationScreen is in module crimeandlaw@0.1.52 of loader 'TRANSFORMER' @29c2c826) step=23"
+      }
+    },
+    {
+      "run": "inclinations-5",
+      "passed_checks": [
+        "pot-collision",
+        "preparation-recovery",
+        "reservation",
+        "rival",
+        "shop-recovery",
+        "uv-distance",
+        "uv-update",
+        "wasd"
+      ],
+      "failures": {
+        "owner": "java.lang.AssertionError: Released bag pauses filling without spending material step=12"
+      }
+    }
+  ],
+  "known_issue": "Earlier intermittent station disk persistence failure remains open. Targeted disk reload passed, without changes to save implementation. Broad preparation integration attempts are not counted as passed.",
+  "artifact": {
+    "file": "crimeandlaw-0.1.52.jar",
+    "bytes": 3983520,
+    "sha256": "ddc4e95caad368aeefdb66c128cc81f1ab2eb14b7309a2011ce9065e4c0daa2e",
+    "production_classes": 265,
+    "resources": 34,
+    "fixture_classes": 0,
+    "crc": "PASS"
+  }
+}

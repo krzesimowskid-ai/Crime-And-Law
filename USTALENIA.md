@@ -1020,7 +1020,7 @@ To zapis kierunku rozwoju; JAR 0.1.42 nie został w tej rozmowie zmieniony.
 
 - Doprecyzowanie użytkownika: liście mają wyrastać w różnych kierunkach w pionie — część uniesiona, część pozioma, część opuszczona. Sama zmiana azymutu lub zagięcie końcówki tego nie zastępuje. Użytkownik zaakceptował wdrożenie po sprawdzeniu materiałów botanicznych.
 - Cały liść od nasady ma trwałe nachylenie wynikające z UUID rośliny. Mieszanka trzech kierunków jest obecna już przy trzech liściach; łagodne wygięcie powierzchni pozostaje.
-- Wstępne nachylenie około 10–23 stopni w górę/w dół, liście niemal poziome około ±3 stopni; ograniczenie najniższego liścia utrzymuje go nad ziemią. Są to parametry stylizowanego modelu gry, nie uniwersalne kąty botaniczne.
+- Wstępne nachylenie około 10–23 stopni w górę/w dół, liście niemal poziome około ±3 stopni; ograniczenie opadania utrzymuje całą bryłę liścia z zapasem nad rantem doniczki. Są to parametry stylizowanego modelu gry, nie uniwersalne kąty botaniczne.
 - Kontrola przecięć przestrzennych konserwatywnych obwiedni (SAT) obejmuje grubość i krzywiznę. W razie konfliktu dobierany jest inny kierunek; ograniczony ponowny dobór łagodniejszego nachylenia gwarantuje zakończenie. Niezależny test przycina rzuty faktycznych płatów powierzchni i porównuje ich wysokości.
 - Zmiana dotyczy wspólnego generatora geometrii. Świat, przygotowanie, wybieranie liści, odcięta bryła i zbiór zachowują ten sam wariant. Protokół pozostaje 28, zapis, UV, koszty i nagrody pozostają bez zmian.
 - Weryfikacja i otwarty wcześniejszy problem zapisu stanowiska: docs/VALIDATION_0.1.52.md.

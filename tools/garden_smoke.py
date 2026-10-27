@@ -1,13 +1,13 @@
 import os,sys,socket,subprocess,time,hashlib,uuid,argparse,shutil,ctypes,json
 from pathlib import Path
 repo=Path(__file__).resolve().parent.parent;root=repo.parent;tools=Path(os.environ.get('CRIMEANDLAW_BUILD_TOOLS',str(root/'build-tools')))
-arg=argparse.ArgumentParser();arg.add_argument('--visual',action='store_true');arg.add_argument('--quick-far',action='store_true');arg.add_argument('--output',default='tcp-1');args=arg.parse_args();out=repo/'build/garden-smoke'/args.output
+arg=argparse.ArgumentParser();arg.add_argument('--visual',action='store_true');arg.add_argument('--quick-far',action='store_true');arg.add_argument('--harvest-only',action='store_true');arg.add_argument('--output',default='tcp-1');args=arg.parse_args();out=repo/'build/garden-smoke'/args.output
 if out.exists() and any(out.iterdir()):raise SystemExit('Choose a fresh --output directory; previous results must not be reused.')
 out.mkdir(parents=True,exist_ok=True)
 env=os.environ.copy()
 for key in ['JAVA_TOOL_OPTIONS','JDK_JAVA_OPTIONS','GRADLE_OPTS']:env.pop(key,None)
 env['MOD_CLASSES']=':'.join('crimeandlaw%%'+str(p) for p in [repo/'build/classes/java/main',repo/'build/resources/main'])
-env.update(LD_LIBRARY_PATH=str(tools/'x11/root/usr/lib/x86_64-linux-gnu'),DISPLAY='127.0.0.1:78',LIBGL_ALWAYS_SOFTWARE='1',ALSOFT_DRIVERS='null')
+env.update(LD_LIBRARY_PATH=str(tools/'x11/root/usr/lib/x86_64-linux-gnu'),DISPLAY='127.0.0.1:78',LIBGL_ALWAYS_SOFTWARE='1',ALSOFT_DRIVERS='null',LP_NUM_THREADS='2')
 runtime=out/'runtime';runtime.mkdir(mode=0o700,exist_ok=True);env['XDG_RUNTIME_DIR']=str(runtime)
 procs=[];logs=[]
 def launch(role,restart=False):
@@ -16,7 +16,8 @@ def launch(role,restart=False):
   (game/'eula.txt').write_text('eula=true\n');(game/'server.properties').write_text('online-mode=false\nserver-port=25598\nserver-ip=127.0.0.1\nlevel-type=minecraft:flat\nspawn-protection=0\nview-distance=5\nsimulation-distance=2\ndifficulty=peaceful\nmax-tick-time=0\n')
  name='server' if server else 'client';cp=[str(repo/'build/moddev/artifacts/neoforge-21.1.248.jar')]+(repo/f'build/moddev/{name}LegacyClasspath.txt').read_text().splitlines()+[str(repo/'build/classes/java/main'),str(repo/'build/resources/main')]
  native=out/('natives-'+role);native.mkdir(exist_ok=True)
- command=[str(tools/'jdk-21.0.2/bin/java'),'-Xmx1400m','-Dorg.lwjgl.system.SharedLibraryExtractPath='+str(native),'-Dcrimeandlaw.gardenOutput='+str(out)]
+ command=[str(tools/'jdk-21.0.2/bin/java'),'-Xmx1400m','-XX:ActiveProcessorCount=3','-Dorg.lwjgl.system.SharedLibraryExtractPath='+str(native),'-Dcrimeandlaw.gardenOutput='+str(out)]
+ if args.harvest_only:command+=['-Dcrimeandlaw.harvestOnly=true']
  if server:command+=['-Dcrimeandlaw.gardenSmoke=true','-Dcrimeandlaw.gardenRestart='+str(restart).lower()]
  else:command+=['-Dcrimeandlaw.gardenRole='+role]+(['-Dcrimeandlaw.quickFar=true'] if args.quick_far else [])
  command+=['-cp',':'.join(cp),'@'+str(repo/f'build/moddev/{name}RunVmArgs.txt'),'@'+str(repo/f'build/moddev/{name}RunProgramArgs.txt')]
@@ -60,14 +61,15 @@ try:
    time.sleep(.3)
   (out/'first-server-exit.json').write_text(json.dumps({'server_exit':p.returncode,'clients':{role:process.poll() for role,process in clients.items()}}))
   if p.returncode!=0:raise RuntimeError('First server exited abnormally: '+str(p.returncode))
-  if not all((out/(n+'.PASS')).exists() for n in ['owner','rival','server','security']):raise RuntimeError('Missing network PASS')
+  required=['owner','rival','server']+([] if args.harvest_only else ['security'])
+  if not all((out/(n+'.PASS')).exists() for n in required):raise RuntimeError('Missing network PASS')
   for role in clients:
    if 'OpenGL debug message:' in (out/(role+'.log')).read_text():raise RuntimeError(role+' OpenGL diagnostic; inspect its log')
   (out/'client-gl.PASS').write_text('Both client logs contain no OpenGL debug errors after UV changes, removal, resource reload and GUI rendering\n')
   shutil.copytree(out/'game-server/world',out/'before-restart-world')
   p=launch('server',True);p.wait(timeout=100)
   if not (out/'restart.PASS').exists():raise RuntimeError('Disk restart failed')
-  print('PASS two TCP clients, adversarial checks and disk restart',flush=True)
+  print('PASS two TCP clients, targeted harvest and disk restart' if args.harvest_only else 'PASS two TCP clients, adversarial checks and disk restart',flush=True)
 finally:
  for p in reversed(procs):
   if p.poll() is None:

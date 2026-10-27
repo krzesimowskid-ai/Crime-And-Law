@@ -34,7 +34,7 @@ public final class PlantShape {
                 for(int attempt=0;attempt<192;attempt++){
                     double angle=phase+node*2.399963229728653+(attempt<8?(random.nextDouble()-.5)*1.1:random.nextDouble()*Math.PI*2);
                     double slope=mode==0?(random.nextDouble()-.5)*.10:mode*(.18+random.nextDouble()*.24);
-                    double rise=length*slope*strength;if(node==0)rise=Math.max(-.11,rise);
+                    double rise=Math.max(.126-heights[node],length*slope*strength);
                     var candidate=new Leaf(node,heights[node],angle,length,width,rise,.004+random.nextDouble()*.008);
                     if(leaves.stream().noneMatch(other->overlap(candidate,other))){leaves.add(candidate);break;}
                 }
