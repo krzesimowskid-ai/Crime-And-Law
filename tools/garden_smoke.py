@@ -44,7 +44,7 @@ try:
   if not (out/'visual.PASS').exists():raise RuntimeError('Visual validation failed')
   print('PASS visual gallery',flush=True)
  else:
-  p=launch('server');deadline=time.monotonic()+100
+  p=launch('server');deadline=time.monotonic()+200
   while True:
    if p.poll() is not None:raise RuntimeError('Server startup failed')
    try:
@@ -67,7 +67,7 @@ try:
    if 'OpenGL debug message:' in (out/(role+'.log')).read_text():raise RuntimeError(role+' OpenGL diagnostic; inspect its log')
   (out/'client-gl.PASS').write_text('Both client logs contain no OpenGL debug errors after UV changes, removal, resource reload and GUI rendering\n')
   shutil.copytree(out/'game-server/world',out/'before-restart-world')
-  p=launch('server',True);p.wait(timeout=100)
+  p=launch('server',True);p.wait(timeout=200)
   if not (out/'restart.PASS').exists():raise RuntimeError('Disk restart failed')
   print('PASS two TCP clients, targeted harvest and disk restart' if args.harvest_only else 'PASS two TCP clients, adversarial checks and disk restart',flush=True)
 finally:

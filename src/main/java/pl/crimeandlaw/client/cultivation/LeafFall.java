@@ -17,8 +17,9 @@ public final class LeafFall {
     }
     public static boolean below(Matrix4f camera,Matrix4f motion,AureliaMesh.Leaf leaf,float bottom){
         var projected=new Matrix4f(camera).mul(motion);
-        for(float t:new float[]{0,.42f,.72f,1})for(float side:new float[]{-1,1})for(float d:new float[]{-.007f,.007f}){
-            var p=leaf.point(t,side);var v=projected.transformPosition(new Vector3f((float)p.x,(float)p.y+d,(float)p.z));
+        // A conservative prism contains the curved blade, its roll and thickness.
+        for(float t:new float[]{0,1})for(float side:new float[]{-1,1})for(double y:new double[]{leaf.minY(),leaf.maxY()}){
+            var p=leaf.point(t,side);var v=projected.transformPosition(new Vector3f((float)p.x,(float)y,(float)p.z));
             if(v.y<=bottom+2)return false;
         }
         return true;

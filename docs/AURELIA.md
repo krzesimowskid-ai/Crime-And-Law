@@ -1,7 +1,7 @@
 # Aurelia — doniczki, wyposażenie i zbiór
 
-Wersja testowa 0.1.52. Minecraft 1.21.1, NeoForge 21.1.248, Java 21.
-Protokół **27**: ten sam JAR na serwerze i u graczy.
+Wersja testowa 0.1.53. Minecraft 1.21.1, NeoForge 21.1.248, Java 21.
+Protokół **28**: ten sam JAR na serwerze i u graczy.
 Aurelia jest fikcyjną rośliną; liczby są bilansem gry.
 
 ## Skąd wziąć wyposażenie
@@ -144,11 +144,17 @@ ekspozycja i tożsamość rośliny zapisują się ze światem.
 
 Z istniejącej tożsamości wyprowadzany jest również trwały układ rośliny.
 Kąt, wysokość, długość i szerokość poszczególnych liści różnią się między
-roślinami. Całe liście mają różne nachylenia od nasady: część w górę, część
-niemal poziomo, część lekko w dół. Na to nakłada się płytkie, łagodne
-wygięcie powierzchni. Kierunki są mieszane już przy trzech liściach.
-Przestrzenne obwiednie uwzględniają grubość, krzywiznę i odstęp między
-liśćmi. Przy kolizji zmienia się kąt kandydata przed ustaleniem całego układu.
+roślinami. Dwie dolne pary wyrastają naprzeciw siebie; wyższe liście zmieniają
+kierunek wokół łodygi i są stopniowo mniejsze. Dolne, starsze blaszki lekko
+opadają, środkowe są bliższe poziomym, a górne są delikatnie uniesione.
+Osobny, lekko wznoszący się ogonek łączy łodygę z blaszką. Jej powierzchnia
+ma ciągłe wygięcie wzdłuż i wszerz, niewielki skręt oraz opuszczenie końca.
+To stylizowany model rośliny, bez symulacji tkanek i sprężystości.
+Nowa pikselowa tekstura 64×64 przedstawia ząbkowane listki wychodzące
+ze wspólnej nasady; osiem zielonych kolorów zastępuje złote pasy.
+Przestrzenne obwiednie uwzględniają ogonek, skręt, grubość, krzywiznę
+i odstęp między blaszkami. Przy kolizji zmienia się kąt kandydata przed
+ustaleniem całego układu. Blaszki pozostają nad rantem doniczki i pod lampą.
 Świat, przygotowanie i zbiór pokazują ten sam układ, a usunięcie liścia
 nie zmienia pozostałych. Ustawienia starych roślin są wyprowadzane z ich
 dotychczasowego UUID, bez ponownego losowania nagród. Wymagany protokół 28

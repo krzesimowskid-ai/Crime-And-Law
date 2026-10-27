@@ -1024,3 +1024,12 @@ To zapis kierunku rozwoju; JAR 0.1.42 nie został w tej rozmowie zmieniony.
 - Kontrola przecięć przestrzennych konserwatywnych obwiedni (SAT) obejmuje grubość i krzywiznę. W razie konfliktu dobierany jest inny kierunek; ograniczony ponowny dobór łagodniejszego nachylenia gwarantuje zakończenie. Niezależny test przycina rzuty faktycznych płatów powierzchni i porównuje ich wysokości.
 - Zmiana dotyczy wspólnego generatora geometrii. Świat, przygotowanie, wybieranie liści, odcięta bryła i zbiór zachowują ten sam wariant. Protokół pozostaje 28, zapis, UV, koszty i nagrody pozostają bez zmian.
 - Weryfikacja i otwarty wcześniejszy problem zapisu stanowiska: docs/VALIDATION_0.1.52.md.
+
+
+## 2026-10-27 — tekstura i budowa rośliny (0.1.53)
+
+- Użytkownik pokazał świat i okno zbioru: roślina nadal wyglądała jak pionowy patyk z płaskimi liśćmi. Poprosił o dopracowanie tekstury i wzrostu zgodnego z przyrodą.
+- Zielona, ząbkowana sylwetka złożona z listków o wspólnej nasadzie; tekstura w grze 64×64, osiem zielonych kolorów, bez szerokich złotych żyłek. Oryginał PNG pochodzi z imagegen i jest zapisany w źródłach.
+- Osobny ogonek przed blaszką, łagodna krzywizna wzdłużna i poprzeczna, niewielki skręt oraz opuszczenie końca. Dwie dolne pary naprzeciw siebie, wyższe liście naprzemianległe i stopniowo mniejsze. Dolne bardziej opuszczone, górne delikatnie uniesione. Są to parametry stylizowanej rośliny gry, nie symulacja biologiczna.
+- Konserwatywne obwiednie obejmują nowy kształt i odstęp między blaszkami. Klikanie korzysta z tej samej siatki 8×4 i alfy tekstury 64×64; kształt pozostaje ten sam przy odcięciu. Cała zakrzywiona bryła musi opuścić widok przed usunięciem animacji.
+- Układ nadal wynika z zapisanego UUID. Bez nowego formatu zapisu, pakietów, zmiany UV, plonu, kosztów i nagród; protokół 28. Otwarty wcześniejszy problem zapisu pozostaje opisany w docs/VALIDATION_0.1.53.md.

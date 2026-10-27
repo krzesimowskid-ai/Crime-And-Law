@@ -1,0 +1,97 @@
+{
+  "version": "0.1.53",
+  "protocol": 28,
+  "unit": {
+    "tests": 269,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "suites": 43,
+  "geometry_samples": 2000,
+  "game_run": "organic-4",
+  "game_scope": "Two TCP clients and dedicated server; mature fixture plants, eight real free-order GUI snips, at least three clicks on opaque curved 64px blade away from marker, replay attempts, exact reward/wear, first-frame rigid fall, four-layout gallery and actual disk restart. Preparation and shop were not exercised.",
+  "checks": {
+    "rival": "Second TCP client observes the same mature plant identity",
+    "owner": "World and harvest share the persisted shape, eight freely selected actual GUI snips, correct rewards and wear, first-frame falling model, curved 64px surface picking and four-shape gallery pass",
+    "client-gl": "Both client logs contain no OpenGL debug errors after UV changes, removal, resource reload and GUI rendering",
+    "leaf-fall": "Real snip: rigid falling leaf continues past panel/old floor, removed only wholly below Minecraft viewport",
+    "server": "Two-client shape synchronization, eight real selected cuts with replay attempts, exact rewards and wear, finished crop and retained equipment",
+    "restart": "Actual disk reload: harvested station equipment and exhausted soil, second plant UUID, count and mask preserved"
+  },
+  "failures": {},
+  "client_logs": {
+    "owner.log": "no OpenGL debug errors",
+    "game-owner/logs/latest.log": "no OpenGL debug errors",
+    "rival.log": "no OpenGL debug errors",
+    "game-rival/logs/latest.log": "no OpenGL debug errors"
+  },
+  "snip_timings": [
+    {
+      "leaf": 7,
+      "releaseWallMs": 916.00811
+    },
+    {
+      "leaf": 2,
+      "releaseWallMs": 1030.975379
+    },
+    {
+      "leaf": 5,
+      "releaseWallMs": 1232.812753
+    },
+    {
+      "leaf": 0,
+      "releaseWallMs": 934.229497
+    },
+    {
+      "leaf": 6,
+      "releaseWallMs": 941.867125
+    },
+    {
+      "leaf": 1,
+      "releaseWallMs": 980.617228
+    },
+    {
+      "leaf": 4,
+      "releaseWallMs": 937.034812
+    },
+    {
+      "leaf": 3,
+      "releaseWallMs": 1027.975364
+    }
+  ],
+  "first_exit": {
+    "server_exit": 0,
+    "clients": {
+      "rival": null,
+      "owner": null
+    }
+  },
+  "prior_runs": [
+    {
+      "run": "organic-1",
+      "status": "interrupted",
+      "detail": "Four snips passed, then no fifth inventory reward; stopped without claiming PASS. Fixture now checks mouse-press selection immediately, aims at pixel centres with double precision input scaling, and reports a missing reward after 10 seconds."
+    },
+    {
+      "run": "organic-2",
+      "status": "FAIL",
+      "detail": "First mouse press correctly selected blade 7, but server rejected release as too late. Fixture checked release every third frame; changed to every frame and 850ms target, with release timing recorded. Production timing and rewards unchanged."
+    },
+    {
+      "run": "organic-3",
+      "status": "environment startup timeout",
+      "detail": "New dedicated world did not reach listen readiness within 100 seconds, before either client launched. Increased only server startup and restart allowance to 200 seconds; gameplay checks unchanged."
+    }
+  ],
+  "known_issue": "Earlier intermittent station disk persistence failure remains open. This disk reload passing is not a save implementation fix. No broad preparation/shop integration PASS claimed.",
+  "artifact": {
+    "file": "crimeandlaw-0.1.53.jar",
+    "bytes": 4347410,
+    "sha256": "419a553dc07a36f45ce3254ad639c5d9286501ebdb9a5e55d9d129969679d9d3",
+    "production_classes": 266,
+    "resources": 34,
+    "fixture_classes": 0,
+    "crc": "PASS"
+  }
+}

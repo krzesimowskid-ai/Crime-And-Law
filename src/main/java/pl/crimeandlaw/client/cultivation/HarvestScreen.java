@@ -149,11 +149,11 @@ public final class HarvestScreen extends Screen {
         int result=-1;double best=22*22;
         for(var e:markers.entrySet()){var p=e.getValue();double d=(p.x-x)*(p.x-x)+(p.y-y)*(p.y-y);if(d<best){best=d;result=e.getKey();}}
         if(result>=0)return result;
-        float nearest=-Float.MAX_VALUE;float[] rows={0,.28f,.58f,1};
+        float nearest=-Float.MAX_VALUE;
         for(int id=0;id<8;id++)if(PruningRules.available(state.leaves(),id)){
             var leaf=AureliaMesh.leaf(id,state.total(),state.shape());
-            for(int row=0;row<3;row++)for(int col=0;col<2;col++){
-                float u0=col*.5f,u1=u0+.5f,v0=rows[row],v1=rows[row+1];
+            for(int row=0;row<PixelSprite.CURVE_ROWS;row++)for(int col=0;col<PixelSprite.CURVE_COLUMNS;col++){
+                float u0=col/(float)PixelSprite.CURVE_COLUMNS,u1=(col+1)/(float)PixelSprite.CURVE_COLUMNS,v0=row/(float)PixelSprite.CURVE_ROWS,v1=(row+1)/(float)PixelSprite.CURVE_ROWS;
                 var a=project(leaf,u0,v0);var b=project(leaf,u0,v1);var c=project(leaf,u1,v1);var d=project(leaf,u1,v0);
                 float z=hit(x,y,a,b,c,u0,v0,u0,v1,u1,v1);if(z>nearest){nearest=z;result=id;}
                 z=hit(x,y,a,c,d,u0,v0,u1,v1,u1,v0);if(z>nearest){nearest=z;result=id;}
@@ -165,7 +165,7 @@ public final class HarvestScreen extends Screen {
         double denominator=(b.y-c.y)*(a.x-c.x)+(c.x-b.x)*(a.y-c.y);if(Math.abs(denominator)<.01)return -Float.MAX_VALUE;
         double wa=((b.y-c.y)*(x-c.x)+(c.x-b.x)*(y-c.y))/denominator,wb=((c.y-a.y)*(x-c.x)+(a.x-c.x)*(y-c.y))/denominator,wc=1-wa-wb;
         if(wa<0||wb<0||wc<0)return -Float.MAX_VALUE;
-        int u=(int)((wa*au+wb*bu+wc*cu)*PixelSprite.SIZE),v=(int)((wa*av+wb*bv+wc*cv)*PixelSprite.SIZE);
+        int u=(int)((wa*au+wb*bu+wc*cu)*PixelSprite.LEAF.resolution()),v=(int)((wa*av+wb*bv+wc*cv)*PixelSprite.LEAF.resolution());
         return PixelSprite.LEAF.opaque(u,v)?(float)(wa*a.z+wb*b.z+wc*c.z):-Float.MAX_VALUE;
     }
     @Override public boolean mouseClicked(double x,double y,int button){

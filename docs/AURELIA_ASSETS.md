@@ -1,4 +1,37 @@
-# Pikselowa grafika aurelii — 0.1.42
+# Pikselowa grafika aurelii — zasoby i pochodzenie
+
+## Aktualizacja liścia — 0.1.53
+
+`aurelia_leaf.png` zastąpiono nowym autorskim zasobem RGBA wygenerowanym
+wbudowanym `image_gen`. Plik źródłowy zachowano bez edycji obrazu:
+991726 bajtów, SHA-256
+`228510993eca249ac8c812e5924dcdb74c28d3c2f189f16a296ae98c799e2af5`.
+Nie kopiowano tekstur Minecrafta ani gry Schedule I.
+
+Założenia generowania: pojedynczy fikcyjny liść aurelii, widok ortograficzny
+od góry, pięć oddzielnych ząbkowanych listków lancetowatych wychodzących
+ze wspólnej nasady u dołu. Środkowy listek najdłuższy, boczne krótsze.
+Czytelna pikselowa grafika na logicznej siatce 64×64, osiem zielonych
+kolorów, dyskretne nerwy, przezroczyste tło. Bez złotych/żółtych pasów,
+fotorealizmu, rozmycia, cieni poza sylwetką, poświaty i napisów.
+
+Przy przeładowaniu zasobów `PixelSprite` wyznacza granice alfy, próbkuje
+liść do 64×64 i ogranicza go do ośmiu zielonych kolorów. Alfa jest binarna,
+filtr nearest pozostaje wymuszony. Nożyce i nasiona nadal mają 32×32.
+Jedna wspólna tekstura liścia w GPU zajmuje 16384 bajty RGBA, bez mipmap.
+Zielony materiał łodygi 8×8 ma cztery stonowane kolory.
+
+Blaszka ma obie powierzchnie, schodkowy obrys i grubość 0,015 bloku.
+Siatka 8×4 wygina ją wzdłuż i wszerz; ta sama siatka i alfa służą
+do wybierania kursorem. Osobny ogonek ma dwie części i łączy blaszkę
+z łodygą. Rzeczywisty układ ośmiu możliwych liści jest wspólny dla świata,
+przygotowania, zbioru i animacji odcięcia. Liczba widocznych liści nadal
+wynika z zapisanej maski i plonu, a nie z liczby listków na jednej blaszce.
+
+## Pierwotne zasoby — 0.1.42
+
+Poniższy opis i prompty dokumentują wcześniejsze zasoby. Pierwotny liść
+został zastąpiony powyższą aktualizacją; nożyce i nasiona zachowano.
 
 Trzy autorskie zasoby RGBA utworzono wbudowanym generatorem obrazów (`image_gen`, tryb built-in). Oryginalne PNG z przezroczystością zachowano w źródłach:
 
