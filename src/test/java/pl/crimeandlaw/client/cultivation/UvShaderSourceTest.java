@@ -11,7 +11,7 @@ class UvShaderSourceTest {
     @Test void programMetadataRetainsExistingSamplersAndUniforms(){String original="{\"vertex\":\"rendertype_solid\",\"fragment\":\"rendertype_solid\",\"samplers\":[{\"name\":\"Sampler0\"},{\"name\":\"Sampler2\"}],\"uniforms\":[{\"name\":\"FogStart\",\"type\":\"float\",\"count\":1,\"values\":[0]}]}";String patched=UvShaderSource.program(original);var json=JsonParser.parseString(patched).getAsJsonObject();assertEquals("Sampler0",json.getAsJsonArray("samplers").get(0).getAsJsonObject().get("name").getAsString());assertEquals("FogStart",json.getAsJsonArray("uniforms").get(0).getAsJsonObject().get("name").getAsString());assertEquals(patched,UvShaderSource.program(patched));}
     @Test void upperLeafUnderLampDoesNotSampleAboveTheEmitter(){
         var values=pl.crimeandlaw.cultivation.UvVolume.bake(new boolean[21*21*21]);
-        var point=AureliaMesh.leaf(7,8).point(.42f,0);
+        var point=new net.minecraft.world.phys.Vec3(.5,.85,.5);
         double x=10+.11+.78*point.x,y=9+.39+.86*point.y,z=10+.11+.78*point.z;
         assertEquals(0,pl.crimeandlaw.cultivation.UvVolume.sample(values,x,y+.45,z));
         assertTrue(pl.crimeandlaw.cultivation.UvVolume.sample(values,x,y+.012,z)>.2);

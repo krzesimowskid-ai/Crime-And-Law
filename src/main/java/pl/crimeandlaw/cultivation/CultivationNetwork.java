@@ -24,15 +24,16 @@ public final class CultivationNetwork {
         public static final StreamCodec<RegistryFriendlyByteBuf,Cut> CODEC=StreamCodec.of((b,p)->{b.writeUUID(p.token);b.writeVarInt(p.leaf);b.writeVarInt(p.phase);},b->new Cut(b.readUUID(),b.readVarInt(),b.readVarInt()));
         @Override public Type<Cut> type(){return TYPE;}
     }
-    public record State(BlockPos pos,UUID token,int leaves,int total,int target,boolean holding,boolean active,String message) implements CustomPacketPayload {
-        public State(BlockPos p,UUID t,int l,int target,boolean h,boolean a,String m){this(p,t,l,6,target,h,a,m);}
+    public record State(BlockPos pos,UUID token,int leaves,int total,int target,boolean holding,boolean active,String message,long shape) implements CustomPacketPayload {
+        public State(BlockPos p,UUID t,int l,int target,boolean h,boolean a,String m){this(p,t,l,6,target,h,a,m,0);}
+        public State(BlockPos p,UUID t,int l,int total,int target,boolean h,boolean a,String m){this(p,t,l,total,target,h,a,m,0);}
         public static final Type<State> TYPE=CultivationNetwork.type("harvest_state");
-        public static final StreamCodec<RegistryFriendlyByteBuf,State> CODEC=StreamCodec.of((b,p)->{b.writeBlockPos(p.pos);b.writeUUID(p.token);b.writeVarInt(p.leaves);b.writeVarInt(p.total);b.writeVarInt(p.target);b.writeBoolean(p.holding);b.writeBoolean(p.active);b.writeUtf(p.message,160);},b->new State(b.readBlockPos(),b.readUUID(),b.readVarInt(),b.readVarInt(),b.readVarInt(),b.readBoolean(),b.readBoolean(),b.readUtf(160)));
+        public static final StreamCodec<RegistryFriendlyByteBuf,State> CODEC=StreamCodec.of((b,p)->{b.writeBlockPos(p.pos);b.writeUUID(p.token);b.writeVarInt(p.leaves);b.writeVarInt(p.total);b.writeVarInt(p.target);b.writeBoolean(p.holding);b.writeBoolean(p.active);b.writeUtf(p.message,160);b.writeLong(p.shape);},b->new State(b.readBlockPos(),b.readUUID(),b.readVarInt(),b.readVarInt(),b.readVarInt(),b.readBoolean(),b.readBoolean(),b.readUtf(160),b.readLong()));
         @Override public Type<State> type(){return TYPE;}
     }
     private CultivationNetwork(){}
     public static void register(RegisterPayloadHandlersEvent event){
-        var r=event.registrar("27");
+        var r=event.registrar("28");
         r.playToServer(Open.TYPE,Open.CODEC,(p,c)->{if(c.player() instanceof ServerPlayer player)HarvestController.open(player,p.pos);});
         r.playToServer(Cut.TYPE,Cut.CODEC,(p,c)->{if(c.player() instanceof ServerPlayer player)HarvestController.cut(player,p);});
         r.playToClient(State.TYPE,State.CODEC,(p,c)->receiver.accept(p));

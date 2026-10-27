@@ -96,7 +96,7 @@ public final class HarvestController {
     private static void message(ServerPlayer player,BlockPos pos,String text){CultivationNetwork.send(player,new CultivationNetwork.State(pos,new UUID(0,0),0,-1,false,false,text));}
     private static void send(ServerPlayer player,Session s,boolean active,String message){
         int mask=s.key.dimension.equals(player.serverLevel().dimension().location().toString())&&player.serverLevel().hasChunkAt(s.key.pos)&&player.serverLevel().getBlockEntity(s.key.pos) instanceof HarvestPlant p?p.leaves():0;
-        CultivationNetwork.send(player,new CultivationNetwork.State(s.key.pos,s.token,mask,s.key.dimension.equals(player.serverLevel().dimension().location().toString())&&player.serverLevel().hasChunkAt(s.key.pos)&&player.serverLevel().getBlockEntity(s.key.pos) instanceof HarvestPlant p?p.totalLeaves():0,s.target,s.began>=0,active,message));
+        CultivationNetwork.send(player,new CultivationNetwork.State(s.key.pos,s.token,mask,s.key.dimension.equals(player.serverLevel().dimension().location().toString())&&player.serverLevel().hasChunkAt(s.key.pos)&&player.serverLevel().getBlockEntity(s.key.pos) instanceof HarvestPlant p?p.totalLeaves():0,s.target,s.began>=0,active,message,PlantShape.seed(s.plant)));
     }
     public static boolean reserved(ServerPlayer player,BlockPos pos){return LOCKS.containsKey(new Key(player.serverLevel().dimension().location().toString(),pos));}
     private static void close(ServerPlayer player){var s=SESSIONS.remove(player);if(s!=null)LOCKS.remove(s.key,player);}

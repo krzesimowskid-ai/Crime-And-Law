@@ -7,70 +7,75 @@ import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.chunk.*;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.chunk.LevelChunk;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.*;
+import net.neoforged.neoforge.event.level.ChunkEvent;
+import net.neoforged.neoforge.event.level.LevelEvent;
 import org.joml.Matrix4f;
 import pl.crimeandlaw.cultivation.*;
 
-/** Colored irradiance is supplied directly to lightmapped materials, before texture and fog. */
+/** World lightmap for all loaded lamps, independent of player/freecam distance. */
 @EventBusSubscriber(modid="crimeandlaw",value=Dist.CLIENT)
 public final class UvLighting {
-    private static final ResourceLocation ATLAS=ResourceLocation.fromNamespaceAndPath("crimeandlaw","dynamic/uv_volume");
-    private record Field(long stamp,boolean[] solid,float[] values){}
-    private static final Map<BlockPos,Field> CACHE=new HashMap<>();
+    private static final ResourceLocation ATLAS=id("uv_volume"),INDEX=id("uv_index");
+    private static ResourceLocation id(String name){return ResourceLocation.fromNamespaceAndPath("crimeandlaw","dynamic/"+name);}
+    private static final Map<Long,LevelChunk> LOADED=new HashMap<>();
+    private static final Map<BlockPos,float[]> CACHE=new HashMap<>();
     private static final Matrix4f inverseView=new Matrix4f();
-    private static final float[][] lights=new float[UvVolume.MAX_LIGHTS][4];
-    private static List<Planter> lamps=List.of();private static ClientLevel world;private static long lastScan=Long.MIN_VALUE;private static DynamicTexture atlas;private static boolean dirty=true,worldPass,handPass;
+    private static ClientLevel tracked,world;private static List<Planter> lamps=List.of();private static long lastScan=Long.MIN_VALUE;
+    private static DynamicTexture atlas,index;private static UvSectionField field;private static boolean dirty=true,worldPass,handPass;
     private static int renderedFrames,lastLightCount;private static float handLight;
     private UvLighting(){}
     public static int multiply(int a,int b){return (a>>>24)*(b>>>24)/255<<24|((a>>>16&255)*(b>>>16&255)/255)<<16|((a>>>8&255)*(b>>>8&255)/255)<<8|(a&255)*(b&255)/255;}
     public static int activeLights(){return lastLightCount;}public static int renderedFrames(){return renderedFrames;}
     @EventBusSubscriber(modid="crimeandlaw",value=Dist.CLIENT,bus=EventBusSubscriber.Bus.MOD)
-    public static final class Registration {
-        @SubscribeEvent public static void shaders(RegisterShadersEvent e){release();}
-    }
-    @SubscribeEvent public static void logout(ClientPlayerNetworkEvent.LoggingOut e){release();}
-    private static void release(){if(atlas!=null){Minecraft.getInstance().getTextureManager().release(ATLAS);atlas=null;}CACHE.clear();lamps=List.of();world=null;lastScan=Long.MIN_VALUE;dirty=true;lastLightCount=0;worldPass=false;handPass=false;}
+    public static final class Registration {@SubscribeEvent public static void shaders(RegisterShadersEvent e){release();}}
+    @SubscribeEvent public static void load(ChunkEvent.Load e){if(e.getLevel() instanceof ClientLevel level&&e.getChunk() instanceof LevelChunk chunk){if(tracked!=level){LOADED.clear();tracked=level;release();}LOADED.put(chunk.getPos().toLong(),chunk);invalidateAll();}}
+    @SubscribeEvent public static void unload(ChunkEvent.Unload e){if(e.getLevel()==tracked){LOADED.remove(e.getChunk().getPos().toLong());invalidateAll();}}
+    @SubscribeEvent public static void leave(LevelEvent.Unload e){if(e.getLevel()==tracked){LOADED.clear();tracked=null;release();}}
+    @SubscribeEvent public static void logout(ClientPlayerNetworkEvent.LoggingOut e){LOADED.clear();tracked=null;release();}
+    private static void invalidateAll(){CACHE.clear();dirty=true;lastScan=Long.MIN_VALUE;}
+    public static void changed(ClientLevel level,BlockPos pos){if(level!=tracked)return;boolean removed=CACHE.keySet().removeIf(p->Math.abs(p.getX()-pos.getX())<=10&&Math.abs(p.getZ()-pos.getZ())<=10&&pos.getY()>=p.getY()-9&&pos.getY()<=p.getY()+11);if(removed)dirty=true;}
+    private static void release(){var manager=Minecraft.getInstance().getTextureManager();if(atlas!=null){manager.release(ATLAS);atlas=null;}if(index!=null){manager.release(INDEX);index=null;}CACHE.clear();field=null;lamps=List.of();world=null;lastScan=Long.MIN_VALUE;dirty=true;lastLightCount=0;worldPass=handPass=false;}
     private static void collect(Minecraft mc){
         if(world!=mc.level){release();world=mc.level;}long now=world.getGameTime();if(now-lastScan>=0&&now-lastScan<5)return;lastScan=now;
-        var camera=mc.gameRenderer.getMainCamera().getPosition();int cx=net.minecraft.util.Mth.floor(camera.x)>>4,cz=net.minecraft.util.Mth.floor(camera.z)>>4;var found=new ArrayList<Planter>();
-        for(int x=cx-1;x<=cx+1;x++)for(int z=cz-1;z<=cz+1;z++){var chunk=world.getChunk(x,z,net.minecraft.world.level.chunk.status.ChunkStatus.FULL,false);if(chunk instanceof LevelChunk c)for(var be:c.getBlockEntities().values())if(be instanceof Planter p&&p.hasLamp()&&p.getBlockPos().distToCenterSqr(camera)<420)found.add(p);}
-        found.sort(Comparator.comparingDouble(p->p.getBlockPos().distToCenterSqr(camera)));if(found.size()>UvVolume.MAX_LIGHTS)found.subList(UvVolume.MAX_LIGHTS,found.size()).clear();found.sort(Comparator.comparingLong(p->p.getBlockPos().asLong()));
-        if(!found.equals(lamps)){lamps=List.copyOf(found);dirty=true;}var positions=new HashSet<BlockPos>();for(var p:lamps)positions.add(p.getBlockPos());CACHE.keySet().retainAll(positions);
+        if(LOADED.entrySet().removeIf(e->{var c=e.getValue();return world.getChunkSource().getChunk(c.getPos().x,c.getPos().z,net.minecraft.world.level.chunk.status.ChunkStatus.FULL,false)!=c;}))invalidateAll();
+        var found=new ArrayList<Planter>();for(var chunk:LOADED.values())for(var be:chunk.getBlockEntities().values())if(be instanceof Planter p&&!p.isRemoved()&&p.hasLamp())found.add(p);
+        found.sort(Comparator.comparingLong(p->p.getBlockPos().asLong()));if(!found.equals(lamps)){lamps=List.copyOf(found);dirty=true;}
+        var positions=new HashSet<BlockPos>();for(var p:lamps)positions.add(p.getBlockPos());CACHE.keySet().retainAll(positions);
     }
     private static BlockPos origin(Planter p){return p.getBlockPos().offset(-UvVolume.CENTER,1-UvVolume.CENTER,-UvVolume.CENTER);}
+    private static DynamicTexture texture(DynamicTexture old,ResourceLocation name,int width,int height,int[] pixels){
+        var manager=Minecraft.getInstance().getTextureManager();if(old==null||old.getPixels().getWidth()!=width||old.getPixels().getHeight()!=height){if(old!=null)manager.release(name);old=new DynamicTexture(width,height,false);manager.register(name,old);}
+        var image=Objects.requireNonNull(old.getPixels());for(int y=0;y<height;y++)for(int x=0;x<width;x++)image.setPixelRGBA(x,y,pixels[y*width+x]);
+        old.upload();old.setFilter(true,false);return old;
+    }
     private static void volumes(){
-        int size=UvVolume.SIZE;for(var p:lamps){var pos=p.getBlockPos();long stamp=(world.getGameTime()+Math.floorMod(pos.asLong(),5))/5;var old=CACHE.get(pos);if(old!=null&&old.stamp==stamp)continue;
-            var base=origin(p);var solid=new boolean[size*size*size];var at=new BlockPos.MutableBlockPos();
-            for(int y=0;y<size;y++)for(int z=0;z<size;z++)for(int x=0;x<size;x++){at.set(base.getX()+x,base.getY()+y,base.getZ()+z);solid[UvVolume.index(x,y,z)]=!world.hasChunkAt(at)||world.getBlockState(at).getLightBlock(world,at)>=15;}
-            if(old!=null&&Arrays.equals(old.solid,solid)){CACHE.put(pos,new Field(stamp,old.solid,old.values));continue;}
-            CACHE.put(pos,new Field(stamp,solid,UvVolume.bake(solid)));dirty=true;
+        for(var lamp:lamps)if(!CACHE.containsKey(lamp.getBlockPos())){
+            int size=UvVolume.SIZE;var base=origin(lamp);var solid=new boolean[size*size*size];var at=new BlockPos.MutableBlockPos();
+            for(int y=0;y<size;y++)for(int z=0;z<size;z++)for(int x=0;x<size;x++){
+                at.set(base.getX()+x,base.getY()+y,base.getZ()+z);var chunk=LOADED.get(ChunkPos.asLong(at.getX()>>4,at.getZ()>>4));
+                solid[UvVolume.index(x,y,z)]=chunk==null||chunk.getBlockState(at).getLightBlock(world,at)>=15;
+            }CACHE.put(lamp.getBlockPos(),UvVolume.bake(solid));dirty=true;
         }
-        if(atlas==null){atlas=new DynamicTexture(size*size,size*UvVolume.MAX_LIGHTS,false);Minecraft.getInstance().getTextureManager().register(ATLAS,atlas);atlas.setFilter(true,false);dirty=true;}
-        if(!dirty)return;var image=Objects.requireNonNull(atlas.getPixels());image.fillRect(0,0,image.getWidth(),image.getHeight(),0xFF000000);
-        for(int i=0;i<lamps.size();i++){var values=CACHE.get(lamps.get(i).getBlockPos()).values;for(int y=0;y<size;y++)for(int z=0;z<size;z++)for(int x=0;x<size;x++){int v=Math.clamp(Math.round(values[UvVolume.index(x,y,z)]*255),0,255);image.setPixelRGBA(y*size+x,i*size+z,0xFF000000|v*0x010101);}}
-        // NativeImage.upload resets GL filtering to NEAREST. Restore linear filtering afterwards.
-        atlas.upload();atlas.setFilter(true,false);dirty=false;
+        if(!dirty)return;var sources=new ArrayList<UvSectionField.Source>();for(var lamp:lamps){var o=origin(lamp);sources.add(new UvSectionField.Source(o.getX(),o.getY(),o.getZ(),lamp.getBlockPos().getY()+1,CACHE.get(lamp.getBlockPos())));}
+        field=UvSectionField.compose(sources);atlas=texture(atlas,ATLAS,field.atlasWidth,field.atlasHeight,field.atlasPixels());index=texture(index,INDEX,field.indexWidth,field.indexHeight,field.indexPixels());dirty=false;
     }
     @SubscribeEvent public static void render(RenderLevelStageEvent e){
-        if(e.getStage()!=RenderLevelStageEvent.Stage.AFTER_SKY)return;worldPass=false;handPass=false;var mc=Minecraft.getInstance();if(mc.level==null)return;collect(mc);
+        if(e.getStage()!=RenderLevelStageEvent.Stage.AFTER_SKY)return;worldPass=handPass=false;var mc=Minecraft.getInstance();if(mc.level==null)return;collect(mc);
         var live=lamps.stream().filter(p->!p.isRemoved()&&p.hasLamp()).toList();if(!live.equals(lamps)){lamps=live;dirty=true;}
-        lastLightCount=lamps.size();handLight=0;if(lamps.isEmpty())return;volumes();inverseView.set(e.getModelViewMatrix()).invert();var eye=e.getCamera().getPosition();
-        var direction=e.getCamera().getLookVector();var hand=eye.add(direction.x()*.45,direction.y()*.45-.4,direction.z()*.45);
-        for(int i=0;i<lamps.size();i++){var lamp=lamps.get(i);var o=origin(lamp);handLight=Math.max(handLight,UvVolume.sample(CACHE.get(lamp.getBlockPos()).values,hand.x-o.getX(),hand.y-o.getY(),hand.z-o.getZ()));lights[i][0]=(float)(o.getX()-eye.x);lights[i][1]=(float)(o.getY()-eye.y);lights[i][2]=(float)(o.getZ()-eye.z);lights[i][3]=i;}
-        worldPass=true;renderedFrames++;
+        lastLightCount=lamps.size();handLight=0;if(lamps.isEmpty())return;volumes();inverseView.set(e.getModelViewMatrix()).invert();var eye=e.getCamera().getPosition();var direction=e.getCamera().getLookVector();
+        var hand=eye.add(direction.x()*.45,direction.y()*.45-.4,direction.z()*.45);handLight=field.sample(hand.x,hand.y,hand.z);worldPass=true;renderedFrames++;
     }
-    public static void beginHands(){handPass=worldPass;}
-    public static void endHands(){handPass=false;}
-    public static void finishWorld(){worldPass=false;handPass=false;}
+    public static void beginHands(){handPass=worldPass;}public static void endHands(){handPass=false;}public static void finishWorld(){worldPass=handPass=false;}
     public static void bind(ShaderInstance shader){
-        if(shader.getUniform("CalUvCount")==null)return;
-        int count=worldPass&&atlas!=null&&world==Minecraft.getInstance().level?lastLightCount:0;
-        shader.safeGetUniform("CalUvCount").set(count);if(count==0)return;
-        shader.setSampler("CalUvVolume",atlas.getId());shader.safeGetUniform("CalUvInverseView").set(inverseView);shader.safeGetUniform("CalUvHand").set(handPass?1:0);shader.safeGetUniform("CalUvHandLight").set(handLight);shader.safeGetUniform("CalUvGamma").set(Minecraft.getInstance().options.gamma().get().floatValue());
-        for(int i=0;i<count;i++){var a=lights[i];shader.safeGetUniform("CalUvLight"+i).set(a[0],a[1],a[2],a[3]);}
+        if(shader.getUniform("CalUvCount")==null)return;boolean enabled=worldPass&&atlas!=null&&index!=null&&field!=null&&field.count>0&&world==Minecraft.getInstance().level;
+        shader.safeGetUniform("CalUvCount").set(enabled?1:0);if(!enabled)return;var eye=Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
+        shader.setSampler("CalUvVolume",atlas.getId());shader.setSampler("CalUvIndex",index.getId());shader.safeGetUniform("CalUvInverseView").set(inverseView);shader.safeGetUniform("CalUvHand").set(handPass?1:0);shader.safeGetUniform("CalUvHandLight").set(handLight);shader.safeGetUniform("CalUvGamma").set(Minecraft.getInstance().options.gamma().get().floatValue());
+        shader.safeGetUniform("CalUvOrigin").set((float)(field.originX-eye.x),(float)(field.originY-eye.y),(float)(field.originZ-eye.z));shader.safeGetUniform("CalUvExtent").set((float)field.extentX,(float)field.extentY,(float)field.extentZ);shader.safeGetUniform("CalUvColumns").set(field.columns);shader.safeGetUniform("CalUvIndexWidth").set(field.indexWidth);shader.safeGetUniform("CalUvCapacity").set(field.capacity);shader.safeGetUniform("CalUvProbes").set(field.probes);
     }
 }

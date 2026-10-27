@@ -126,9 +126,9 @@ public final class GardenMesh {
         p.pushPose();p.translate(.61,.26,.44);p.mulPose(Axis.ZP.rotationDegrees(36));box(p,b,GardenMaterials.STEEL,0,-.04,0,.43,.05,.12,light,0xFFB7CFC3);box(p,b,GardenMaterials.STEEL,.4,-.08,-.05,.46,.10,.17,light,0xFFD0DFCF);for(int i=0;i<3;i++)for(int j=0;j<3;j++)box(p,b,GardenMaterials.WHITE,.461,-.05+i*.055,-.02+j*.055,.464,-.027+i*.055,.003+j*.055,light,0xFF354D52);p.popPose();
         for(int i=0;i<3;i++)box(p,b,GardenMaterials.STEEL,.28+i*.09,.22,.282,.30+i*.09,.48,.29,light,0xFFAABFB4);
     }
-    public static void station(PoseStack p,MultiBufferSource b,boolean rack,boolean hasPot,boolean lamp,float fill,int growth,int mask,int total,int water,int light){
+    public static void station(PoseStack p,MultiBufferSource b,boolean rack,boolean hasPot,boolean lamp,float fill,int growth,int mask,int total,int water,int light,long shape){
         if(rack)frame(p,b,lamp,light);p.pushPose();if(rack)p.translate(0,.13,0);
-        int old=tint;tint=-1;try{if(hasPot){pot(p,b,fill,water>0,light);if(growth>=0){p.translate(.11,.39,.11);p.scale(.78f,.86f,.78f);AureliaMesh.draw(p,b,Math.clamp(growth*4/CultivationRules.GROWTH_TICKS,0,4),mask,-1,0,light,total>0?total:6,tint);}}}finally{tint=old;}
+        int old=tint;tint=-1;try{if(hasPot){pot(p,b,fill,water>0,light);if(growth>=0){p.translate(.11,.39,.11);p.scale(.78f,.86f,.78f);AureliaMesh.draw(p,b,Math.clamp(growth*4/CultivationRules.GROWTH_TICKS,0,4),mask,-1,0,light,total>0?total:6,tint,shape);}}}finally{tint=old;}
         p.popPose();
     }
     public static boolean modelItem(ItemStack s){return s.is(CultivationContent.POT_ITEM.get())||s.is(CultivationContent.FRAME_ITEM.get())||s.getItem() instanceof GardenSupplyItem;}

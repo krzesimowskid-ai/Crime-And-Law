@@ -43,6 +43,15 @@ public final class GardenServerSmoke {
         if(Files.exists(OUT.resolve("uv-second-remove.request"))&&!Files.exists(OUT.resolve("uv-second-remove.applied"))){l.removeBlock(B.above(),false);l.removeBlock(B,false);Files.writeString(OUT.resolve("uv-second-remove.applied"),"removed");}
         if(Files.exists(OUT.resolve("uv-off.request"))&&!Files.exists(OUT.resolve("uv-off.applied"))){check(Planter.at(l,A).removeLamp(),"Fixture lamp removal");Files.writeString(OUT.resolve("uv-off.applied"),"removed");}
         if(Files.exists(OUT.resolve("uv-on.request"))&&!Files.exists(OUT.resolve("uv-on.applied"))){check(Planter.at(l,A).installLamp(),"Fixture lamp restoration");check(l.getBlockState(A.above()).getLightEmission(l,A.above())==0,"UV lamp emits no ordinary block light");Files.writeString(OUT.resolve("uv-on.applied"),"restored");}
+        if(Files.exists(OUT.resolve("uv-far.request"))&&!Files.exists(OUT.resolve("uv-far.applied"))){
+            l.setBlock(new BlockPos(1,80,0),Blocks.WHITE_CONCRETE.defaultBlockState(),3);
+            for(int x:new int[]{-24,-8,8,24})for(int z:new int[]{-24,-8,8}){
+                var q=new BlockPos(x,80,z);l.setBlock(q,CultivationContent.FRAME.get().defaultBlockState(),3);l.setBlock(q.above(),CultivationContent.FRAME.get().defaultBlockState().setValue(GrowFrameBlock.HALF,DoubleBlockHalf.UPPER),3);Planter.at(l,q).installLamp();
+            }Files.writeString(OUT.resolve("uv-far.applied"),"probe and twelve extra loaded lamps");
+        }
+        if(Files.exists(OUT.resolve("uv-far-remove.request"))&&!Files.exists(OUT.resolve("uv-far-remove.applied"))){
+            l.removeBlock(new BlockPos(1,80,0),false);for(int x:new int[]{-24,-8,8,24})for(int z:new int[]{-24,-8,8}){var q=new BlockPos(x,80,z);l.removeBlock(q.above(),false);l.removeBlock(q,false);}Files.writeString(OUT.resolve("uv-far-remove.applied"),"removed");
+        }
         if(Files.exists(OUT.resolve("rival-attempt.sent"))&&!Files.exists(OUT.resolve("reservation.PASS"))){check(session(PotController.class,p)!=null&&session(PotController.class,rival)==null,"Only owner holds real TCP preparation reservation");Files.writeString(OUT.resolve("reservation.PASS"),"Second TCP player denied same pot");}
         if(server.getTickCount()%20==0&&session(PotController.class,p)!=null){var debug=session(PotController.class,p);Files.writeString(OUT.resolve("debug-server.txt"),"op="+field(debug,"operation")+" work="+field(debug,"work")+" pose="+field(debug,"pose")+" held="+field(debug,"held")+" sequence="+field(debug,"sequence"));}
         if(!grown&&Files.exists(OUT.resolve("grow.ready"))){

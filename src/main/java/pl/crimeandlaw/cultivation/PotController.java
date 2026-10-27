@@ -140,7 +140,7 @@ public final class PotController {
     }
     private static boolean unpack(ServerPlayer p,int slot){var stack=p.getInventory().getItem(slot);if(!stack.is(CultivationContent.SEED_PACKET.get()))return false;var replacement=stack.copy();replacement.shrink(1);var plan=InventoryExchange.prepare(p,slot,stack,replacement,new ItemStack(CultivationContent.SEEDS.get(),CultivationRules.PACK_SEEDS));return plan!=null&&plan.commit();}
     public static void openPacket(ServerPlayer p,int slot){if(allow(p)&&!p.isSpectator()&&!p.isDeadOrDying()&&InventoryExchange.sourceSlot(slot))notice(p,unpack(p,slot)?"Rozpakowano 5 nasion.":"Zrób miejsce w ekwipunku na nasiona.");}
-    private static void send(ServerPlayer p,Session s,boolean active){var pot=s.planter;var plant=pot.plant;PotNetwork.send(p,new PotNetwork.State(s.key.pos,s.token,s.revision,plant.stage(),plant.growth(),plant.water(),plant.leaves(),plant.total(),pot.frame(),pot.hasPot(),pot.hasLamp(),pot.lit(),active,s.operation,(int)s.work,s.slot,s.message));}
+    private static void send(ServerPlayer p,Session s,boolean active){var pot=s.planter;var plant=pot.plant;PotNetwork.send(p,new PotNetwork.State(s.key.pos,s.token,s.revision,plant.stage(),plant.growth(),plant.water(),plant.leaves(),plant.total(),pot.frame(),pot.hasPot(),pot.hasLamp(),pot.lit(),active,s.operation,(int)s.work,s.slot,s.message,PlantShape.seed(plant.identity())));}
     private static void close(ServerPlayer p){var s=SESSIONS.remove(p);if(s!=null)LOCKS.remove(s.key,p);}
     @SubscribeEvent public static void tick(ServerTickEvent.Post e){
         long now=e.getServer().getTickCount();for(var p:new ArrayList<>(SESSIONS.keySet())){var s=SESSIONS.get(p);if(p.server!=e.getServer())continue;

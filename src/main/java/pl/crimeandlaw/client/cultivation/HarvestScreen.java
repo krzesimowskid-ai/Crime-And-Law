@@ -28,7 +28,7 @@ public final class HarvestScreen extends Screen {
     private double dragX;
     private int heldLeaf=-1,hoveredLeaf=-1,collected;
     private String status;
-    private record Falling(int leaf,int total,long started,LeafMotion.Motion motion){}
+    private record Falling(int leaf,int total,long started,LeafMotion.Motion motion,long shape){}
     private final List<Falling> falling=new ArrayList<>();
     private final Map<Integer,Vector3f> markers=new HashMap<>();
     private Button exit;
@@ -36,13 +36,13 @@ public final class HarvestScreen extends Screen {
     public UUID token(){return state.token();}
     public void receive(CultivationNetwork.State next){
         int removed=state.leaves()&~next.leaves();
-        for(int id=0;id<8;id++)if((removed&(1<<id))!=0){falling.add(new Falling(id,state.total(),System.nanoTime(),LeafMotion.cut(id,System.nanoTime())));collected++;}
+        for(int id=0;id<8;id++)if((removed&(1<<id))!=0){falling.add(new Falling(id,state.total(),System.nanoTime(),LeafMotion.cut(id,System.nanoTime()),state.shape()));collected++;}
         state=next;status=next.message();
         if(!next.holding()){awaiting=false;if(!holding)heldLeaf=-1;}
         if(!next.active()){holding=false;awaiting=false;}
         if(exit!=null)exit.setMessage(Component.literal(next.active()?"Przerwij zbiór":"Wróć do gry"));
     }
-    public void interrupted(String message){holding=awaiting=false;status=message;state=new CultivationNetwork.State(state.pos(),state.token(),state.leaves(),state.total(),-1,false,false,message);}
+    public void interrupted(String message){holding=awaiting=false;status=message;state=new CultivationNetwork.State(state.pos(),state.token(),state.leaves(),state.total(),-1,false,false,message,state.shape());}
     @Override public void tick(){
         if(awaiting&&System.nanoTime()-awaitingSince>3_000_000_000L){
             awaitingSince=System.nanoTime();status="Odświeżanie stanu cięcia…";
@@ -110,21 +110,21 @@ public final class HarvestScreen extends Screen {
         camera=new Matrix4f().translate(left+298,top+431,170).scale(363*zoom,-363*zoom,363*zoom)
             .rotateX(.23f).rotateY(yaw).translate(-.5f,0,-.5f);
         markers.clear();for(int i=0;i<8;i++)if(PruningRules.available(state.leaves(),i)){
-            var p=AureliaMesh.leaf(i,state.total()).marker();markers.put(i,camera.transformPosition(new Vector3f((float)p.x,(float)p.y,(float)p.z)));
+            var p=AureliaMesh.leaf(i,state.total(),state.shape()).marker();markers.put(i,camera.transformPosition(new Vector3f((float)p.x,(float)p.y,(float)p.z)));
         }
         hoveredLeaf=state.active()?pick(mouseX,mouseY):-1;
         g.flush();g.enableScissor((int)((left+12)*scale),(int)((top+70)*scale),(int)((left+595)*scale),(int)((top+466)*scale));RenderSystem.enableDepthTest();RenderSystem.depthMask(true);Lighting.setupFor3DItems();
         var buffers=minecraft.renderBuffers().bufferSource();
         g.pose().pushPose();g.pose().mulPose(camera);
         try{
-            AureliaMesh.draw(g.pose(),buffers,4,state.leaves(),state.active()?(holding||awaiting?heldLeaf:hoveredLeaf):-1,time(),LightTexture.FULL_BRIGHT,state.total());
+            AureliaMesh.draw(g.pose(),buffers,4,state.leaves(),state.active()?(holding||awaiting?heldLeaf:hoveredLeaf):-1,time(),LightTexture.FULL_BRIGHT,state.total(),-1,state.shape());
             buffers.endBatch();g.pose().popPose();g.disableScissor();
             // Falling leaves continue below the panel towards the bottom of the Minecraft viewport.
             g.enableScissor((int)((left+12)*scale),(int)((top+70)*scale),(int)((left+595)*scale),height);
             g.pose().pushPose();g.pose().mulPose(camera);
             var it=falling.iterator();while(it.hasNext()){
                 var f=it.next();double elapsed=(System.nanoTime()-f.started)/1_000_000_000.;
-                var leaf=AureliaMesh.leaf(f.leaf,f.total);var motion=LeafFall.transform(leaf,f.motion,elapsed);
+                var leaf=AureliaMesh.leaf(f.leaf,f.total,f.shape);var motion=LeafFall.transform(leaf,f.motion,elapsed);
                 if(LeafFall.below(camera,motion,leaf,height/scale)){it.remove();continue;}
                 g.pose().pushPose();g.pose().mulPose(motion);
                 AureliaMesh.drawLeaf(g.pose(),buffers.getBuffer(RenderType.entityCutoutNoCull(AureliaMesh.LEAF)),leaf,LightTexture.FULL_BRIGHT,0xFFFFFFFF,time(),false);g.pose().popPose();
@@ -151,7 +151,7 @@ public final class HarvestScreen extends Screen {
         if(result>=0)return result;
         float nearest=-Float.MAX_VALUE;float[] rows={0,.28f,.58f,1};
         for(int id=0;id<8;id++)if(PruningRules.available(state.leaves(),id)){
-            var leaf=AureliaMesh.leaf(id,state.total());
+            var leaf=AureliaMesh.leaf(id,state.total(),state.shape());
             for(int row=0;row<3;row++)for(int col=0;col<2;col++){
                 float u0=col*.5f,u1=u0+.5f,v0=rows[row],v1=rows[row+1];
                 var a=project(leaf,u0,v0);var b=project(leaf,u0,v1);var c=project(leaf,u1,v1);var d=project(leaf,u1,v0);
