@@ -21,8 +21,8 @@ class LeafFallTest {
         for(int i=1;i<=100;i++){
             var a=leaf.point((i-1)/100f,0);var b=leaf.point(i/100f,0);
             double slope=(b.y-a.y)/Math.hypot(b.x-a.x,b.z-a.z);
-            assertTrue(Math.abs(slope)<.14);if(i>1)assertTrue(Math.abs(slope-lastSlope)<.20);
-            assertTrue(Math.abs(b.y-leaf.base().y)<.02);lastSlope=slope;
+            assertTrue(Math.abs(slope-leaf.rise()/leaf.length())<.14);if(i>1)assertTrue(Math.abs(slope-lastSlope)<.20);
+            assertTrue(Math.abs(b.y-leaf.base().y-leaf.rise()*i/100)<.02);lastSlope=slope;
         }
     }
     @Test void fallingContinuesPastTheOldFloorUntilTheWholeLeafLeavesTheView(){

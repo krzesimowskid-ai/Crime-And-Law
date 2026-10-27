@@ -1,6 +1,6 @@
 # Aurelia — doniczki, wyposażenie i zbiór
 
-Wersja testowa 0.1.51. Minecraft 1.21.1, NeoForge 21.1.248, Java 21.
+Wersja testowa 0.1.52. Minecraft 1.21.1, NeoForge 21.1.248, Java 21.
 Protokół **27**: ten sam JAR na serwerze i u graczy.
 Aurelia jest fikcyjną rośliną; liczby są bilansem gry.
 
@@ -144,8 +144,11 @@ ekspozycja i tożsamość rośliny zapisują się ze światem.
 
 Z istniejącej tożsamości wyprowadzany jest również trwały układ rośliny.
 Kąt, wysokość, długość i szerokość poszczególnych liści różnią się między
-roślinami. Liście są niemal proste, z niewielkim naturalnym wygięciem;
-pionowe odstępy utrzymują ich bryły osobno także przy pełnych ośmiu liściach.
+roślinami. Całe liście mają różne nachylenia od nasady: część w górę, część
+niemal poziomo, część lekko w dół. Na to nakłada się płytkie, łagodne
+wygięcie powierzchni. Kierunki są mieszane już przy trzech liściach.
+Przestrzenne obwiednie uwzględniają grubość, krzywiznę i odstęp między
+liśćmi. Przy kolizji zmienia się kąt kandydata przed ustaleniem całego układu.
 Świat, przygotowanie i zbiór pokazują ten sam układ, a usunięcie liścia
 nie zmienia pozostałych. Ustawienia starych roślin są wyprowadzane z ich
 dotychczasowego UUID, bez ponownego losowania nagród. Wymagany protokół 28
@@ -202,4 +205,4 @@ Jednorazowe rewizje żądań i wyceny sklepu nie pozwalają ponawiać skutków
 starym pakietem. Po trzech sekundach bez potwierdzenia klient odzyskuje
 stan bez ponawiania wydatku ani nagrody.
 
-Wyniki i granice testów: [VALIDATION_0.1.51.md](VALIDATION_0.1.51.md).
+Wyniki i granice testów: [VALIDATION_0.1.52.md](VALIDATION_0.1.52.md).
