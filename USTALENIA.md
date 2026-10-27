@@ -994,3 +994,12 @@ To zapis kierunku rozwoju; JAR 0.1.42 nie został w tej rozmowie zmieniony.
 - Jeden cel nasiona na powierzchni dołka, bez drugiego nakładającego się pierścienia. Wysokość spoczynku nasiona i czas opadania wspólne z serwerem.
 - Zamiast pełnego statycznego łuku wody: krótkie ruchome odcinki z czasem życia i grawitacją, narastające od sitka.
 - Protokół 27: wspólna zmiana miejsca emisji i lądowania klient/serwer.
+
+
+## 2026-10-27 — liście, UV i kolizje doniczki (0.1.50)
+
+- Górne liście pod lampą mają próbkę światła przy powierzchni (0,012 bloku), nie 0,45 bloku powyżej niej. Większy odstęp pozostaje dla brył terenu.
+- Ziemia i woda sprawdzają kontakt z ośmiokątnym obrzeżem, zwężającymi się ściankami, powierzchnią ziemi i dnem, z podziałem toru między klatkami. To korekta wizualna, bez dodatkowych nagród i zmian kosztów materiałów.
+- Płytsza krzywizna liści, ten sam kształt przed i po odcięciu, sztywny obrót całego odciętego liścia.
+- Usunięto zatrzymywanie odciętego liścia na sztucznej podłodze i limit 2,3 s. Lot trwa poniżej panelu, a obiekt jest usuwany dopiero po wypadnięciu całej sylwetki poniżej widoku Minecrafta.
+- Protokół pozostaje 27, format pakietów i logika nagród bez zmian. Nadal wymagana aktualna wersja u graczy i na serwerze.

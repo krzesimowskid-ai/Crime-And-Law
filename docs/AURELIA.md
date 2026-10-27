@@ -1,6 +1,6 @@
 # Aurelia — doniczki, wyposażenie i zbiór
 
-Wersja testowa 0.1.49. Minecraft 1.21.1, NeoForge 21.1.248, Java 21.
+Wersja testowa 0.1.50. Minecraft 1.21.1, NeoForge 21.1.248, Java 21.
 Protokół **27**: ten sam JAR na serwerze i u graczy.
 Aurelia jest fikcyjną rośliną; liczby są bilansem gry.
 
@@ -56,6 +56,8 @@ wartości wykonawcze, które można później zbilansować.
    Obrót jest ręczny; sam chwyt nie zmienia kąta. Ziemia wypada z piętnastu
    miejsc przed krawędzią otworu, razem z jego obrotem i położeniem.
    Widoczne drobiny nie pozostają wewnątrz obracanego korpusu.
+   Obrzeże, wewnętrzne/zewnętrzne ścianki i dno doniczki zatrzymują drobiny;
+   kontakt jest sprawdzany również pomiędzy klatkami.
    Serwer zalicza tylko część trafiającą do komory, a nie cały strumień
    po trafieniu jego środka. Po puszczeniu LPM worek pozostaje w miejscu,
    zachowuje kąt i przestaje sypać. Można chwycić go ponownie.
@@ -77,7 +79,8 @@ wartości wykonawcze, które można później zbilansować.
    Mysz przesuwa, WASD obraca ręcznie, bez automatycznego przechyłu. **Dziewięć cienkich
    strużek** stopniowo wychodzi z poszczególnych otworów sitka.
    Wylatująca woda porusza się od miejsca emisji; nie pojawia się od razu
-   jako nieruchomy łuk sięgający ziemi.
+   jako nieruchomy łuk sięgający ziemi. Woda uderza w ścianki i obrzeże
+   doniczki, zamiast przenikać na drugą stronę.
    Serwer zalicza tylko trafiającą część strumieni. Po puszczeniu konewka nie upada. Udane
    podlanie pobiera tylko tyle wody, ile przyjęła doniczka.
 
@@ -112,6 +115,10 @@ wiązka słabnie ku brzegom i z odległością; nad oprawą nie ma emisji.
 Pełne, nieprzezroczyste bloki zasłaniają wiązkę. Jest to bezpośrednie
 światło, bez odbijania od ścian i bez obchodzenia przeszkód.
 
+Liście i inne małe modele próbkują światło przy swojej powierzchni;
+nie używają odsunięcia o prawie pół bloku przeznaczonego dla pełnych bloków.
+Zapobiega to przenoszeniu punktu oświetlenia górnego liścia ponad lampę.
+
 Kolor oświetla tekstury materiałów przed mgłą; nie jest filtrem gotowego
 obrazu. HUD zachowuje własne kolory. Usunięto reset wygładzania przy
 aktualizacji tekstury światła oraz niepotrzebne odświeżanie niezmiennego
@@ -137,8 +144,11 @@ Weź specjalne nożyce do głównej ręki, spójrz na dojrzałą roślinę i nac
 Z. Możesz też przejść do zbioru przyciskiem z przygotowania. Wybieraj
 **dowolne widoczne liście**: kliknij liść lub znacznik przy nasadzie,
 przytrzymaj LPM i puść w zielonym polu. Każde poprawne cięcie daje jeden
-liść i jeden punkt zużycia nożyc. Odcięte liście mają różne kierunki lotu,
-grawitację, kołysanie i obrót wokół własnego środka. Animacja nie daje
+liść i jeden punkt zużycia nożyc. Liście mają łagodną, płytką krzywiznę zamiast ostrych załamań.
+Odcięte liście mają różne kierunki lotu, grawitację, kołysanie i obrót
+wokół własnego środka. Zachowują kształt przy cięciu i spadają poniżej
+panelu aż cała sylwetka opuści dolną krawędź widoku Minecrafta.
+Nie zatrzymują się na umownej podłodze ani nie znikają po stałym czasie. Animacja nie daje
 dodatkowych przedmiotów. Zwykłe nożyce nie uruchamiają minigry.
 
 Przeciąganie tła/PPM obraca roślinę, kółko zmienia zbliżenie. Esc zachowuje
@@ -179,4 +189,4 @@ Jednorazowe rewizje żądań i wyceny sklepu nie pozwalają ponawiać skutków
 starym pakietem. Po trzech sekundach bez potwierdzenia klient odzyskuje
 stan bez ponawiania wydatku ani nagrody.
 
-Wyniki i granice testów: [VALIDATION_0.1.49.md](VALIDATION_0.1.49.md).
+Wyniki i granice testów: [VALIDATION_0.1.50.md](VALIDATION_0.1.50.md).
